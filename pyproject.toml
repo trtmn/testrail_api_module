@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail_api_module"
-version = "0.1.0"
+version = "0.1.1"
 description = "A simple wrapper for the TestRail API"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
