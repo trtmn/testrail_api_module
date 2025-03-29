@@ -8,7 +8,7 @@ Attributes:
     __all__ (list): A list of modules to be imported when `from testrail_api_module import *` is used.
 """
 import os
-__version__ = '0.1.1'
+__version__ = '0.1.0'
 __author__ = 'Matt Troutman / Christian Thompson'
 package_version = __version__
 """The version of the package, used for compatibility checks and logging."""
