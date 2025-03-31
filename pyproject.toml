@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail_api_module"
-version = "0.1.1"
+version = "0.1.2"
 description = "A simple wrapper for the TestRail API"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
@@ -24,7 +24,7 @@ where = ["src"]
 Homepage = "https://github.com/trtmn/testrail_api_module"
 
 [tool.bumpversion]
-current_version = "0.1.1"
+current_version = "0.1.2"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
