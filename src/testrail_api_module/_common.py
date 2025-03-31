@@ -7,44 +7,7 @@ import json
 
 import os
 
-def set_testrail_api_credentials(baseurl=None, username=None, password=None):
-    """
-    Set the TestRail API credentials as environment variables.
 
-    Args:
-        baseurl (str): The base URL for the TestRail API.
-        username (str): The username for TestRail API authentication.
-        password (str): The password for TestRail API authentication.
-    """
-    if baseurl is not None:
-        os.environ["TESTRAIL_API_BASEURL"] = baseurl
-    if username is not None:
-        os.environ["TESTRAIL_API_USERNAME"] = username
-    if password is not None:
-        os.environ["TESTRAIL_API_PASSWORD"] = password
-
-def get_testrail_api_credentials():
-    """
-    Get the TestRail API credentials from environment variables.
-
-    Returns:
-        tuple: A tuple containing the baseurl, username, and password.
-
-    Raises:
-        ValueError: If any of the required credentials are not set.
-    """
-    baseurl = os.getenv("TESTRAIL_API_BASEURL")
-    username = os.getenv("TESTRAIL_API_USERNAME")
-    password = os.getenv("TESTRAIL_API_PASSWORD")
-
-    if baseurl is None:
-        raise ValueError("The base URL for the TestRail API is required. Set it as an environment variable or pass it as an argument.")
-    if username is None:
-        raise ValueError("The username for TestRail API authentication is required. Set it as an environment variable or pass it as an argument.")
-    if password is None:
-        raise ValueError("The password for TestRail API authentication is required. Set it as an environment variable or pass it as an argument.")
-
-    return baseurl, username, password
 
 class ApiConstructor:
     """
@@ -65,20 +28,51 @@ class ApiConstructor:
         self.project_id = None
         """The project ID for the TestRail project. This is required."""
         
-        self.baseurl = get_testrail_api_credentials()[0] #Required!
+        self.baseurl = None #Required!
         """The base URL for the TestRail API (e.g., "https://your_testrail_instance.testrail.io"). This is required.
         Can be set in the constructor or as an environment variable.
-        use testrail_api_module._common.set_testrail_api_credentials()"""
+        use {your_instance}.set_testrail_api_credentials()"""
         
-        self.username = get_testrail_api_credentials()[1] #Required!
+        self.username = None #Required!
         """The username for TestRail API authentication. This is required.
         Can be set in the constructor or as an environment variable.
-        use testrail_api_module._common.set_testrail_api_credentials()"""
+        use {your_instance}.set_testrail_api_credentials()"""
         
-        self.password = get_testrail_api_credentials()[2] #Required!
+        self.password = None
         """The password for TestRail API authentication. This is required.
         Can be set in the constructor or as an environment variable.
-        use testrail_api_module._common.set_testrail_api_credentials()"""
+        use {your_instance}.set_testrail_api_credentials()"""
+
+    def set_testrail_api_credentials(self, baseurl=None, username=None, password=None):
+        """
+        Set the TestRail API credentials as environment variables.
+
+        Args:
+            baseurl (str): The base URL for the TestRail API.
+            username (str): The username for TestRail API authentication.
+            password (str): The password for TestRail API authentication.
+        """
+        if baseurl is not None:
+            self.baseurl = baseurl
+        if username is not None:
+            self.username = username
+        if password is not None:
+            self.password = password
+
+    def fetch_testrail_api_credentials(self):
+        """
+        Fetch the TestRail API credentials from the environment variables.
+
+        Returns:
+            tuple: A tuple containing the base URL, username, and password for the TestRail API.
+        """
+
+        os.environ['TESTRAIL_API_BASEURL'] = self.baseurl
+        os.environ['TESTRAIL_API_USERNAME'] = self.username
+        os.environ['TESTRAIL_API_PASSWORD'] = self.password
+
+        return self.baseurl, self.username, self.password
+
 
     def api_request(self, method, endpoint, data=None):
                 """
@@ -110,6 +104,3 @@ class ApiConstructor:
                     print(f"Failed to {method} {endpoint}. Response:", response.text)
                     return None
 
-if __name__ == '__main__':
-    set_testrail_api_credentials(baseurl="https://your_testrail_instance.testrail.io", username="your_username", password="your_password")
-    print(get_testrail_api_credentials())
