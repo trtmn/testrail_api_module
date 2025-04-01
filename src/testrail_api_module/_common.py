@@ -63,9 +63,9 @@ class ApiConstructor:
             tuple: A tuple containing the base URL, username, and password for the TestRail API.
         """
 
-        self.baseurl = os.environ['TESTRAIL_API_BASEURL']
-        self.username = os.environ['TESTRAIL_API_USERNAME']
-        self.password = os.environ['TESTRAIL_API_PASSWORD']
+        self.baseurl = os.getenv('TESTRAIL_API_BASEURL')
+        self.username = os.getenv('TESTRAIL_API_USERNAME')
+        self.password = os.getenv('TESTRAIL_API_PASSWORD')
 
         return self.baseurl, self.username, self.password
 
