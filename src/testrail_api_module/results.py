@@ -5,7 +5,8 @@ _api = _common.ApiConstructor()
 # Print initializing message for file_name
 print("{0} is initializing...".format(__file__))
 
-def add(run_id=None, case_id=None, status_id=None, comment=None, version=None, elapsed=None, defects=None, assignedto_id=None):
+def add(run_id=None, case_id=None, status_id=None, comment=None, version=None, elapsed=None, defects=None, assignedto_id=None,
+        baseurl=None,username=None,password=None):
     """
     Add a test result for a specific test case in a test run.
 
@@ -30,7 +31,7 @@ def add(run_id=None, case_id=None, status_id=None, comment=None, version=None, e
         "defects": defects,
         "assignedto_id": assignedto_id
     }
-    response = _api.api_request('POST', f'add_result_for_case/{run_id}/{case_id}', data)
+    response = _api.api_request('POST', f'add_result_for_case/{run_id}/{case_id}', data, baseurl=baseurl, username=username, password=password)
     print("Test result added successfully." if response else "Failed to add test result.")
     if response is not None:
         _logging.info(f"Test result added successfully. Response: {response}")

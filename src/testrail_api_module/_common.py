@@ -55,48 +55,49 @@ class ApiConstructor:
         if password is not None:
             self.password = password
 
-    def fetch_testrail_api_credentials(self):
+    # def fetch_testrail_api_credentials(self):
+    #     """
+    #     Fetch the TestRail API credentials from the environment variables.
+    #
+    #     Returns:
+    #         tuple: A tuple containing the base URL, username, and password for the TestRail API.
+    #     """
+    #
+    #     self.baseurl = os.getenv('TESTRAIL_API_BASEURL')
+    #     self.username = os.getenv('TESTRAIL_API_USERNAME')
+    #     self.password = os.getenv('TESTRAIL_API_PASSWORD')
+    #
+    #     return self.baseurl, self.username, self.password
+
+
+    def api_request(self, method, endpoint, data=None, baseurl=None, username=None, password=None,**kwargs):
         """
-        Fetch the TestRail API credentials from the environment variables.
+        Make an API request to TestRail.
+
+        Args:
+            method (str): The HTTP method to use for the request (e.g., 'GET', 'POST').
+            endpoint (str): The API endpoint to send the request to.
+            data (dict, optional): The data to send with the request, if any.
 
         Returns:
-            tuple: A tuple containing the base URL, username, and password for the TestRail API.
+            dict: The JSON response from the API if the request is successful.
+            None: If the request fails.
+
+        Parameters
+        ----------
+        data
+        method
+        endpoint
+        password
+        username
+        baseurl
         """
-
-        self.baseurl = os.getenv('TESTRAIL_API_BASEURL')
-        self.username = os.getenv('TESTRAIL_API_USERNAME')
-        self.password = os.getenv('TESTRAIL_API_PASSWORD')
-
-        return self.baseurl, self.username, self.password
-
-
-    def api_request(self, method, endpoint, data=None):
-                """
-                Make an API request to TestRail.
-
-                Args:
-                    method (str): The HTTP method to use for the request (e.g., 'GET', 'POST').
-                    endpoint (str): The API endpoint to send the request to.
-                    data (dict, optional): The data to send with the request, if any.
-
-                Returns:
-                    dict: The JSON response from the API if the request is successful.
-                    None: If the request fails.
-                """
-                # Confirm that all 3 required variables are set
-                if not self.baseurl:
-                    raise ValueError("The base URL for the TestRail API is required. See documentation for more info")
-                if not self.username:
-                    raise ValueError("The username for TestRail API authentication is required. See documentation for more info")
-                if not self.password:
-                    raise ValueError("The password for TestRail API authentication is required. See documentation for more info")
-
-                url = f"{self.baseurl}/index.php?/api/v2/{endpoint}"
-                headers = {"Content-Type": "application/json"}
-                response = requests.request(method, url, headers=headers, data=json.dumps(data), auth=(self.username, self.password))
-                if response.status_code == 200:
-                    return response.json()
-                else:
-                    print(f"Failed to {method} {endpoint}. Response:", response.text)
-                    return None
+        url = f"{baseurl}/index.php?/api/v2/{endpoint}"
+        headers = {"Content-Type": "application/json"}
+        response = requests.request(method, url, headers=headers, data=json.dumps(data), auth=(username, password))
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to {method} {endpoint}. Response:", response.text)
+            return None
 
