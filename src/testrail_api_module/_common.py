@@ -1,76 +1,24 @@
 """
-`_common.py` serves as a foundational module for the TestRail API package, providing a base class for API requests and a function to set API credentials.
+`_common.py` serves as a foundational module for the TestRail API package, providing a base class for API requests.
 """
 import requests
 import json
 import os
 
-class ApiConstructor:
+class BaseAPI:
     """
-    A class to construct and make API requests to TestRail.
+    Base class for all TestRail API modules.
     """
-
-    def __init__(self) -> object:
+    def __init__(self, client):
         """
-        Initializes the ApiConstructor with default values for run_id, case_id, project_id,
-        baseurl, username, and password.
-        """
-        self.run_id = None  # Actual run id in demo project
-        """The run ID for the TestRail run. This is required."""
+        Initialize the base API class with a client instance.
         
-        self.case_id = None  # Actual case id in demo project
-        """The case ID for the TestRail case. This is required."""
-        
-        self.project_id = None
-        """The project ID for the TestRail project. This is required."""
-        
-        self.baseurl = None #Required!
-        """The base URL for the TestRail API (e.g., "https://your_testrail_instance.testrail.io"). This is required.
-        Can be set in the constructor or as an environment variable.
-        use {your_instance}.set_testrail_api_credentials()"""
-        
-        self.username = None #Required!
-        """The username for TestRail API authentication. This is required.
-        Can be set in the constructor or as an environment variable.
-        use {your_instance}.set_testrail_api_credentials()"""
-        
-        self.password = None
-        """The password for TestRail API authentication. This is required.
-        Can be set in the constructor or as an environment variable.
-        use {your_instance}.set_testrail_api_credentials()"""
-
-    def set_testrail_api_credentials(self, baseurl=None, username=None, password=None):
-        """
-        Set the TestRail API credentials as environment variables.
-
         Args:
-            baseurl (str): The base URL for the TestRail API.
-            username (str): The username for TestRail API authentication.
-            password (str): The password for TestRail API authentication.
+            client: The TestRailAPI client instance
         """
-        if baseurl is not None:
-            self.baseurl = baseurl
-        if username is not None:
-            self.username = username
-        if password is not None:
-            self.password = password
+        self.client = client
 
-    # def fetch_testrail_api_credentials(self):
-    #     """
-    #     Fetch the TestRail API credentials from the environment variables.
-    #
-    #     Returns:
-    #         tuple: A tuple containing the base URL, username, and password for the TestRail API.
-    #     """
-    #
-    #     self.baseurl = os.getenv('TESTRAIL_API_BASEURL')
-    #     self.username = os.getenv('TESTRAIL_API_USERNAME')
-    #     self.password = os.getenv('TESTRAIL_API_PASSWORD')
-    #
-    #     return self.baseurl, self.username, self.password
-
-
-    def api_request(self, method, endpoint, data=None, baseurl=None, username=None, password=None,**kwargs):
+    def _api_request(self, method, endpoint, data=None, **kwargs):
         """
         Make an API request to TestRail.
 
@@ -78,23 +26,26 @@ class ApiConstructor:
             method (str): The HTTP method to use for the request (e.g., 'GET', 'POST').
             endpoint (str): The API endpoint to send the request to.
             data (dict, optional): The data to send with the request, if any.
+            **kwargs: Additional arguments to pass to the request.
 
         Returns:
             dict: The JSON response from the API if the request is successful.
             None: If the request fails.
-
-        Parameters
-        ----------
-        data
-        method
-        endpoint
-        password
-        username
-        baseurl
         """
-        url = f"{baseurl}/index.php?/api/v2/{endpoint}"
+        url = f"{self.client.base_url}/index.php?/api/v2/{endpoint}"
         headers = {"Content-Type": "application/json"}
-        response = requests.request(method, url, headers=headers, data=json.dumps(data), auth=(username, password))
+        if 'headers' in kwargs:
+            headers.update(kwargs.pop('headers'))
+            
+        response = requests.request(
+            method,
+            url,
+            headers=headers,
+            data=json.dumps(data) if data else None,
+            auth=(self.client.username, self.client.api_key),
+            **kwargs
+        )
+        
         if response.status_code == 200:
             return response.json()
         else:
