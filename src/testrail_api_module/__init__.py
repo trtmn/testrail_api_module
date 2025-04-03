@@ -18,18 +18,26 @@ class TestRailAPI:
     Main class for interacting with the TestRail API.
     This class serves as the entry point for all TestRail API functionality.
     """
-    def __init__(self, base_url: str, username: str, api_key: str):
+    def __init__(self, base_url: str, username: str, api_key: Optional[str] = None, password: Optional[str] = None):
         """
         Initialize the TestRail API client.
         
         Args:
             base_url (str): The base URL of your TestRail instance (e.g., 'https://your-instance.testrail.io')
             username (str): Your TestRail username
-            api_key (str): Your TestRail API key
+            api_key (str, optional): Your TestRail API key. Either api_key or password must be provided.
+            password (str, optional): Your TestRail password. Either api_key or password must be provided.
+            
+        Raises:
+            ValueError: If neither api_key nor password is provided.
         """
+        if not api_key and not password:
+            raise ValueError("Either api_key or password must be provided for authentication")
+            
         self.base_url = base_url
         self.username = username
         self.api_key = api_key
+        self.password = password
         
         # Initialize all submodules
         from . import attachments
