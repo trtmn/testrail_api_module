@@ -120,3 +120,5 @@ dmypy.json
 cython_debug/
 
 test_it.py
+
+docs/
