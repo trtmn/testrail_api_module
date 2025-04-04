@@ -97,18 +97,6 @@ class ResultsAPI(BaseAPI):
             data.update(custom_fields)
         return self._api_request('POST', f'add_result_for_run/{run_id}', data)
 
-    def get_result(self, result_id: int) -> Dict[str, Any]:
-        """
-        Get a specific test result.
-
-        Args:
-            result_id: The ID of the test result.
-
-        Returns:
-            Dict containing the test result data.
-        """
-        return self._api_request('GET', f'get_result/{result_id}')
-
     def get_results(self, run_id: int) -> List[Dict[str, Any]]:
         """
         Get all test results for a test run.
@@ -146,11 +134,24 @@ class ResultsAPI(BaseAPI):
         """
         return self._api_request('GET', f'get_results_for_run/{run_id}')
 
-    def get_result_fields(self) -> List[Dict[str, Any]]:
+    def add_results(self, run_id: int, results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        Get all available test result fields.
+        Add multiple test results for test cases in a test run.
+
+        Args:
+            run_id: The ID of the test run.
+            results: List of dictionaries containing test result data for each case.
+                    Each result should include:
+                    - case_id: The ID of the test case
+                    - status_id: The status ID of the test result
+                    - comment: Optional comment for the test result
+                    - version: Optional version of the software under test
+                    - elapsed: Optional time taken to execute the test
+                    - defects: Optional comma-separated list of defects
+                    - assignedto_id: Optional ID of the user the test is assigned to
+                    - custom_fields: Optional dictionary of custom field values
 
         Returns:
-            List of dictionaries containing test result field data.
+            Dict containing the created test results data.
         """
-        return self._api_request('GET', 'get_result_fields')
+        return self._api_request('POST', f'add_results_for_cases/{run_id}', {"results": results})

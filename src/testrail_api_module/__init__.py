@@ -42,8 +42,6 @@ class TestRailAPI:
         # Initialize all submodules
         from . import attachments
         from . import bdd
-        from . import case_fields
-        from . import case_types
         from . import cases
         from . import configurations
         from . import datasets
@@ -69,8 +67,6 @@ class TestRailAPI:
         # Create instances of each submodule
         self.attachments = attachments.AttachmentsAPI(self)
         self.bdd = bdd.BDDAPI(self)
-        self.case_fields = case_fields.CaseFieldsAPI(self)
-        self.case_types = case_types.CaseTypesAPI(self)
         self.cases = cases.CasesAPI(self)
         self.configurations = configurations.ConfigurationsAPI(self)
         self.datasets = datasets.DatasetsAPI(self)

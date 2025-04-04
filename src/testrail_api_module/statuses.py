@@ -34,8 +34,8 @@ class StatusesAPI(BaseAPI):
     def add_status(self, name: str, short_name: str, color: str,
                   is_system: bool = False, is_untested: bool = False,
                   is_passed: bool = False, is_blocked: bool = False,
-                  is_untested: bool = False, is_retest: bool = False,
-                  is_failed: bool = False, is_custom: bool = True) -> Optional[Dict[str, Any]]:
+                  is_retest: bool = False, is_failed: bool = False,
+                  is_custom: bool = True) -> Optional[Dict[str, Any]]:
         """
         Add a new status.
         
