@@ -1,187 +1,82 @@
-from . import _common
-_api = _common.ApiConstructor()
 """
-This module provides functionalities to interact with attachments in TestRail.
+This module provides functionality for managing attachments in TestRail.
+Attachments can be added to test cases, test runs, and other entities.
 """
+from typing import Optional, Dict, Any, List
+from .base import BaseAPI
 
-
-def add_attachment_to_case(case_id, file_path):
+class AttachmentsAPI(BaseAPI):
     """
-    Add an attachment to a specific test case.
-
-    Args:
-        case_id (str): The ID of the test case.
-        file_path (str): The path to the file to be attached.
-
-    Returns:
-        dict: The response from the API.
+    API for managing TestRail attachments.
     """
-    files = {'attachment': open(file_path, 'rb')}
-    headers = {'Content-Type': 'multipart/form-data'}
-    response = _api.api_request('POST', f'add_attachment_to_case/{case_id}', files=files, headers=headers)
-    return response
-
-def add_attachment_to_plan(plan_id, file_path):
-    """
-    Add an attachment to a specific test plan.
-
-    Args:
-        plan_id (str): The ID of the test plan.
-        file_path (str): The path to the file to be attached.
-
-    Returns:
-        dict: The response from the API.
-    """
-    files = {'attachment': open(file_path, 'rb')}
-    headers = {'Content-Type': 'multipart/form-data'}
-    response = _api.api_request('POST', f'add_attachment_to_plan/{plan_id}', files=files, headers=headers)
-    return response
-
-def add_attachment_to_plan_entry(plan_id, entry_id, file_path):
-    """
-    Add an attachment to a specific test plan entry.
-
-    Args:
-        plan_id (str): The ID of the test plan.
-        entry_id (str): The ID of the test plan entry.
-        file_path (str): The path to the file to be attached.
-
-    Returns:
-        dict: The response from the API.
-    """
-    files = {'attachment': open(file_path, 'rb')}
-    headers = {'Content-Type': 'multipart/form-data'}
-    response = _api.api_request('POST', f'add_attachment_to_plan_entry/{plan_id}/{entry_id}', files=files, headers=headers)
-    return response
-
-def add_attachment_to_result(result_id, file_path):
-    """
-    Add an attachment to a specific test result.
-
-    Args:
-        result_id (str): The ID of the test result.
-        file_path (str): The path to the file to be attached.
-
-    Returns:
-        dict: The response from the API.
-    """
-    files = {'attachment': open(file_path, 'rb')}
-    headers = {'Content-Type': 'multipart/form-data'}
-    response = _api.api_request('POST', f'add_attachment_to_result/{result_id}', files=files, headers=headers)
-    return response
-
-def add_attachment_to_run(run_id, file_path):
-    """
-    Add an attachment to a specific test run.
-
-    Args:
-        run_id (str): The ID of the test run.
-        file_path (str): The path to the file to be attached.
-
-    Returns:
-        dict: The response from the API.
-    """
-    files = {'attachment': open(file_path, 'rb')}
-    headers = {'Content-Type': 'multipart/form-data'}
-    response = _api.api_request('POST', f'add_attachment_to_run/{run_id}', files=files, headers=headers)
-    return response
-
-def get_attachments_for_case(case_id, limit=250, offset=0):
-    """
-    Get all attachments for a specific test case.
-
-    Args:
-        case_id (str): The ID of the test case.
-        limit (int, optional): The maximum number of attachments to return (default is 250).
-        offset (int, optional): The number of attachments to skip before starting to collect the result set (default is 0).
-
-    Returns:
-        dict: The response from the API.
-    """
-    response = _api.api_request('GET', f'get_attachments_for_case/{case_id}&limit={limit}&offset={offset}')
-    return response
-
-def get_attachments_for_plan(plan_id, limit=250, offset=0):
-    """
-    Get all attachments for a specific test plan.
-
-    Args:
-        plan_id (str): The ID of the test plan.
-        limit (int, optional): The maximum number of attachments to return (default is 250).
-        offset (int, optional): The number of attachments to skip before starting to collect the result set (default is 0).
-
-    Returns:
-        dict: The response from the API.
-    """
-    response = _api.api_request('GET', f'get_attachments_for_plan/{plan_id}&limit={limit}&offset={offset}')
-    return response
-
-def get_attachments_for_plan_entry(plan_id, entry_id, limit=250, offset=0):
-    """
-    Get all attachments for a specific test plan entry.
-
-    Args:
-        plan_id (str): The ID of the test plan.
-        entry_id (str): The ID of the test plan entry.
-        limit (int, optional): The maximum number of attachments to return (default is 250).
-        offset (int, optional): The number of attachments to skip before starting to collect the result set (default is 0).
-
-    Returns:
-        dict: The response from the API.
-    """
-    response = _api.api_request('GET', f'get_attachments_for_plan_entry/{plan_id}/{entry_id}&limit={limit}&offset={offset}')
-    return response
-
-def get_attachments_for_run(run_id, limit=250, offset=0):
-    """
-    Get all attachments for a specific test run.
-
-    Args:
-        run_id (str): The ID of the test run.
-        limit (int, optional): The maximum number of attachments to return (default is 250).
-        offset (int, optional): The number of attachments to skip before starting to collect the result set (default is 0).
-
-    Returns:
-        dict: The response from the API.
-    """
-    response = _api.api_request('GET', f'get_attachments_for_run/{run_id}?limit={limit}&offset={offset}')
-    return response
-
-def get_attachments_for_test(test_id):
-    """
-    Get all attachments for a specific test.
-
-    Args:
-        test_id (str): The ID of the test.
-
-    Returns:
-        dict: The response from the API.
-    """
-    response = _api.api_request('GET', f'get_attachments_for_test/{test_id}')
-    return response
-
-def get_attachment(attachment_id):
-    """
-    Get details of a specific attachment.
-
-    Args:
-        attachment_id (str): The ID of the attachment.
-
-    Returns:
-        dict: The response from the API.
-    """
-    response = _api.api_request('GET', f'get_attachment/{attachment_id}')
-    return response
-
-def delete_attachment(attachment_id):
-    """
-    Delete a specific attachment.
-
-    Args:
-        attachment_id (str): The ID of the attachment.
-
-    Returns:
-        dict: The response from the API.
-    """
-    response = _api.api_request('POST', f'delete_attachment/{attachment_id}')
-    return response
+    
+    def get_attachment(self, attachment_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Get an attachment by ID.
+        
+        Args:
+            attachment_id: The ID of the attachment to retrieve.
+            
+        Returns:
+            Dict containing the attachment data.
+        """
+        return self._api_request('GET', f'get_attachment/{attachment_id}')
+    
+    def get_attachments(self, entity_type: str, entity_id: int) -> Optional[List[Dict[str, Any]]]:
+        """
+        Get all attachments for a specific entity.
+        
+        Args:
+            entity_type: The type of entity ('case', 'run', 'plan', 'project').
+            entity_id: The ID of the entity to get attachments for.
+            
+        Returns:
+            List of dictionaries containing attachment data.
+        """
+        return self._api_request('GET', f'get_attachments/{entity_type}/{entity_id}')
+    
+    def add_attachment(self, entity_type: str, entity_id: int, file_path: str,
+                      description: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """
+        Add an attachment to a specific entity.
+        
+        Args:
+            entity_type: The type of entity ('case', 'run', 'plan', 'project').
+            entity_id: The ID of the entity to add the attachment to.
+            file_path: The path to the file to attach.
+            description: Optional description of the attachment.
+                
+        Returns:
+            Dict containing the created attachment data.
+        """
+        data = {
+            'file': file_path
+        }
+        if description:
+            data['description'] = description
+            
+        return self._api_request('POST', f'add_attachment/{entity_type}/{entity_id}', data=data)
+    
+    def delete_attachment(self, attachment_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Delete an attachment.
+        
+        Args:
+            attachment_id: The ID of the attachment to delete.
+            
+        Returns:
+            Dict containing the response data.
+        """
+        return self._api_request('POST', f'delete_attachment/{attachment_id}')
+    
+    def get_attachment_content(self, attachment_id: int) -> Optional[bytes]:
+        """
+        Get the content of an attachment.
+        
+        Args:
+            attachment_id: The ID of the attachment to get content for.
+            
+        Returns:
+            Bytes containing the attachment content.
+        """
+        return self._api_request('GET', f'get_attachment_content/{attachment_id}')

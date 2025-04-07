@@ -118,3 +118,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+
+
+test_it.py
+docs/
+
+__private__/

@@ -7,8 +7,10 @@
       <excludeFolder url="file://$MODULE_DIR$/src/testrail_api.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/src/testrail_api_module.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv311" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv38" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.13 (testrail_api_module)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.11 (testrail_api_module)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
