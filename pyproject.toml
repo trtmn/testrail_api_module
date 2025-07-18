@@ -17,6 +17,11 @@ dependencies = [
     "requests"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pdoc",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
