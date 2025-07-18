@@ -37,6 +37,24 @@ Updates the version in the module's `__init__.py` file.
 python utilities/update_version.py 0.3.0
 ```
 
+### `generate_stubs.py`
+
+Generates library stubs (.pyi files) for the TestRail API module using stubgen.
+
+**Features:**
+
+- Automatically generates type stubs for all modules
+- Improves generated stubs with better type annotations
+- Creates py.typed file for typing support
+- Updates pyproject.toml with mypy configuration
+- Adds stubgen to development dependencies
+
+**Usage:**
+
+```bash
+python utilities/generate_stubs.py
+```
+
 ### `run_tests.py`
 
 Runs the test suite for the project.
@@ -68,3 +86,25 @@ bumpversion major  # for breaking changes
 ```bash
 python utilities/generate_docs.py
 ```
+
+## Type Checking and Stubs
+
+The project includes library stubs (.pyi files) for better IDE support and static type checking.
+
+**To generate/regenerate stubs:**
+
+```bash
+python utilities/generate_stubs.py
+```
+
+**To check types with mypy:**
+
+```bash
+mypy src/testrail_api_module
+```
+
+**Stub files included:**
+
+- All `.pyi` files in `src/testrail_api_module/` (inline stubs)
+- `py.typed` file for typing support
+- Mypy configuration in `pyproject.toml`
