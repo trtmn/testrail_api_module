@@ -4,9 +4,9 @@
 
 A comprehensive Python wrapper for the TestRail API that provides easy access to all TestRail functionalities.
 
-## Features
+## Features / Goals
 
-- Full coverage of TestRail API endpoints
+- Goal: Full coverage of TestRail API endpoints (currently at 8%)
 - Type hints for better IDE support
 - Easy-to-use interface
 - Comprehensive error handling
@@ -144,6 +144,19 @@ For complete documentation, visit our [documentation site](https://trtmn.github.
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+For advanced usage, development setup, and troubleshooting, please refer to the [Developer Guide](./dev-readme.md). The guide includes detailed instructions on:
+
+- Setting up your development environment with a `.venv` virtual environment at the project root
+- Installing dependencies using `pip-tools` (`pip-compile` and `pip-sync`)
+- Running tests and checking coverage
+- Building and deploying the package to PyPI and Test PyPI
+- Managing versions with `bump-my-version`
+- Best practices for contributing and maintaining the project
+
+**Note:** Always use Python 3.10 or higher and activate the `.venv` environment before running any development commands. The Developer Guide also covers CI/CD integration, environment variables, and common troubleshooting steps.
+
+[Read the Developer Guide →](./dev-readme.md)
+
 
 ## License
 
