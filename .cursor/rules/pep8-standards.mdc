@@ -1,0 +1,76 @@
+# PEP 8 Standards for Python Files
+
+---
+alwaysApply: true
+globs: *.py
+---
+
+Always follow PEP 8 style guidelines for all Python code:
+
+## Code Layout
+- Use 4 spaces per indentation level (no tabs)
+- Maximum line length of 79 characters
+- Use blank lines to separate top-level functions and classes
+- Use blank lines to separate methods within classes
+- Use blank lines sparingly inside functions to indicate logical sections
+
+## Imports
+- Group imports in the following order:
+  1. Standard library imports
+  2. Related third party imports
+  3. Local application/library specific imports
+- Place each group in alphabetical order
+- Use absolute imports rather than relative imports
+- Avoid wildcard imports (from module import *)
+
+## String Formatting
+- Use f-strings for string formatting (Python 3.6+)
+- Use str.format() as a fallback
+- Avoid %-formatting
+
+## Naming Conventions
+- **Classes**: Use CapWords convention (e.g., `MyClass`)
+- **Functions and Variables**: Use lowercase with words separated by underscores (e.g., `my_function`)
+- **Constants**: Use uppercase with underscores (e.g., `MAX_VALUE`)
+- **Protected instance attributes**: Use single leading underscore (e.g., `_internal_value`)
+- **Private instance attributes**: Use double leading underscore (e.g., `__private_value`)
+
+## Whitespace
+- No spaces around = when used for default parameter values
+- No spaces around = when used for keyword arguments
+- Use spaces around operators (+, -, *, /, etc.)
+- No spaces inside parentheses, brackets, or braces
+- Use spaces after commas in function calls and definitions
+
+## Comments
+- Use complete sentences for docstrings
+- Use inline comments sparingly
+- Write comments that explain "why" not "what"
+
+## Type Hints
+- Use type hints for function parameters and return values
+- Import typing modules as needed (Optional, Dict, List, Any, etc.)
+- Use proper type annotations for complex data structures
+
+## Error Handling
+- Use specific exceptions rather than bare except clauses
+- Use try/except blocks only around code that can actually raise exceptions
+
+## Code Examples
+```python
+# Good
+def calculate_total(items: List[Dict[str, Any]]) -> float:
+    """Calculate the total price of all items."""
+    return sum(item['price'] for item in items)
+
+# Bad
+def calculateTotal(items):  # Missing type hints
+    return sum([item['price'] for item in items])  # Unnecessary list comprehension
+```
+
+## File Organization
+- One class per file when possible
+- Keep functions focused and single-purpose
+- Use meaningful variable and function names
+- Avoid deep nesting (max 3-4 levels) 
+---
