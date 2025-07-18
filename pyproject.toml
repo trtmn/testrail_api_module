@@ -10,7 +10,7 @@ authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
     { name = "Christian Thompson", email = "example@example.com" }
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 readme = "README.md"
 dependencies = [
@@ -55,6 +55,9 @@ post_commit_hooks = []
 
 [[tool.bumpversion.files]]
 filename = "src/testrail_api_module/__init__.py"
+
+[tool.bumpversion.hooks]
+post_bump = "python utilities/update_version.py {new_version}"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

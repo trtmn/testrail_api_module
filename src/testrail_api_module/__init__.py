@@ -1,6 +1,15 @@
 # src/testrail_api_module/__init__.py
 """
-This module provides functionalities to interact with the TestRail API, including managing attachments, cases, tests, and results, etc.
+TestRail API Module
+==================
+
+A comprehensive Python wrapper for the TestRail API that provides easy-to-use
+interfaces for managing test cases, runs, results, and all other TestRail resources.
+
+**Version:** {version}
+
+This module provides functionalities to interact with the TestRail API, including 
+managing attachments, cases, tests, and results, etc.
 
 Attributes:
     __version__ (str): The version of the module.
@@ -12,6 +21,9 @@ from typing import Optional
 __version__ = '0.2.0'
 """The version of the module, used for compatibility checks and logging."""
 __author__ = 'Matt Troutman and Christian Thompson'
+
+# Update the docstring with the current version
+__doc__ = __doc__.format(version=__version__)
 
 class TestRailAPI:
     """
