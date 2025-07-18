@@ -24,6 +24,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "stubgen",
+    "bump-my-version",
 ]
 
 [tool.setuptools.packages.find]
@@ -33,8 +34,8 @@ where = ["src"]
 Homepage = "https://github.com/trtmn/testrail_api_module"
 Docs = 'https://trtmn.github.io/testrail_api_module/'
 
-[tool.bumpversion]
-current_version = "0.2.0"
+[tool.bump-my-version]
+current_version = "0.3.0"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
@@ -54,11 +55,15 @@ setup_hooks = []
 pre_commit_hooks = []
 post_commit_hooks = []
 
-[[tool.bumpversion.files]]
-filename = "src/testrail_api_module/__init__.py"
+[[tool.bump-my-version.files]]
+filename = "pyproject.toml"
+search = "version = \"{current_version}\""
+replace = "version = \"{new_version}\""
 
-[tool.bumpversion.hooks]
-post_bump = "python utilities/update_version.py {new_version}"
+[[tool.bump-my-version.files]]
+filename = "src/testrail_api_module/__init__.py"
+search = "__version__ = '{current_version}'"
+replace = "__version__ = '{new_version}'"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

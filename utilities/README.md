@@ -23,18 +23,33 @@ python utilities/generate_docs.py
 
 ### `update_version.py`
 
-Updates the version in the module's `__init__.py` file.
+Updates the version using bump-my-version for both pyproject.toml and __init__.py files.
 
 **Features:**
 
-- Validates version format (x.y.z)
-- Updates `__version__` in the main module
-- Called automatically by bumpversion
+- Uses bump-my-version for consistent version management
+- Updates both pyproject.toml and __init__.py files
+- Supports patch, minor, and major version bumps
+- Includes dry-run mode for testing changes
+- Auto-installs bump-my-version if not present
 
 **Usage:**
 
 ```bash
-python utilities/update_version.py 0.3.0
+# Show current version
+python utilities/update_version.py show
+
+# Bump patch version (0.3.0 -> 0.3.1)
+python utilities/update_version.py patch
+
+# Bump minor version (0.3.0 -> 0.4.0)
+python utilities/update_version.py minor
+
+# Bump major version (1.0.0 -> 2.0.0)
+python utilities/update_version.py major
+
+# Dry run to see what would change
+python utilities/update_version.py patch --dry-run
 ```
 
 ### `generate_stubs.py`
@@ -67,7 +82,7 @@ python utilities/run_tests.py
 
 ## Version Management
 
-The project uses `bumpversion` for version management. When you bump the version:
+The project uses `bump-my-version` for version management. When you bump the version:
 
 1. `pyproject.toml` is updated
 2. `src/testrail_api_module/__init__.py` is updated automatically
@@ -76,9 +91,21 @@ The project uses `bumpversion` for version management. When you bump the version
 **To bump version:**
 
 ```bash
-bumpversion patch  # for bug fixes
-bumpversion minor  # for new features
-bumpversion major  # for breaking changes
+# Using the utility script (recommended)
+python utilities/update_version.py patch   # for bug fixes
+python utilities/update_version.py minor   # for new features
+python utilities/update_version.py major   # for breaking changes
+
+# Or using bump-my-version directly
+bump-my-version bump patch
+bump-my-version bump minor
+bump-my-version bump major
+```
+
+**To show current version:**
+
+```bash
+python utilities/update_version.py show
 ```
 
 **To regenerate documentation with new version:**
