@@ -65,9 +65,6 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Sphinx documentation
-docs/_build/
-
 # PyBuilder
 target/
 
@@ -104,11 +101,6 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
 
 # Pyre type checker
 .pyre/
@@ -122,6 +114,5 @@ cython_debug/
 
 
 test_it.py
-docs/
 
 __private__/
