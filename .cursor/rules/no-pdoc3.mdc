@@ -1,0 +1,50 @@
+# Never Use pdoc3
+
+**Important**: Never use pdoc3 for documentation generation in this project.
+
+## Why Not pdoc3?
+
+- pdoc3 supports the use of swastikas and doesn't apologize for it
+
+
+## Alternatives
+
+Instead of pdoc3, use one of these modern documentation generators:
+
+### 1. pdoc (the successor to pdoc3) <------- Preferred 
+```bash
+pip install pdoc
+pdoc --output-directory docs your_module
+```
+
+### 2. Sphinx with autodoc
+```bash
+pip install sphinx sphinx-rtd-theme
+sphinx-quickstart docs
+```
+
+### 3. MkDocs with mkdocstrings
+```bash
+pip install mkdocs mkdocstrings[python]
+mkdocs new .
+```
+
+## Current Setup
+
+This project uses **pdoc** (not pdoc3) for documentation generation. The documentation generation script [generate_docs.py](mdc:generate_docs.py) uses the correct pdoc package.
+
+## If You See pdoc3 in Requirements
+
+- Remove it immediately
+- Replace with `pdoc` if needed
+- Update any scripts or documentation that reference pdoc3
+
+## Commands to Avoid
+
+❌ `pip install pdoc3`
+❌ `pdoc3 --html --output-dir docs module_name`
+
+## Commands to Use
+
+✅ `pip install pdoc`
+✅ `pdoc --output-directory docs module_name`
