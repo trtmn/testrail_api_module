@@ -14,8 +14,26 @@ A comprehensive Python wrapper for the TestRail API that provides easy access to
 
 ## Installation
 
+### For Consumers
+
 ```bash
+# Install the package with runtime dependencies only
 pip install testrail-api-module
+```
+
+### For Developers
+
+```bash
+# Clone the repository
+git clone https://github.com/trtmn/testrail-api-module.git
+cd testrail-api-module
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install in development mode with all dev dependencies
+pip install -e .[dev]
 ```
 
 ## Quick Start
@@ -140,6 +158,21 @@ except Exception as e:
 ## Documentation
 
 For complete documentation, visit our [documentation site](https://trtmn.github.io/testrail-api-module/).
+
+## Dependency Management
+
+This project uses modern Python packaging with `pyproject.toml` for dependency management.
+
+### For Consumers
+- **Minimal dependencies**: Only `requests>=2.32.0` is required
+- **Automatic resolution**: pip handles dependency resolution automatically
+
+### For Developers
+- **Development dependencies**: Use `pip install -e .[dev]` for all development tools
+- **Automatic resolution**: pip handles all dependency resolution
+
+### Files
+- `pyproject.toml` - Package configuration and dependency specifications
 
 ## Contributing
 
