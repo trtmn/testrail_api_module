@@ -1,0 +1,14 @@
+# Do Not Use pdoc3
+
+**Important:** Never use `pdoc3` for documentation generation in this project.
+
+## Why Not pdoc3?
+
+- `pdoc3` has problematic associations and is not maintained.
+
+## Approved Alternatives
+
+Use one of these modern documentation generators instead of `pdoc3`:
+
+### 1. pdoc (Preferred)
+### 2. Sphinx

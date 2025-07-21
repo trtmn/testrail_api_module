@@ -18,7 +18,7 @@ Attributes:
 import os
 from typing import Optional
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 """The version of the module, used for compatibility checks and logging."""
 __author__ = 'Matt Troutman and Christian Thompson'
 
