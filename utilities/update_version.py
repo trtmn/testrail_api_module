@@ -1,48 +1,119 @@
 #!/usr/bin/env python3
 """
-Script to update the version using bump-my-version.
+Script to update the version manually in pyproject.toml and __init__.py files.
 This script can be used to bump versions in both pyproject.toml and __init__.py files.
 """
-import subprocess
+import re
 import sys
 from pathlib import Path
 import click
 
 
-def run_bump_version(project_root: Path, part: str, dry_run: bool = False) -> None:
-    """Run bump-my-version to update the version."""
-    cmd = ["bump-my-version", "bump", part]
-
-    if dry_run:
-        cmd.append("--dry-run")
-
-    click.echo(f"🔄 Running: {' '.join(cmd)}")
-
-    try:
-        result = subprocess.run(
-            cmd,
-            cwd=project_root,
-            check=True,
-            capture_output=True,
-            text=True
-        )
-
-        if dry_run:
-            click.echo("📋 Dry run output:")
-            click.echo(result.stdout)
-        else:
-            click.echo("✅ Version bumped successfully!")
-            click.echo(result.stdout)
-
-    except subprocess.CalledProcessError as e:
-        click.secho(f"❌ Error running bump-my-version: {e}", fg="red")
-        click.secho(f"stderr: {e.stderr}", fg="red")
+def get_current_version(project_root: Path) -> str:
+    """Get the current version from pyproject.toml."""
+    pyproject_file = project_root / "pyproject.toml"
+    
+    if not pyproject_file.exists():
+        click.secho("❌ pyproject.toml not found", fg="red")
         sys.exit(1)
+    
+    content = pyproject_file.read_text()
+    match = re.search(r'version\s*=\s*"([^"]+)"', content)
+    if not match:
+        click.secho("❌ Could not find version in pyproject.toml", fg="red")
+        sys.exit(1)
+    
+    return match.group(1)
+
+
+def bump_version(version: str, part: str) -> str:
+    """Bump the version by the specified part."""
+    parts = version.split('.')
+    if len(parts) != 3:
+        click.secho(f"❌ Invalid version format: {version}", fg="red")
+        sys.exit(1)
+    
+    major, minor, patch = map(int, parts)
+    
+    if part == "patch":
+        patch += 1
+    elif part == "minor":
+        minor += 1
+        patch = 0
+    elif part == "major":
+        major += 1
+        minor = 0
+        patch = 0
+    else:
+        click.secho(f"❌ Invalid version part: {part}", fg="red")
+        sys.exit(1)
+    
+    return f"{major}.{minor}.{patch}"
+
+
+def update_file_version(file_path: Path, old_version: str, new_version: str, pattern: str, replacement: str) -> bool:
+    """Update version in a file."""
+    if not file_path.exists():
+        click.secho(f"❌ File not found: {file_path}", fg="red")
+        return False
+    
+    content = file_path.read_text()
+    
+    # Create the actual search and replace patterns
+    search_pattern = pattern.format(current_version=old_version)
+    replace_pattern = replacement.format(new_version=new_version)
+    
+    if search_pattern not in content:
+        click.secho(f"❌ Version {old_version} not found in {file_path}", fg="red")
+        return False
+    
+    new_content = content.replace(search_pattern, replace_pattern)
+    file_path.write_text(new_content)
+    
+    click.echo(f"✅ Updated {file_path}")
+    return True
+
+
+def run_version_update(project_root: Path, part: str, dry_run: bool = False) -> None:
+    """Update version in all configured files."""
+    current_version = get_current_version(project_root)
+    new_version = bump_version(current_version, part)
+    
+    click.echo(f"🔄 Updating version from {current_version} to {new_version}")
+    
+    if dry_run:
+        click.echo("📋 Dry run - would update:")
+        click.echo(f"  pyproject.toml: version = \"{current_version}\" → version = \"{new_version}\"")
+        click.echo(f"  __init__.py: __version__ = '{current_version}' → __version__ = '{new_version}'")
+        return
+    
+    # Update pyproject.toml
+    pyproject_file = project_root / "pyproject.toml"
+    update_file_version(
+        pyproject_file,
+        current_version,
+        new_version,
+        'version = "{current_version}"',
+        'version = "{new_version}"'
+    )
+    
+    # Update __init__.py
+    init_file = project_root / "src" / "testrail_api_module" / "__init__.py"
+    update_file_version(
+        init_file,
+        current_version,
+        new_version,
+        "__version__ = '{current_version}'",
+        "__version__ = '{new_version}'"
+    )
+    
+    click.echo(f"✅ Version updated to {new_version}")
 
 
 def check_bump_my_version_installed() -> bool:
     """Check if bump-my-version is installed."""
     try:
+        import subprocess
         subprocess.run(
             ["bump-my-version", "--version"],
             check=True,
@@ -58,6 +129,7 @@ def install_bump_my_version() -> None:
     click.echo("📦 Installing bump-my-version...")
 
     try:
+        import subprocess
         subprocess.run(
             [sys.executable, "-m", "pip", "install", "bump-my-version"],
             check=True,
@@ -73,29 +145,13 @@ def install_bump_my_version() -> None:
 
 def show_current_version(project_root: Path) -> None:
     """Show the current version from pyproject.toml."""
-    pyproject_file = project_root / "pyproject.toml"
-
-    if not pyproject_file.exists():
-        click.secho("❌ pyproject.toml not found", fg="red")
-        return
-
-    try:
-        result = subprocess.run(
-            ["bump-my-version", "show", "current"],
-            cwd=project_root,
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        click.echo(f"📋 Current version: {result.stdout.strip()}")
-    except subprocess.CalledProcessError as e:
-        click.secho(f"❌ Error getting current version: {e}", fg="red")
-        click.secho(f"stderr: {e.stderr}", fg="red")
+    version = get_current_version(project_root)
+    click.echo(f"📋 Current version: {version}")
 
 
 @click.group()
 def cli() -> None:
-    """CLI for updating project version using bump-my-version."""
+    """CLI for updating project version."""
     return None
 
 
@@ -103,14 +159,6 @@ def cli() -> None:
 def show() -> None:
     """Show the current version."""
     project_root = Path(__file__).parent.parent
-    if not check_bump_my_version_installed():
-        click.secho("❌ bump-my-version is not installed", fg="red")
-        if click.confirm("Would you like to install it now?"):
-            install_bump_my_version()
-        else:
-            click.echo("Please install bump-my-version manually:")
-            click.echo("  pip install bump-my-version")
-            sys.exit(1)
     show_current_version(project_root)
 
 
@@ -120,15 +168,6 @@ def show() -> None:
 def bump(part: str, dry_run: bool) -> None:
     """Bump the version: 1=patch, 2=minor, 3=major."""
     project_root = Path(__file__).parent.parent
-
-    if not check_bump_my_version_installed():
-        click.secho("❌ bump-my-version is not installed", fg="red")
-        if click.confirm("Would you like to install it now?"):
-            install_bump_my_version()
-        else:
-            click.echo("Please install bump-my-version manually:")
-            click.echo("  pip install bump-my-version")
-            sys.exit(1)
 
     # Map numeric choice to version part
     version_parts = {
@@ -141,7 +180,7 @@ def bump(part: str, dry_run: bool) -> None:
     click.echo(f"🔧 Updating version ({version_part}) for TestRail API Module")
     click.echo(f"📁 Project root: {project_root}")
 
-    run_bump_version(project_root, version_part, dry_run)
+    run_version_update(project_root, version_part, dry_run)
 
     if not dry_run:
         click.echo("\n🎉 Version update completed!")

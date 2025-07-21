@@ -73,8 +73,8 @@ def update_version() -> bool:
         return False
     
     console.print("\n[bold]Version bump options:[/bold]")
-    console.print("1. [cyan]patch[/cyan] - for bug fixes (0.2.3 → 0.2.4)")
-    console.print("2. [cyan]minor[/cyan] - for new features (0.2.3 → 0.3.0)")
+    console.print("1. [cyan]patch[/cyan] - for bug fixes (0.2.0 → 0.2.1)")
+    console.print("2. [cyan]minor[/cyan] - for new features (0.2.0 → 0.3.0)")
     console.print("3. [cyan]major[/cyan] - for breaking changes (1.0.0 → 2.0.0)")
     
     part = Prompt.ask(

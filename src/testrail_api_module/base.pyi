@@ -15,7 +15,7 @@ class BaseAPI:
         Args:
             client: The TestRailAPI client instance
         """
-    def _api_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Optional[Dict[str, Any]]:
+    def _api_request(self, method, endpoint, data: Any | None = None, **kwargs):
         """
         Make an API request to TestRail. Supports both API key and password authentication.
         Will try API key first, then fall back to password if API key fails.
