@@ -1,0 +1,47 @@
+---
+globs: *.md
+alwaysApply: false
+---
+# Markdown Standards (markdownlint-based)
+
+Follow these markdownlint-inspired rules for consistent Markdown formatting:
+
+## Essential Rules
+
+- **Headings**: Use ATX style with space after hash (`# Heading`)
+- **Line length**: Keep lines under 80 characters
+- **Blank lines**: Surround headings and code blocks with blank lines
+- **Lists**: Use `-` for unordered lists, consistent indentation
+- **Links**: Use `[text](url)` format, no bare URLs
+- **Code blocks**: Use fenced blocks with language specification
+- **No hard tabs**: Use spaces for indentation
+- **No multiple blanks**: Maximum one consecutive blank line
+
+## Common Patterns
+
+```markdown
+# Document Title
+
+## Section
+
+- List item
+- Another item
+
+```python
+def example():
+    return "code"
+```
+
+[Link text](https://example.com)
+```
+
+## Key markdownlint Rules
+
+- MD018: Space after ATX heading
+- MD013: Line length limit
+- MD022: Blank lines around headings  
+- MD040: Language in fenced code blocks
+- MD010: No hard tabs
+- MD012: No multiple blank lines
+- MD011: Proper link format
+- MD034: No bare URLs 

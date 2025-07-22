@@ -45,6 +45,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -203,11 +204,17 @@ It allows you to import and export BDD scenarios as .feature files.</p>
 
             <div class="docstring"><p>Export a BDD scenario from a test case as a .feature file.</p>
 
-<p>Args:
-    case_id: The ID of the test case to export.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the BDD scenario data in .feature file format.</p>
+<ul>
+<li><strong>case_id:</strong>  The ID of the test case to export.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the BDD scenario data in .feature file format.</p>
+</blockquote>
 </div>
 
 
@@ -253,16 +260,25 @@ It allows you to import and export BDD scenarios as .feature files.</p>
 
             <div class="docstring"><p>Import/upload a BDD scenario from a .feature file into a section.</p>
 
-<p>Args:
-    section_id: The ID of the section to import the BDD scenario into.
-    feature_file: The path to the .feature file to import.
-    description: Optional description for the BDD scenario.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the created BDD scenario data.</p>
+<ul>
+<li><strong>section_id:</strong>  The ID of the section to import the BDD scenario into.</li>
+<li><strong>feature_file:</strong>  The path to the .feature file to import.</li>
+<li><strong>description:</strong>  Optional description for the BDD scenario.</li>
+</ul>
 
-<p>Raises:
-    FileNotFoundError: If the specified feature file does not exist.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the created BDD scenario data.</p>
+</blockquote>
+
+<h6 id="raises">Raises:</h6>
+
+<ul>
+<li><strong>FileNotFoundError:</strong>  If the specified feature file does not exist.</li>
+</ul>
 </div>
 
 

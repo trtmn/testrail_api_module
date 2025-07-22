@@ -1,8 +1,12 @@
 # testrail_api_module
 
-[![PyPI - Version](https://img.shields.io/pypi/v/testrail-api-module?label=Latest%20Version)](https://pypi.org/project/testrail-api-module/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/testrail-api-module?color=brightgreen)](https://pypi.org/project/testrail-api-module/) [![GitHub Source](https://img.shields.io/badge/github-source-blue?logo=github)](https://github.com/trtmn/testrail-api-module) [![PyPI Stats](https://img.shields.io/badge/%F0%9F%93%96%20Stats-%20%F0%9F%94%97-blue)](https://pypistats.org/packages/testrail-api-module)
+[![PyPI - Version](https://img.shields.io/pypi/v/testrail-api-module?label=Latest%20Version)](https://pypi.org/project/testrail-api-module/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/testrail-api-module?color=brightgreen)](https://pypi.org/project/testrail-api-module/)
+[![GitHub Source](https://img.shields.io/badge/github-source-blue?logo=github)](https://github.com/trtmn/testrail-api-module/)
+[![PyPI Stats](https://img.shields.io/badge/%F0%9F%93%96%20Stats-%20%F0%9F%94%97-blue)](https://pypistats.org/packages/testrail-api-module/)
 
-A comprehensive Python wrapper for the TestRail API that provides easy access to all TestRail functionalities.
+A comprehensive Python wrapper for the TestRail API that provides easy access to all
+TestRail functionalities.
 
 ## Features
 
@@ -14,8 +18,29 @@ A comprehensive Python wrapper for the TestRail API that provides easy access to
 
 ## Installation
 
+### For Consumers
+
 ```bash
+# Install the package with runtime dependencies only
 pip install testrail-api-module
+```
+
+### For Developers
+
+```bash
+# Clone the repository
+git clone https://github.com/trtmn/testrail-api-module.git
+cd testrail-api-module
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install development dependencies using pip-tools
+pip-compile --extra dev | pip-sync
+
+# Alternative: Install in development mode with all dev dependencies
+pip install -e .[dev]
 ```
 
 ## Quick Start
@@ -139,7 +164,23 @@ except Exception as e:
 
 ## Documentation
 
-For complete documentation, visit our [documentation site](https://trtmn.github.io/testrail-api-module/).
+For complete documentation, visit our
+[documentation site](https://trtmn.github.io/testrail-api-module/).
+
+## Dependency Management
+
+This project uses modern Python packaging with `pyproject.toml` for dependency
+management.
+
+### For Developers
+
+- **Development dependencies**: Use `pip install -e .[dev]` for all development
+  tools
+- **Automatic resolution**: pip handles all dependency resolution
+
+### Files
+
+- `pyproject.toml` - Package configuration and dependency specifications
 
 ## Contributing
 
@@ -147,7 +188,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for
+details.
 
 ## Authors
 
@@ -156,4 +198,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/trtmn/testrail-api-module/issues) on GitHub.
+If you encounter any issues or have questions, please
+[open an issue](https://github.com/trtmn/testrail_api_module/issues/new) on
+GitHub.

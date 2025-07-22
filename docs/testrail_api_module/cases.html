@@ -57,6 +57,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -398,11 +399,17 @@ Test cases are the fundamental building blocks for test management.</p>
 
             <div class="docstring"><p>Get a test case by ID.</p>
 
-<p>Args:
-    case_id: The ID of the test case to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the test case data.</p>
+<ul>
+<li><strong>case_id:</strong>  The ID of the test case to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the test case data.</p>
+</blockquote>
 </div>
 
 
@@ -442,13 +449,19 @@ Test cases are the fundamental building blocks for test management.</p>
 
             <div class="docstring"><p>Get all test cases for a project and optionally a specific suite or section.</p>
 
-<p>Args:
-    project_id: The ID of the project to get test cases for.
-    suite_id: Optional ID of the suite to get test cases for.
-    section_id: Optional ID of the section to get test cases for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    List of dictionaries containing test case data.</p>
+<ul>
+<li><strong>project_id:</strong>  The ID of the project to get test cases for.</li>
+<li><strong>suite_id:</strong>  Optional ID of the suite to get test cases for.</li>
+<li><strong>section_id:</strong>  Optional ID of the section to get test cases for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>List of dictionaries containing test case data.</p>
+</blockquote>
 </div>
 
 
@@ -530,32 +543,38 @@ Test cases are the fundamental building blocks for test management.</p>
 
             <div class="docstring"><p>Add a new test case.</p>
 
-<p>Args:
-    section_id: The ID of the section to add the test case to.
-    title: The title of the test case.
-    template_id: Optional ID of the template to use.
-    type_id: Optional type of test case:
-        1: Other
-        2: Functional
-        3: Performance
-        4: Usability
-        5: Security
-        6: Compliance
-    priority_id: Optional priority of the test case:
-        1: Critical
-        2: High
-        3: Medium
-        4: Low
-    estimate: Optional estimated time to complete the test.
-    milestone_id: Optional ID of the milestone to add the test case to.
-    refs: Optional references or requirements.
-    description: Optional description of the test case.
-    preconditions: Optional preconditions for the test case.
-    postconditions: Optional postconditions for the test case.
-    custom_fields: Optional custom field values.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the created test case data.</p>
+<ul>
+<li><strong>section_id:</strong>  The ID of the section to add the test case to.</li>
+<li><strong>title:</strong>  The title of the test case.</li>
+<li><strong>template_id:</strong>  Optional ID of the template to use.</li>
+<li><strong>type_id:</strong>  Optional type of test case:
+1: Other
+2: Functional
+3: Performance
+4: Usability
+5: Security
+6: Compliance</li>
+<li><strong>priority_id:</strong>  Optional priority of the test case:
+1: Critical
+2: High
+3: Medium
+4: Low</li>
+<li><strong>estimate:</strong>  Optional estimated time to complete the test.</li>
+<li><strong>milestone_id:</strong>  Optional ID of the milestone to add the test case to.</li>
+<li><strong>refs:</strong>  Optional references or requirements.</li>
+<li><strong>description:</strong>  Optional description of the test case.</li>
+<li><strong>preconditions:</strong>  Optional preconditions for the test case.</li>
+<li><strong>postconditions:</strong>  Optional postconditions for the test case.</li>
+<li><strong>custom_fields:</strong>  Optional custom field values.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the created test case data.</p>
+</blockquote>
 </div>
 
 
@@ -588,12 +607,18 @@ Test cases are the fundamental building blocks for test management.</p>
 
             <div class="docstring"><p>Update a test case.</p>
 
-<p>Args:
-    case_id: The ID of the test case to update.
-    **kwargs: The fields to update (title, template_id, type_id, priority_id, etc.).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the updated test case data.</p>
+<ul>
+<li><strong>case_id:</strong>  The ID of the test case to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (title, template_id, type_id, priority_id, etc.).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the updated test case data.</p>
+</blockquote>
 </div>
 
 
@@ -625,11 +650,17 @@ Test cases are the fundamental building blocks for test management.</p>
 
             <div class="docstring"><p>Delete a test case.</p>
 
-<p>Args:
-    case_id: The ID of the test case to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the response data.</p>
+<ul>
+<li><strong>case_id:</strong>  The ID of the test case to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the response data.</p>
+</blockquote>
 </div>
 
 
@@ -658,8 +689,11 @@ Test cases are the fundamental building blocks for test management.</p>
 
             <div class="docstring"><p>Get all available test case fields.</p>
 
-<p>Returns:
-    List of dictionaries containing test case field data.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>List of dictionaries containing test case field data.</p>
+</blockquote>
 </div>
 
 

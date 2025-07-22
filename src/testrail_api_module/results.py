@@ -6,6 +6,8 @@ It allows you to add, update, and retrieve test results for test cases and runs.
 from typing import Dict, Any, Optional, List
 from .base import BaseAPI
 
+__all__ = ['ResultsAPI']
+
 class ResultsAPI(BaseAPI):
     """API for managing test results in TestRail."""
 

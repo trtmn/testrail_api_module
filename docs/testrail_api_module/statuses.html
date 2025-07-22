@@ -60,6 +60,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -361,11 +362,17 @@ Statuses are used to track the state of test cases and test results.</p>
 
             <div class="docstring"><p>Get a status by ID.</p>
 
-<p>Args:
-    status_id (int): The ID of the status to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The status data if successful, None otherwise.</p>
+<ul>
+<li><strong>status_id (int):</strong>  The ID of the status to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The status data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -394,8 +401,11 @@ Statuses are used to track the state of test cases and test results.</p>
 
             <div class="docstring"><p>Get all available statuses.</p>
 
-<p>Returns:
-    list: List of statuses if successful, None otherwise.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of statuses if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -453,20 +463,26 @@ Statuses are used to track the state of test cases and test results.</p>
 
             <div class="docstring"><p>Add a new status.</p>
 
-<p>Args:
-    name (str): The name of the status.
-    short_name (str): The short name of the status.
-    color (str): The color of the status (hex code).
-    is_system (bool, optional): Whether this is a system status.
-    is_untested (bool, optional): Whether this is the untested status.
-    is_passed (bool, optional): Whether this is the passed status.
-    is_blocked (bool, optional): Whether this is the blocked status.
-    is_retest (bool, optional): Whether this is the retest status.
-    is_failed (bool, optional): Whether this is the failed status.
-    is_custom (bool, optional): Whether this is a custom status.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created status data if successful, None otherwise.</p>
+<ul>
+<li><strong>name (str):</strong>  The name of the status.</li>
+<li><strong>short_name (str):</strong>  The short name of the status.</li>
+<li><strong>color (str):</strong>  The color of the status (hex code).</li>
+<li><strong>is_system (bool, optional):</strong>  Whether this is a system status.</li>
+<li><strong>is_untested (bool, optional):</strong>  Whether this is the untested status.</li>
+<li><strong>is_passed (bool, optional):</strong>  Whether this is the passed status.</li>
+<li><strong>is_blocked (bool, optional):</strong>  Whether this is the blocked status.</li>
+<li><strong>is_retest (bool, optional):</strong>  Whether this is the retest status.</li>
+<li><strong>is_failed (bool, optional):</strong>  Whether this is the failed status.</li>
+<li><strong>is_custom (bool, optional):</strong>  Whether this is a custom status.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created status data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -499,12 +515,18 @@ Statuses are used to track the state of test cases and test results.</p>
 
             <div class="docstring"><p>Update a status.</p>
 
-<p>Args:
-    status_id (int): The ID of the status to update.
-    **kwargs: The fields to update (name, short_name, color, etc.).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated status data if successful, None otherwise.</p>
+<ul>
+<li><strong>status_id (int):</strong>  The ID of the status to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, short_name, color, etc.).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated status data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -536,11 +558,17 @@ Statuses are used to track the state of test cases and test results.</p>
 
             <div class="docstring"><p>Delete a status.</p>
 
-<p>Args:
-    status_id (int): The ID of the status to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>status_id (int):</strong>  The ID of the status to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -572,11 +600,17 @@ Statuses are used to track the state of test cases and test results.</p>
 
             <div class="docstring"><p>Get the count of test results by status for a test run.</p>
 
-<p>Args:
-    run_id (int): The ID of the test run to get status counts for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: Dictionary mapping status IDs to counts if successful, None otherwise.</p>
+<ul>
+<li><strong>run_id (int):</strong>  The ID of the test run to get status counts for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: Dictionary mapping status IDs to counts if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -608,11 +642,17 @@ Statuses are used to track the state of test cases and test results.</p>
 
             <div class="docstring"><p>Get the history of status changes for a test result.</p>
 
-<p>Args:
-    result_id (int): The ID of the test result to get history for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of status history entries if successful, None otherwise.</p>
+<ul>
+<li><strong>result_id (int):</strong>  The ID of the test result to get history for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of status history entries if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

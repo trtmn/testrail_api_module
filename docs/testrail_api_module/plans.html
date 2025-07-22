@@ -60,6 +60,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -88,128 +89,116 @@ Test plans are used to organize and schedule test runs.</p>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseAPI</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PlansAPI</span><span class="p">(</span><span class="n">BaseAPI</span><span class="p">):</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">    API for managing TestRail test plans.</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>    
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">        Get a test plan by ID.</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">        </span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">        Args:</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">            plan_id (int): The ID of the test plan to retrieve.</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">            </span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">        Returns:</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">            dict: The test plan data if successful, None otherwise.</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>    
-</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">        Get all test plans for a project.</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">        </span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">        Args:</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">            project_id (int): The ID of the project to get test plans for.</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">            </span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">        Returns:</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">            list: List of test plans if successful, None otherwise.</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plans/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>    
-</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_plan</span><span class="p">(</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>        <span class="bp">self</span><span class="p">,</span> 
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
-</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>        <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>        <span class="n">milestone_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>        <span class="n">entries</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">        Add a new test plan.</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="sd">        </span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">        Args:</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="sd">            project_id (int): The ID of the project to add the test plan to.</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">            name (str): The name of the test plan.</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="sd">            description (str, optional): The description of the test plan.</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a><span class="sd">            milestone_id (int, optional): The ID of the milestone to add the </span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">                test plan to.</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="sd">            entries (list, optional): List of test plan entries, each </span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="sd">                containing:</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">                - suite_id (int): The ID of the test suite</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">                - name (str): The name of the test run</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="sd">                - description (str, optional): The description of the test run</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">                - assignedto_id (int, optional): The ID of the user to assign </span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">                    the test run to</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">                - include_all (bool, optional): Whether to include all test </span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">                    cases</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">                - case_ids (list, optional): List of test case IDs to include</span>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">                </span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">        Returns:</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">            dict: The created test plan data if successful, None otherwise.</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>        <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>        <span class="p">}</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="k">if</span> <span class="n">milestone_id</span><span class="p">:</span>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;milestone_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">milestone_id</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>        <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entries</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>            
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;add_plan/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>    
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">        Update a test plan.</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">        </span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">        Args:</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">            plan_id (int): The ID of the test plan to update.</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">            **kwargs: The fields to update (name, description, milestone_id, </span>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">                entries).</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PlansAPI</span><span class="p">(</span><span class="n">BaseAPI</span><span class="p">):</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    API for managing TestRail test plans.</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>    
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">        Get a test plan by ID.</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">        </span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">        Args:</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">            plan_id (int): The ID of the test plan to retrieve.</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">            </span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">        Returns:</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">            dict: The test plan data if successful, None otherwise.</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a>    
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="sd">        Get all test plans for a project.</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">        </span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">        Args:</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">            project_id (int): The ID of the project to get test plans for.</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">            </span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">        Returns:</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">            list: List of test plans if successful, None otherwise.</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plans/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>                 <span class="n">milestone_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">entries</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">        Add a new test plan.</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">        </span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">        Args:</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">            project_id (int): The ID of the project to add the test plan to.</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">            name (str): The name of the test plan.</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">            description (str, optional): The description of the test plan.</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">            milestone_id (int, optional): The ID of the milestone to add the test plan to.</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">            entries (list, optional): List of test plan entries, each containing:</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="sd">                - suite_id (int): The ID of the test suite</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">                - name (str): The name of the test run</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="sd">                - description (str, optional): The description of the test run</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">                - assignedto_id (int, optional): The ID of the user to assign the test run to</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="sd">                - include_all (bool, optional): Whether to include all test cases</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a><span class="sd">                - case_ids (list, optional): List of test case IDs to include</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">                </span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="sd">        Returns:</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="sd">            dict: The created test plan data if successful, None otherwise.</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>        <span class="p">}</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>        <span class="k">if</span> <span class="n">milestone_id</span><span class="p">:</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;milestone_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">milestone_id</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>        <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entries</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>            
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;add_plan/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="sd">        Update a test plan.</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">        </span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="sd">        Args:</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">            plan_id (int): The ID of the test plan to update.</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="sd">            **kwargs: The fields to update (name, description, milestone_id, entries).</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">            </span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">        Returns:</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">            dict: The updated test plan data if successful, None otherwise.</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;update_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>    
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">        Close a test plan.</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">        </span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">        Args:</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">            plan_id (int): The ID of the test plan to close.</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">            </span>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">        Returns:</span>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">            dict: The updated test plan data if successful, None otherwise.</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;update_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;close_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>    
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">        Close a test plan.</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">        Delete a test plan.</span>
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="sd">        </span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">        Args:</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="sd">            plan_id (int): The ID of the test plan to close.</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="sd">            plan_id (int): The ID of the test plan to delete.</span>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">            </span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="sd">        Returns:</span>
 </span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;close_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;delete_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>    
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="sd">        Delete a test plan.</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="sd">        Get statistics for a test plan.</span>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">        </span>
 </span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">        Args:</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">            plan_id (int): The ID of the test plan to delete.</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">            plan_id (int): The ID of the test plan to get statistics for.</span>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">            </span>
 </span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="sd">        Returns:</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="sd">            dict: The test plan statistics if successful, None otherwise.</span>
 </span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;delete_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>    
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">        Get statistics for a test plan.</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">        </span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">        Args:</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">            plan_id (int): The ID of the test plan to get statistics for.</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">            </span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        Returns:</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">            dict: The test plan statistics if successful, None otherwise.</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan_stats/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan_stats/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -225,127 +214,116 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI-10"><a href="#PlansAPI-10"><span class="linenos"> 10</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PlansAPI</span><span class="p">(</span><span class="n">BaseAPI</span><span class="p">):</span>
-</span><span id="PlansAPI-11"><a href="#PlansAPI-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-12"><a href="#PlansAPI-12"><span class="linenos"> 12</span></a><span class="sd">    API for managing TestRail test plans.</span>
-</span><span id="PlansAPI-13"><a href="#PlansAPI-13"><span class="linenos"> 13</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-14"><a href="#PlansAPI-14"><span class="linenos"> 14</span></a>    
-</span><span id="PlansAPI-15"><a href="#PlansAPI-15"><span class="linenos"> 15</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI-16"><a href="#PlansAPI-16"><span class="linenos"> 16</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-17"><a href="#PlansAPI-17"><span class="linenos"> 17</span></a><span class="sd">        Get a test plan by ID.</span>
-</span><span id="PlansAPI-18"><a href="#PlansAPI-18"><span class="linenos"> 18</span></a><span class="sd">        </span>
-</span><span id="PlansAPI-19"><a href="#PlansAPI-19"><span class="linenos"> 19</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI-20"><a href="#PlansAPI-20"><span class="linenos"> 20</span></a><span class="sd">            plan_id (int): The ID of the test plan to retrieve.</span>
-</span><span id="PlansAPI-21"><a href="#PlansAPI-21"><span class="linenos"> 21</span></a><span class="sd">            </span>
-</span><span id="PlansAPI-22"><a href="#PlansAPI-22"><span class="linenos"> 22</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI-23"><a href="#PlansAPI-23"><span class="linenos"> 23</span></a><span class="sd">            dict: The test plan data if successful, None otherwise.</span>
-</span><span id="PlansAPI-24"><a href="#PlansAPI-24"><span class="linenos"> 24</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-25"><a href="#PlansAPI-25"><span class="linenos"> 25</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="PlansAPI-26"><a href="#PlansAPI-26"><span class="linenos"> 26</span></a>    
-</span><span id="PlansAPI-27"><a href="#PlansAPI-27"><span class="linenos"> 27</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
-</span><span id="PlansAPI-28"><a href="#PlansAPI-28"><span class="linenos"> 28</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-29"><a href="#PlansAPI-29"><span class="linenos"> 29</span></a><span class="sd">        Get all test plans for a project.</span>
-</span><span id="PlansAPI-30"><a href="#PlansAPI-30"><span class="linenos"> 30</span></a><span class="sd">        </span>
-</span><span id="PlansAPI-31"><a href="#PlansAPI-31"><span class="linenos"> 31</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI-32"><a href="#PlansAPI-32"><span class="linenos"> 32</span></a><span class="sd">            project_id (int): The ID of the project to get test plans for.</span>
-</span><span id="PlansAPI-33"><a href="#PlansAPI-33"><span class="linenos"> 33</span></a><span class="sd">            </span>
-</span><span id="PlansAPI-34"><a href="#PlansAPI-34"><span class="linenos"> 34</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI-35"><a href="#PlansAPI-35"><span class="linenos"> 35</span></a><span class="sd">            list: List of test plans if successful, None otherwise.</span>
-</span><span id="PlansAPI-36"><a href="#PlansAPI-36"><span class="linenos"> 36</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-37"><a href="#PlansAPI-37"><span class="linenos"> 37</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plans/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="PlansAPI-38"><a href="#PlansAPI-38"><span class="linenos"> 38</span></a>    
-</span><span id="PlansAPI-39"><a href="#PlansAPI-39"><span class="linenos"> 39</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_plan</span><span class="p">(</span>
-</span><span id="PlansAPI-40"><a href="#PlansAPI-40"><span class="linenos"> 40</span></a>        <span class="bp">self</span><span class="p">,</span> 
-</span><span id="PlansAPI-41"><a href="#PlansAPI-41"><span class="linenos"> 41</span></a>        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
-</span><span id="PlansAPI-42"><a href="#PlansAPI-42"><span class="linenos"> 42</span></a>        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
-</span><span id="PlansAPI-43"><a href="#PlansAPI-43"><span class="linenos"> 43</span></a>        <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="PlansAPI-44"><a href="#PlansAPI-44"><span class="linenos"> 44</span></a>        <span class="n">milestone_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
-</span><span id="PlansAPI-45"><a href="#PlansAPI-45"><span class="linenos"> 45</span></a>        <span class="n">entries</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="PlansAPI-46"><a href="#PlansAPI-46"><span class="linenos"> 46</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI-47"><a href="#PlansAPI-47"><span class="linenos"> 47</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-48"><a href="#PlansAPI-48"><span class="linenos"> 48</span></a><span class="sd">        Add a new test plan.</span>
-</span><span id="PlansAPI-49"><a href="#PlansAPI-49"><span class="linenos"> 49</span></a><span class="sd">        </span>
-</span><span id="PlansAPI-50"><a href="#PlansAPI-50"><span class="linenos"> 50</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI-51"><a href="#PlansAPI-51"><span class="linenos"> 51</span></a><span class="sd">            project_id (int): The ID of the project to add the test plan to.</span>
-</span><span id="PlansAPI-52"><a href="#PlansAPI-52"><span class="linenos"> 52</span></a><span class="sd">            name (str): The name of the test plan.</span>
-</span><span id="PlansAPI-53"><a href="#PlansAPI-53"><span class="linenos"> 53</span></a><span class="sd">            description (str, optional): The description of the test plan.</span>
-</span><span id="PlansAPI-54"><a href="#PlansAPI-54"><span class="linenos"> 54</span></a><span class="sd">            milestone_id (int, optional): The ID of the milestone to add the </span>
-</span><span id="PlansAPI-55"><a href="#PlansAPI-55"><span class="linenos"> 55</span></a><span class="sd">                test plan to.</span>
-</span><span id="PlansAPI-56"><a href="#PlansAPI-56"><span class="linenos"> 56</span></a><span class="sd">            entries (list, optional): List of test plan entries, each </span>
-</span><span id="PlansAPI-57"><a href="#PlansAPI-57"><span class="linenos"> 57</span></a><span class="sd">                containing:</span>
-</span><span id="PlansAPI-58"><a href="#PlansAPI-58"><span class="linenos"> 58</span></a><span class="sd">                - suite_id (int): The ID of the test suite</span>
-</span><span id="PlansAPI-59"><a href="#PlansAPI-59"><span class="linenos"> 59</span></a><span class="sd">                - name (str): The name of the test run</span>
-</span><span id="PlansAPI-60"><a href="#PlansAPI-60"><span class="linenos"> 60</span></a><span class="sd">                - description (str, optional): The description of the test run</span>
-</span><span id="PlansAPI-61"><a href="#PlansAPI-61"><span class="linenos"> 61</span></a><span class="sd">                - assignedto_id (int, optional): The ID of the user to assign </span>
-</span><span id="PlansAPI-62"><a href="#PlansAPI-62"><span class="linenos"> 62</span></a><span class="sd">                    the test run to</span>
-</span><span id="PlansAPI-63"><a href="#PlansAPI-63"><span class="linenos"> 63</span></a><span class="sd">                - include_all (bool, optional): Whether to include all test </span>
-</span><span id="PlansAPI-64"><a href="#PlansAPI-64"><span class="linenos"> 64</span></a><span class="sd">                    cases</span>
-</span><span id="PlansAPI-65"><a href="#PlansAPI-65"><span class="linenos"> 65</span></a><span class="sd">                - case_ids (list, optional): List of test case IDs to include</span>
-</span><span id="PlansAPI-66"><a href="#PlansAPI-66"><span class="linenos"> 66</span></a><span class="sd">                </span>
-</span><span id="PlansAPI-67"><a href="#PlansAPI-67"><span class="linenos"> 67</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI-68"><a href="#PlansAPI-68"><span class="linenos"> 68</span></a><span class="sd">            dict: The created test plan data if successful, None otherwise.</span>
-</span><span id="PlansAPI-69"><a href="#PlansAPI-69"><span class="linenos"> 69</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-70"><a href="#PlansAPI-70"><span class="linenos"> 70</span></a>        <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="PlansAPI-71"><a href="#PlansAPI-71"><span class="linenos"> 71</span></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span>
-</span><span id="PlansAPI-72"><a href="#PlansAPI-72"><span class="linenos"> 72</span></a>        <span class="p">}</span>
-</span><span id="PlansAPI-73"><a href="#PlansAPI-73"><span class="linenos"> 73</span></a>        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
-</span><span id="PlansAPI-74"><a href="#PlansAPI-74"><span class="linenos"> 74</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
-</span><span id="PlansAPI-75"><a href="#PlansAPI-75"><span class="linenos"> 75</span></a>        <span class="k">if</span> <span class="n">milestone_id</span><span class="p">:</span>
-</span><span id="PlansAPI-76"><a href="#PlansAPI-76"><span class="linenos"> 76</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;milestone_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">milestone_id</span>
-</span><span id="PlansAPI-77"><a href="#PlansAPI-77"><span class="linenos"> 77</span></a>        <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
-</span><span id="PlansAPI-78"><a href="#PlansAPI-78"><span class="linenos"> 78</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entries</span>
-</span><span id="PlansAPI-79"><a href="#PlansAPI-79"><span class="linenos"> 79</span></a>            
-</span><span id="PlansAPI-80"><a href="#PlansAPI-80"><span class="linenos"> 80</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;add_plan/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-</span><span id="PlansAPI-81"><a href="#PlansAPI-81"><span class="linenos"> 81</span></a>    
-</span><span id="PlansAPI-82"><a href="#PlansAPI-82"><span class="linenos"> 82</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI-83"><a href="#PlansAPI-83"><span class="linenos"> 83</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-84"><a href="#PlansAPI-84"><span class="linenos"> 84</span></a><span class="sd">        Update a test plan.</span>
-</span><span id="PlansAPI-85"><a href="#PlansAPI-85"><span class="linenos"> 85</span></a><span class="sd">        </span>
-</span><span id="PlansAPI-86"><a href="#PlansAPI-86"><span class="linenos"> 86</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI-87"><a href="#PlansAPI-87"><span class="linenos"> 87</span></a><span class="sd">            plan_id (int): The ID of the test plan to update.</span>
-</span><span id="PlansAPI-88"><a href="#PlansAPI-88"><span class="linenos"> 88</span></a><span class="sd">            **kwargs: The fields to update (name, description, milestone_id, </span>
-</span><span id="PlansAPI-89"><a href="#PlansAPI-89"><span class="linenos"> 89</span></a><span class="sd">                entries).</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI-9"><a href="#PlansAPI-9"><span class="linenos">  9</span></a><span class="k">class</span><span class="w"> </span><span class="nc">PlansAPI</span><span class="p">(</span><span class="n">BaseAPI</span><span class="p">):</span>
+</span><span id="PlansAPI-10"><a href="#PlansAPI-10"><span class="linenos"> 10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI-11"><a href="#PlansAPI-11"><span class="linenos"> 11</span></a><span class="sd">    API for managing TestRail test plans.</span>
+</span><span id="PlansAPI-12"><a href="#PlansAPI-12"><span class="linenos"> 12</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="PlansAPI-13"><a href="#PlansAPI-13"><span class="linenos"> 13</span></a>    
+</span><span id="PlansAPI-14"><a href="#PlansAPI-14"><span class="linenos"> 14</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI-15"><a href="#PlansAPI-15"><span class="linenos"> 15</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI-16"><a href="#PlansAPI-16"><span class="linenos"> 16</span></a><span class="sd">        Get a test plan by ID.</span>
+</span><span id="PlansAPI-17"><a href="#PlansAPI-17"><span class="linenos"> 17</span></a><span class="sd">        </span>
+</span><span id="PlansAPI-18"><a href="#PlansAPI-18"><span class="linenos"> 18</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI-19"><a href="#PlansAPI-19"><span class="linenos"> 19</span></a><span class="sd">            plan_id (int): The ID of the test plan to retrieve.</span>
+</span><span id="PlansAPI-20"><a href="#PlansAPI-20"><span class="linenos"> 20</span></a><span class="sd">            </span>
+</span><span id="PlansAPI-21"><a href="#PlansAPI-21"><span class="linenos"> 21</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI-22"><a href="#PlansAPI-22"><span class="linenos"> 22</span></a><span class="sd">            dict: The test plan data if successful, None otherwise.</span>
+</span><span id="PlansAPI-23"><a href="#PlansAPI-23"><span class="linenos"> 23</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI-24"><a href="#PlansAPI-24"><span class="linenos"> 24</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="PlansAPI-25"><a href="#PlansAPI-25"><span class="linenos"> 25</span></a>    
+</span><span id="PlansAPI-26"><a href="#PlansAPI-26"><span class="linenos"> 26</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+</span><span id="PlansAPI-27"><a href="#PlansAPI-27"><span class="linenos"> 27</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI-28"><a href="#PlansAPI-28"><span class="linenos"> 28</span></a><span class="sd">        Get all test plans for a project.</span>
+</span><span id="PlansAPI-29"><a href="#PlansAPI-29"><span class="linenos"> 29</span></a><span class="sd">        </span>
+</span><span id="PlansAPI-30"><a href="#PlansAPI-30"><span class="linenos"> 30</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI-31"><a href="#PlansAPI-31"><span class="linenos"> 31</span></a><span class="sd">            project_id (int): The ID of the project to get test plans for.</span>
+</span><span id="PlansAPI-32"><a href="#PlansAPI-32"><span class="linenos"> 32</span></a><span class="sd">            </span>
+</span><span id="PlansAPI-33"><a href="#PlansAPI-33"><span class="linenos"> 33</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI-34"><a href="#PlansAPI-34"><span class="linenos"> 34</span></a><span class="sd">            list: List of test plans if successful, None otherwise.</span>
+</span><span id="PlansAPI-35"><a href="#PlansAPI-35"><span class="linenos"> 35</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI-36"><a href="#PlansAPI-36"><span class="linenos"> 36</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plans/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="PlansAPI-37"><a href="#PlansAPI-37"><span class="linenos"> 37</span></a>    
+</span><span id="PlansAPI-38"><a href="#PlansAPI-38"><span class="linenos"> 38</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="PlansAPI-39"><a href="#PlansAPI-39"><span class="linenos"> 39</span></a>                 <span class="n">milestone_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">entries</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI-40"><a href="#PlansAPI-40"><span class="linenos"> 40</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI-41"><a href="#PlansAPI-41"><span class="linenos"> 41</span></a><span class="sd">        Add a new test plan.</span>
+</span><span id="PlansAPI-42"><a href="#PlansAPI-42"><span class="linenos"> 42</span></a><span class="sd">        </span>
+</span><span id="PlansAPI-43"><a href="#PlansAPI-43"><span class="linenos"> 43</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI-44"><a href="#PlansAPI-44"><span class="linenos"> 44</span></a><span class="sd">            project_id (int): The ID of the project to add the test plan to.</span>
+</span><span id="PlansAPI-45"><a href="#PlansAPI-45"><span class="linenos"> 45</span></a><span class="sd">            name (str): The name of the test plan.</span>
+</span><span id="PlansAPI-46"><a href="#PlansAPI-46"><span class="linenos"> 46</span></a><span class="sd">            description (str, optional): The description of the test plan.</span>
+</span><span id="PlansAPI-47"><a href="#PlansAPI-47"><span class="linenos"> 47</span></a><span class="sd">            milestone_id (int, optional): The ID of the milestone to add the test plan to.</span>
+</span><span id="PlansAPI-48"><a href="#PlansAPI-48"><span class="linenos"> 48</span></a><span class="sd">            entries (list, optional): List of test plan entries, each containing:</span>
+</span><span id="PlansAPI-49"><a href="#PlansAPI-49"><span class="linenos"> 49</span></a><span class="sd">                - suite_id (int): The ID of the test suite</span>
+</span><span id="PlansAPI-50"><a href="#PlansAPI-50"><span class="linenos"> 50</span></a><span class="sd">                - name (str): The name of the test run</span>
+</span><span id="PlansAPI-51"><a href="#PlansAPI-51"><span class="linenos"> 51</span></a><span class="sd">                - description (str, optional): The description of the test run</span>
+</span><span id="PlansAPI-52"><a href="#PlansAPI-52"><span class="linenos"> 52</span></a><span class="sd">                - assignedto_id (int, optional): The ID of the user to assign the test run to</span>
+</span><span id="PlansAPI-53"><a href="#PlansAPI-53"><span class="linenos"> 53</span></a><span class="sd">                - include_all (bool, optional): Whether to include all test cases</span>
+</span><span id="PlansAPI-54"><a href="#PlansAPI-54"><span class="linenos"> 54</span></a><span class="sd">                - case_ids (list, optional): List of test case IDs to include</span>
+</span><span id="PlansAPI-55"><a href="#PlansAPI-55"><span class="linenos"> 55</span></a><span class="sd">                </span>
+</span><span id="PlansAPI-56"><a href="#PlansAPI-56"><span class="linenos"> 56</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI-57"><a href="#PlansAPI-57"><span class="linenos"> 57</span></a><span class="sd">            dict: The created test plan data if successful, None otherwise.</span>
+</span><span id="PlansAPI-58"><a href="#PlansAPI-58"><span class="linenos"> 58</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI-59"><a href="#PlansAPI-59"><span class="linenos"> 59</span></a>        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="PlansAPI-60"><a href="#PlansAPI-60"><span class="linenos"> 60</span></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span>
+</span><span id="PlansAPI-61"><a href="#PlansAPI-61"><span class="linenos"> 61</span></a>        <span class="p">}</span>
+</span><span id="PlansAPI-62"><a href="#PlansAPI-62"><span class="linenos"> 62</span></a>        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+</span><span id="PlansAPI-63"><a href="#PlansAPI-63"><span class="linenos"> 63</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
+</span><span id="PlansAPI-64"><a href="#PlansAPI-64"><span class="linenos"> 64</span></a>        <span class="k">if</span> <span class="n">milestone_id</span><span class="p">:</span>
+</span><span id="PlansAPI-65"><a href="#PlansAPI-65"><span class="linenos"> 65</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;milestone_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">milestone_id</span>
+</span><span id="PlansAPI-66"><a href="#PlansAPI-66"><span class="linenos"> 66</span></a>        <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+</span><span id="PlansAPI-67"><a href="#PlansAPI-67"><span class="linenos"> 67</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entries</span>
+</span><span id="PlansAPI-68"><a href="#PlansAPI-68"><span class="linenos"> 68</span></a>            
+</span><span id="PlansAPI-69"><a href="#PlansAPI-69"><span class="linenos"> 69</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;add_plan/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+</span><span id="PlansAPI-70"><a href="#PlansAPI-70"><span class="linenos"> 70</span></a>    
+</span><span id="PlansAPI-71"><a href="#PlansAPI-71"><span class="linenos"> 71</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI-72"><a href="#PlansAPI-72"><span class="linenos"> 72</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI-73"><a href="#PlansAPI-73"><span class="linenos"> 73</span></a><span class="sd">        Update a test plan.</span>
+</span><span id="PlansAPI-74"><a href="#PlansAPI-74"><span class="linenos"> 74</span></a><span class="sd">        </span>
+</span><span id="PlansAPI-75"><a href="#PlansAPI-75"><span class="linenos"> 75</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI-76"><a href="#PlansAPI-76"><span class="linenos"> 76</span></a><span class="sd">            plan_id (int): The ID of the test plan to update.</span>
+</span><span id="PlansAPI-77"><a href="#PlansAPI-77"><span class="linenos"> 77</span></a><span class="sd">            **kwargs: The fields to update (name, description, milestone_id, entries).</span>
+</span><span id="PlansAPI-78"><a href="#PlansAPI-78"><span class="linenos"> 78</span></a><span class="sd">            </span>
+</span><span id="PlansAPI-79"><a href="#PlansAPI-79"><span class="linenos"> 79</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI-80"><a href="#PlansAPI-80"><span class="linenos"> 80</span></a><span class="sd">            dict: The updated test plan data if successful, None otherwise.</span>
+</span><span id="PlansAPI-81"><a href="#PlansAPI-81"><span class="linenos"> 81</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI-82"><a href="#PlansAPI-82"><span class="linenos"> 82</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;update_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="PlansAPI-83"><a href="#PlansAPI-83"><span class="linenos"> 83</span></a>    
+</span><span id="PlansAPI-84"><a href="#PlansAPI-84"><span class="linenos"> 84</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI-85"><a href="#PlansAPI-85"><span class="linenos"> 85</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI-86"><a href="#PlansAPI-86"><span class="linenos"> 86</span></a><span class="sd">        Close a test plan.</span>
+</span><span id="PlansAPI-87"><a href="#PlansAPI-87"><span class="linenos"> 87</span></a><span class="sd">        </span>
+</span><span id="PlansAPI-88"><a href="#PlansAPI-88"><span class="linenos"> 88</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI-89"><a href="#PlansAPI-89"><span class="linenos"> 89</span></a><span class="sd">            plan_id (int): The ID of the test plan to close.</span>
 </span><span id="PlansAPI-90"><a href="#PlansAPI-90"><span class="linenos"> 90</span></a><span class="sd">            </span>
 </span><span id="PlansAPI-91"><a href="#PlansAPI-91"><span class="linenos"> 91</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI-92"><a href="#PlansAPI-92"><span class="linenos"> 92</span></a><span class="sd">            dict: The updated test plan data if successful, None otherwise.</span>
+</span><span id="PlansAPI-92"><a href="#PlansAPI-92"><span class="linenos"> 92</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
 </span><span id="PlansAPI-93"><a href="#PlansAPI-93"><span class="linenos"> 93</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-94"><a href="#PlansAPI-94"><span class="linenos"> 94</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;update_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="PlansAPI-94"><a href="#PlansAPI-94"><span class="linenos"> 94</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;close_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span><span id="PlansAPI-95"><a href="#PlansAPI-95"><span class="linenos"> 95</span></a>    
-</span><span id="PlansAPI-96"><a href="#PlansAPI-96"><span class="linenos"> 96</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI-96"><a href="#PlansAPI-96"><span class="linenos"> 96</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 </span><span id="PlansAPI-97"><a href="#PlansAPI-97"><span class="linenos"> 97</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-98"><a href="#PlansAPI-98"><span class="linenos"> 98</span></a><span class="sd">        Close a test plan.</span>
+</span><span id="PlansAPI-98"><a href="#PlansAPI-98"><span class="linenos"> 98</span></a><span class="sd">        Delete a test plan.</span>
 </span><span id="PlansAPI-99"><a href="#PlansAPI-99"><span class="linenos"> 99</span></a><span class="sd">        </span>
 </span><span id="PlansAPI-100"><a href="#PlansAPI-100"><span class="linenos">100</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI-101"><a href="#PlansAPI-101"><span class="linenos">101</span></a><span class="sd">            plan_id (int): The ID of the test plan to close.</span>
+</span><span id="PlansAPI-101"><a href="#PlansAPI-101"><span class="linenos">101</span></a><span class="sd">            plan_id (int): The ID of the test plan to delete.</span>
 </span><span id="PlansAPI-102"><a href="#PlansAPI-102"><span class="linenos">102</span></a><span class="sd">            </span>
 </span><span id="PlansAPI-103"><a href="#PlansAPI-103"><span class="linenos">103</span></a><span class="sd">        Returns:</span>
 </span><span id="PlansAPI-104"><a href="#PlansAPI-104"><span class="linenos">104</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
 </span><span id="PlansAPI-105"><a href="#PlansAPI-105"><span class="linenos">105</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-106"><a href="#PlansAPI-106"><span class="linenos">106</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;close_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="PlansAPI-106"><a href="#PlansAPI-106"><span class="linenos">106</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;delete_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span><span id="PlansAPI-107"><a href="#PlansAPI-107"><span class="linenos">107</span></a>    
-</span><span id="PlansAPI-108"><a href="#PlansAPI-108"><span class="linenos">108</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI-108"><a href="#PlansAPI-108"><span class="linenos">108</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 </span><span id="PlansAPI-109"><a href="#PlansAPI-109"><span class="linenos">109</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-110"><a href="#PlansAPI-110"><span class="linenos">110</span></a><span class="sd">        Delete a test plan.</span>
+</span><span id="PlansAPI-110"><a href="#PlansAPI-110"><span class="linenos">110</span></a><span class="sd">        Get statistics for a test plan.</span>
 </span><span id="PlansAPI-111"><a href="#PlansAPI-111"><span class="linenos">111</span></a><span class="sd">        </span>
 </span><span id="PlansAPI-112"><a href="#PlansAPI-112"><span class="linenos">112</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI-113"><a href="#PlansAPI-113"><span class="linenos">113</span></a><span class="sd">            plan_id (int): The ID of the test plan to delete.</span>
+</span><span id="PlansAPI-113"><a href="#PlansAPI-113"><span class="linenos">113</span></a><span class="sd">            plan_id (int): The ID of the test plan to get statistics for.</span>
 </span><span id="PlansAPI-114"><a href="#PlansAPI-114"><span class="linenos">114</span></a><span class="sd">            </span>
 </span><span id="PlansAPI-115"><a href="#PlansAPI-115"><span class="linenos">115</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI-116"><a href="#PlansAPI-116"><span class="linenos">116</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
+</span><span id="PlansAPI-116"><a href="#PlansAPI-116"><span class="linenos">116</span></a><span class="sd">            dict: The test plan statistics if successful, None otherwise.</span>
 </span><span id="PlansAPI-117"><a href="#PlansAPI-117"><span class="linenos">117</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-118"><a href="#PlansAPI-118"><span class="linenos">118</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;delete_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="PlansAPI-119"><a href="#PlansAPI-119"><span class="linenos">119</span></a>    
-</span><span id="PlansAPI-120"><a href="#PlansAPI-120"><span class="linenos">120</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI-121"><a href="#PlansAPI-121"><span class="linenos">121</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI-122"><a href="#PlansAPI-122"><span class="linenos">122</span></a><span class="sd">        Get statistics for a test plan.</span>
-</span><span id="PlansAPI-123"><a href="#PlansAPI-123"><span class="linenos">123</span></a><span class="sd">        </span>
-</span><span id="PlansAPI-124"><a href="#PlansAPI-124"><span class="linenos">124</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI-125"><a href="#PlansAPI-125"><span class="linenos">125</span></a><span class="sd">            plan_id (int): The ID of the test plan to get statistics for.</span>
-</span><span id="PlansAPI-126"><a href="#PlansAPI-126"><span class="linenos">126</span></a><span class="sd">            </span>
-</span><span id="PlansAPI-127"><a href="#PlansAPI-127"><span class="linenos">127</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI-128"><a href="#PlansAPI-128"><span class="linenos">128</span></a><span class="sd">            dict: The test plan statistics if successful, None otherwise.</span>
-</span><span id="PlansAPI-129"><a href="#PlansAPI-129"><span class="linenos">129</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI-130"><a href="#PlansAPI-130"><span class="linenos">130</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan_stats/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="PlansAPI-118"><a href="#PlansAPI-118"><span class="linenos">118</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan_stats/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -364,27 +342,33 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI.get_plan"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.get_plan-15"><a href="#PlansAPI.get_plan-15"><span class="linenos">15</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI.get_plan-16"><a href="#PlansAPI.get_plan-16"><span class="linenos">16</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI.get_plan-17"><a href="#PlansAPI.get_plan-17"><span class="linenos">17</span></a><span class="sd">        Get a test plan by ID.</span>
-</span><span id="PlansAPI.get_plan-18"><a href="#PlansAPI.get_plan-18"><span class="linenos">18</span></a><span class="sd">        </span>
-</span><span id="PlansAPI.get_plan-19"><a href="#PlansAPI.get_plan-19"><span class="linenos">19</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI.get_plan-20"><a href="#PlansAPI.get_plan-20"><span class="linenos">20</span></a><span class="sd">            plan_id (int): The ID of the test plan to retrieve.</span>
-</span><span id="PlansAPI.get_plan-21"><a href="#PlansAPI.get_plan-21"><span class="linenos">21</span></a><span class="sd">            </span>
-</span><span id="PlansAPI.get_plan-22"><a href="#PlansAPI.get_plan-22"><span class="linenos">22</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI.get_plan-23"><a href="#PlansAPI.get_plan-23"><span class="linenos">23</span></a><span class="sd">            dict: The test plan data if successful, None otherwise.</span>
-</span><span id="PlansAPI.get_plan-24"><a href="#PlansAPI.get_plan-24"><span class="linenos">24</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI.get_plan-25"><a href="#PlansAPI.get_plan-25"><span class="linenos">25</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.get_plan-14"><a href="#PlansAPI.get_plan-14"><span class="linenos">14</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI.get_plan-15"><a href="#PlansAPI.get_plan-15"><span class="linenos">15</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI.get_plan-16"><a href="#PlansAPI.get_plan-16"><span class="linenos">16</span></a><span class="sd">        Get a test plan by ID.</span>
+</span><span id="PlansAPI.get_plan-17"><a href="#PlansAPI.get_plan-17"><span class="linenos">17</span></a><span class="sd">        </span>
+</span><span id="PlansAPI.get_plan-18"><a href="#PlansAPI.get_plan-18"><span class="linenos">18</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI.get_plan-19"><a href="#PlansAPI.get_plan-19"><span class="linenos">19</span></a><span class="sd">            plan_id (int): The ID of the test plan to retrieve.</span>
+</span><span id="PlansAPI.get_plan-20"><a href="#PlansAPI.get_plan-20"><span class="linenos">20</span></a><span class="sd">            </span>
+</span><span id="PlansAPI.get_plan-21"><a href="#PlansAPI.get_plan-21"><span class="linenos">21</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI.get_plan-22"><a href="#PlansAPI.get_plan-22"><span class="linenos">22</span></a><span class="sd">            dict: The test plan data if successful, None otherwise.</span>
+</span><span id="PlansAPI.get_plan-23"><a href="#PlansAPI.get_plan-23"><span class="linenos">23</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI.get_plan-24"><a href="#PlansAPI.get_plan-24"><span class="linenos">24</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Get a test plan by ID.</p>
 
-<p>Args:
-    plan_id (int): The ID of the test plan to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The test plan data if successful, None otherwise.</p>
+<ul>
+<li><strong>plan_id (int):</strong>  The ID of the test plan to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The test plan data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -400,27 +384,33 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI.get_plans"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.get_plans-27"><a href="#PlansAPI.get_plans-27"><span class="linenos">27</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
-</span><span id="PlansAPI.get_plans-28"><a href="#PlansAPI.get_plans-28"><span class="linenos">28</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI.get_plans-29"><a href="#PlansAPI.get_plans-29"><span class="linenos">29</span></a><span class="sd">        Get all test plans for a project.</span>
-</span><span id="PlansAPI.get_plans-30"><a href="#PlansAPI.get_plans-30"><span class="linenos">30</span></a><span class="sd">        </span>
-</span><span id="PlansAPI.get_plans-31"><a href="#PlansAPI.get_plans-31"><span class="linenos">31</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI.get_plans-32"><a href="#PlansAPI.get_plans-32"><span class="linenos">32</span></a><span class="sd">            project_id (int): The ID of the project to get test plans for.</span>
-</span><span id="PlansAPI.get_plans-33"><a href="#PlansAPI.get_plans-33"><span class="linenos">33</span></a><span class="sd">            </span>
-</span><span id="PlansAPI.get_plans-34"><a href="#PlansAPI.get_plans-34"><span class="linenos">34</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI.get_plans-35"><a href="#PlansAPI.get_plans-35"><span class="linenos">35</span></a><span class="sd">            list: List of test plans if successful, None otherwise.</span>
-</span><span id="PlansAPI.get_plans-36"><a href="#PlansAPI.get_plans-36"><span class="linenos">36</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI.get_plans-37"><a href="#PlansAPI.get_plans-37"><span class="linenos">37</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plans/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.get_plans-26"><a href="#PlansAPI.get_plans-26"><span class="linenos">26</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+</span><span id="PlansAPI.get_plans-27"><a href="#PlansAPI.get_plans-27"><span class="linenos">27</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI.get_plans-28"><a href="#PlansAPI.get_plans-28"><span class="linenos">28</span></a><span class="sd">        Get all test plans for a project.</span>
+</span><span id="PlansAPI.get_plans-29"><a href="#PlansAPI.get_plans-29"><span class="linenos">29</span></a><span class="sd">        </span>
+</span><span id="PlansAPI.get_plans-30"><a href="#PlansAPI.get_plans-30"><span class="linenos">30</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI.get_plans-31"><a href="#PlansAPI.get_plans-31"><span class="linenos">31</span></a><span class="sd">            project_id (int): The ID of the project to get test plans for.</span>
+</span><span id="PlansAPI.get_plans-32"><a href="#PlansAPI.get_plans-32"><span class="linenos">32</span></a><span class="sd">            </span>
+</span><span id="PlansAPI.get_plans-33"><a href="#PlansAPI.get_plans-33"><span class="linenos">33</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI.get_plans-34"><a href="#PlansAPI.get_plans-34"><span class="linenos">34</span></a><span class="sd">            list: List of test plans if successful, None otherwise.</span>
+</span><span id="PlansAPI.get_plans-35"><a href="#PlansAPI.get_plans-35"><span class="linenos">35</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI.get_plans-36"><a href="#PlansAPI.get_plans-36"><span class="linenos">36</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plans/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Get all test plans for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get test plans for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test plans if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get test plans for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test plans if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -436,72 +426,66 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI.add_plan"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.add_plan-39"><a href="#PlansAPI.add_plan-39"><span class="linenos">39</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_plan</span><span class="p">(</span>
-</span><span id="PlansAPI.add_plan-40"><a href="#PlansAPI.add_plan-40"><span class="linenos">40</span></a>        <span class="bp">self</span><span class="p">,</span> 
-</span><span id="PlansAPI.add_plan-41"><a href="#PlansAPI.add_plan-41"><span class="linenos">41</span></a>        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
-</span><span id="PlansAPI.add_plan-42"><a href="#PlansAPI.add_plan-42"><span class="linenos">42</span></a>        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
-</span><span id="PlansAPI.add_plan-43"><a href="#PlansAPI.add_plan-43"><span class="linenos">43</span></a>        <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="PlansAPI.add_plan-44"><a href="#PlansAPI.add_plan-44"><span class="linenos">44</span></a>        <span class="n">milestone_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
-</span><span id="PlansAPI.add_plan-45"><a href="#PlansAPI.add_plan-45"><span class="linenos">45</span></a>        <span class="n">entries</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="PlansAPI.add_plan-46"><a href="#PlansAPI.add_plan-46"><span class="linenos">46</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI.add_plan-47"><a href="#PlansAPI.add_plan-47"><span class="linenos">47</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI.add_plan-48"><a href="#PlansAPI.add_plan-48"><span class="linenos">48</span></a><span class="sd">        Add a new test plan.</span>
-</span><span id="PlansAPI.add_plan-49"><a href="#PlansAPI.add_plan-49"><span class="linenos">49</span></a><span class="sd">        </span>
-</span><span id="PlansAPI.add_plan-50"><a href="#PlansAPI.add_plan-50"><span class="linenos">50</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI.add_plan-51"><a href="#PlansAPI.add_plan-51"><span class="linenos">51</span></a><span class="sd">            project_id (int): The ID of the project to add the test plan to.</span>
-</span><span id="PlansAPI.add_plan-52"><a href="#PlansAPI.add_plan-52"><span class="linenos">52</span></a><span class="sd">            name (str): The name of the test plan.</span>
-</span><span id="PlansAPI.add_plan-53"><a href="#PlansAPI.add_plan-53"><span class="linenos">53</span></a><span class="sd">            description (str, optional): The description of the test plan.</span>
-</span><span id="PlansAPI.add_plan-54"><a href="#PlansAPI.add_plan-54"><span class="linenos">54</span></a><span class="sd">            milestone_id (int, optional): The ID of the milestone to add the </span>
-</span><span id="PlansAPI.add_plan-55"><a href="#PlansAPI.add_plan-55"><span class="linenos">55</span></a><span class="sd">                test plan to.</span>
-</span><span id="PlansAPI.add_plan-56"><a href="#PlansAPI.add_plan-56"><span class="linenos">56</span></a><span class="sd">            entries (list, optional): List of test plan entries, each </span>
-</span><span id="PlansAPI.add_plan-57"><a href="#PlansAPI.add_plan-57"><span class="linenos">57</span></a><span class="sd">                containing:</span>
-</span><span id="PlansAPI.add_plan-58"><a href="#PlansAPI.add_plan-58"><span class="linenos">58</span></a><span class="sd">                - suite_id (int): The ID of the test suite</span>
-</span><span id="PlansAPI.add_plan-59"><a href="#PlansAPI.add_plan-59"><span class="linenos">59</span></a><span class="sd">                - name (str): The name of the test run</span>
-</span><span id="PlansAPI.add_plan-60"><a href="#PlansAPI.add_plan-60"><span class="linenos">60</span></a><span class="sd">                - description (str, optional): The description of the test run</span>
-</span><span id="PlansAPI.add_plan-61"><a href="#PlansAPI.add_plan-61"><span class="linenos">61</span></a><span class="sd">                - assignedto_id (int, optional): The ID of the user to assign </span>
-</span><span id="PlansAPI.add_plan-62"><a href="#PlansAPI.add_plan-62"><span class="linenos">62</span></a><span class="sd">                    the test run to</span>
-</span><span id="PlansAPI.add_plan-63"><a href="#PlansAPI.add_plan-63"><span class="linenos">63</span></a><span class="sd">                - include_all (bool, optional): Whether to include all test </span>
-</span><span id="PlansAPI.add_plan-64"><a href="#PlansAPI.add_plan-64"><span class="linenos">64</span></a><span class="sd">                    cases</span>
-</span><span id="PlansAPI.add_plan-65"><a href="#PlansAPI.add_plan-65"><span class="linenos">65</span></a><span class="sd">                - case_ids (list, optional): List of test case IDs to include</span>
-</span><span id="PlansAPI.add_plan-66"><a href="#PlansAPI.add_plan-66"><span class="linenos">66</span></a><span class="sd">                </span>
-</span><span id="PlansAPI.add_plan-67"><a href="#PlansAPI.add_plan-67"><span class="linenos">67</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI.add_plan-68"><a href="#PlansAPI.add_plan-68"><span class="linenos">68</span></a><span class="sd">            dict: The created test plan data if successful, None otherwise.</span>
-</span><span id="PlansAPI.add_plan-69"><a href="#PlansAPI.add_plan-69"><span class="linenos">69</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI.add_plan-70"><a href="#PlansAPI.add_plan-70"><span class="linenos">70</span></a>        <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="PlansAPI.add_plan-71"><a href="#PlansAPI.add_plan-71"><span class="linenos">71</span></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span>
-</span><span id="PlansAPI.add_plan-72"><a href="#PlansAPI.add_plan-72"><span class="linenos">72</span></a>        <span class="p">}</span>
-</span><span id="PlansAPI.add_plan-73"><a href="#PlansAPI.add_plan-73"><span class="linenos">73</span></a>        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
-</span><span id="PlansAPI.add_plan-74"><a href="#PlansAPI.add_plan-74"><span class="linenos">74</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
-</span><span id="PlansAPI.add_plan-75"><a href="#PlansAPI.add_plan-75"><span class="linenos">75</span></a>        <span class="k">if</span> <span class="n">milestone_id</span><span class="p">:</span>
-</span><span id="PlansAPI.add_plan-76"><a href="#PlansAPI.add_plan-76"><span class="linenos">76</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;milestone_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">milestone_id</span>
-</span><span id="PlansAPI.add_plan-77"><a href="#PlansAPI.add_plan-77"><span class="linenos">77</span></a>        <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
-</span><span id="PlansAPI.add_plan-78"><a href="#PlansAPI.add_plan-78"><span class="linenos">78</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entries</span>
-</span><span id="PlansAPI.add_plan-79"><a href="#PlansAPI.add_plan-79"><span class="linenos">79</span></a>            
-</span><span id="PlansAPI.add_plan-80"><a href="#PlansAPI.add_plan-80"><span class="linenos">80</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;add_plan/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.add_plan-38"><a href="#PlansAPI.add_plan-38"><span class="linenos">38</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="PlansAPI.add_plan-39"><a href="#PlansAPI.add_plan-39"><span class="linenos">39</span></a>                 <span class="n">milestone_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">entries</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI.add_plan-40"><a href="#PlansAPI.add_plan-40"><span class="linenos">40</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI.add_plan-41"><a href="#PlansAPI.add_plan-41"><span class="linenos">41</span></a><span class="sd">        Add a new test plan.</span>
+</span><span id="PlansAPI.add_plan-42"><a href="#PlansAPI.add_plan-42"><span class="linenos">42</span></a><span class="sd">        </span>
+</span><span id="PlansAPI.add_plan-43"><a href="#PlansAPI.add_plan-43"><span class="linenos">43</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI.add_plan-44"><a href="#PlansAPI.add_plan-44"><span class="linenos">44</span></a><span class="sd">            project_id (int): The ID of the project to add the test plan to.</span>
+</span><span id="PlansAPI.add_plan-45"><a href="#PlansAPI.add_plan-45"><span class="linenos">45</span></a><span class="sd">            name (str): The name of the test plan.</span>
+</span><span id="PlansAPI.add_plan-46"><a href="#PlansAPI.add_plan-46"><span class="linenos">46</span></a><span class="sd">            description (str, optional): The description of the test plan.</span>
+</span><span id="PlansAPI.add_plan-47"><a href="#PlansAPI.add_plan-47"><span class="linenos">47</span></a><span class="sd">            milestone_id (int, optional): The ID of the milestone to add the test plan to.</span>
+</span><span id="PlansAPI.add_plan-48"><a href="#PlansAPI.add_plan-48"><span class="linenos">48</span></a><span class="sd">            entries (list, optional): List of test plan entries, each containing:</span>
+</span><span id="PlansAPI.add_plan-49"><a href="#PlansAPI.add_plan-49"><span class="linenos">49</span></a><span class="sd">                - suite_id (int): The ID of the test suite</span>
+</span><span id="PlansAPI.add_plan-50"><a href="#PlansAPI.add_plan-50"><span class="linenos">50</span></a><span class="sd">                - name (str): The name of the test run</span>
+</span><span id="PlansAPI.add_plan-51"><a href="#PlansAPI.add_plan-51"><span class="linenos">51</span></a><span class="sd">                - description (str, optional): The description of the test run</span>
+</span><span id="PlansAPI.add_plan-52"><a href="#PlansAPI.add_plan-52"><span class="linenos">52</span></a><span class="sd">                - assignedto_id (int, optional): The ID of the user to assign the test run to</span>
+</span><span id="PlansAPI.add_plan-53"><a href="#PlansAPI.add_plan-53"><span class="linenos">53</span></a><span class="sd">                - include_all (bool, optional): Whether to include all test cases</span>
+</span><span id="PlansAPI.add_plan-54"><a href="#PlansAPI.add_plan-54"><span class="linenos">54</span></a><span class="sd">                - case_ids (list, optional): List of test case IDs to include</span>
+</span><span id="PlansAPI.add_plan-55"><a href="#PlansAPI.add_plan-55"><span class="linenos">55</span></a><span class="sd">                </span>
+</span><span id="PlansAPI.add_plan-56"><a href="#PlansAPI.add_plan-56"><span class="linenos">56</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI.add_plan-57"><a href="#PlansAPI.add_plan-57"><span class="linenos">57</span></a><span class="sd">            dict: The created test plan data if successful, None otherwise.</span>
+</span><span id="PlansAPI.add_plan-58"><a href="#PlansAPI.add_plan-58"><span class="linenos">58</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI.add_plan-59"><a href="#PlansAPI.add_plan-59"><span class="linenos">59</span></a>        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="PlansAPI.add_plan-60"><a href="#PlansAPI.add_plan-60"><span class="linenos">60</span></a>            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span>
+</span><span id="PlansAPI.add_plan-61"><a href="#PlansAPI.add_plan-61"><span class="linenos">61</span></a>        <span class="p">}</span>
+</span><span id="PlansAPI.add_plan-62"><a href="#PlansAPI.add_plan-62"><span class="linenos">62</span></a>        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+</span><span id="PlansAPI.add_plan-63"><a href="#PlansAPI.add_plan-63"><span class="linenos">63</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
+</span><span id="PlansAPI.add_plan-64"><a href="#PlansAPI.add_plan-64"><span class="linenos">64</span></a>        <span class="k">if</span> <span class="n">milestone_id</span><span class="p">:</span>
+</span><span id="PlansAPI.add_plan-65"><a href="#PlansAPI.add_plan-65"><span class="linenos">65</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;milestone_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">milestone_id</span>
+</span><span id="PlansAPI.add_plan-66"><a href="#PlansAPI.add_plan-66"><span class="linenos">66</span></a>        <span class="k">if</span> <span class="n">entries</span><span class="p">:</span>
+</span><span id="PlansAPI.add_plan-67"><a href="#PlansAPI.add_plan-67"><span class="linenos">67</span></a>            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entries</span>
+</span><span id="PlansAPI.add_plan-68"><a href="#PlansAPI.add_plan-68"><span class="linenos">68</span></a>            
+</span><span id="PlansAPI.add_plan-69"><a href="#PlansAPI.add_plan-69"><span class="linenos">69</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;add_plan/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Add a new test plan.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the test plan to.
-    name (str): The name of the test plan.
-    description (str, optional): The description of the test plan.
-    milestone_id (int, optional): The ID of the milestone to add the 
-        test plan to.
-    entries (list, optional): List of test plan entries, each 
-        containing:
-        - suite_id (int): The ID of the test suite
-        - name (str): The name of the test run
-        - description (str, optional): The description of the test run
-        - assignedto_id (int, optional): The ID of the user to assign 
-            the test run to
-        - include_all (bool, optional): Whether to include all test 
-            cases
-        - case_ids (list, optional): List of test case IDs to include</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created test plan data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the test plan to.</li>
+<li><strong>name (str):</strong>  The name of the test plan.</li>
+<li><strong>description (str, optional):</strong>  The description of the test plan.</li>
+<li><strong>milestone_id (int, optional):</strong>  The ID of the milestone to add the test plan to.</li>
+<li><strong>entries (list, optional):</strong>  List of test plan entries, each containing:
+<ul>
+<li>suite_id (int): The ID of the test suite</li>
+<li>name (str): The name of the test run</li>
+<li>description (str, optional): The description of the test run</li>
+<li>assignedto_id (int, optional): The ID of the user to assign the test run to</li>
+<li>include_all (bool, optional): Whether to include all test cases</li>
+<li>case_ids (list, optional): List of test case IDs to include</li>
+</ul></li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created test plan data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -517,31 +501,35 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI.update_plan"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.update_plan-82"><a href="#PlansAPI.update_plan-82"><span class="linenos">82</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI.update_plan-83"><a href="#PlansAPI.update_plan-83"><span class="linenos">83</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI.update_plan-84"><a href="#PlansAPI.update_plan-84"><span class="linenos">84</span></a><span class="sd">        Update a test plan.</span>
-</span><span id="PlansAPI.update_plan-85"><a href="#PlansAPI.update_plan-85"><span class="linenos">85</span></a><span class="sd">        </span>
-</span><span id="PlansAPI.update_plan-86"><a href="#PlansAPI.update_plan-86"><span class="linenos">86</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI.update_plan-87"><a href="#PlansAPI.update_plan-87"><span class="linenos">87</span></a><span class="sd">            plan_id (int): The ID of the test plan to update.</span>
-</span><span id="PlansAPI.update_plan-88"><a href="#PlansAPI.update_plan-88"><span class="linenos">88</span></a><span class="sd">            **kwargs: The fields to update (name, description, milestone_id, </span>
-</span><span id="PlansAPI.update_plan-89"><a href="#PlansAPI.update_plan-89"><span class="linenos">89</span></a><span class="sd">                entries).</span>
-</span><span id="PlansAPI.update_plan-90"><a href="#PlansAPI.update_plan-90"><span class="linenos">90</span></a><span class="sd">            </span>
-</span><span id="PlansAPI.update_plan-91"><a href="#PlansAPI.update_plan-91"><span class="linenos">91</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI.update_plan-92"><a href="#PlansAPI.update_plan-92"><span class="linenos">92</span></a><span class="sd">            dict: The updated test plan data if successful, None otherwise.</span>
-</span><span id="PlansAPI.update_plan-93"><a href="#PlansAPI.update_plan-93"><span class="linenos">93</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI.update_plan-94"><a href="#PlansAPI.update_plan-94"><span class="linenos">94</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;update_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.update_plan-71"><a href="#PlansAPI.update_plan-71"><span class="linenos">71</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI.update_plan-72"><a href="#PlansAPI.update_plan-72"><span class="linenos">72</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI.update_plan-73"><a href="#PlansAPI.update_plan-73"><span class="linenos">73</span></a><span class="sd">        Update a test plan.</span>
+</span><span id="PlansAPI.update_plan-74"><a href="#PlansAPI.update_plan-74"><span class="linenos">74</span></a><span class="sd">        </span>
+</span><span id="PlansAPI.update_plan-75"><a href="#PlansAPI.update_plan-75"><span class="linenos">75</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI.update_plan-76"><a href="#PlansAPI.update_plan-76"><span class="linenos">76</span></a><span class="sd">            plan_id (int): The ID of the test plan to update.</span>
+</span><span id="PlansAPI.update_plan-77"><a href="#PlansAPI.update_plan-77"><span class="linenos">77</span></a><span class="sd">            **kwargs: The fields to update (name, description, milestone_id, entries).</span>
+</span><span id="PlansAPI.update_plan-78"><a href="#PlansAPI.update_plan-78"><span class="linenos">78</span></a><span class="sd">            </span>
+</span><span id="PlansAPI.update_plan-79"><a href="#PlansAPI.update_plan-79"><span class="linenos">79</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI.update_plan-80"><a href="#PlansAPI.update_plan-80"><span class="linenos">80</span></a><span class="sd">            dict: The updated test plan data if successful, None otherwise.</span>
+</span><span id="PlansAPI.update_plan-81"><a href="#PlansAPI.update_plan-81"><span class="linenos">81</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI.update_plan-82"><a href="#PlansAPI.update_plan-82"><span class="linenos">82</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;update_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Update a test plan.</p>
 
-<p>Args:
-    plan_id (int): The ID of the test plan to update.
-    **kwargs: The fields to update (name, description, milestone_id, 
-        entries).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated test plan data if successful, None otherwise.</p>
+<ul>
+<li><strong>plan_id (int):</strong>  The ID of the test plan to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, milestone_id, entries).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated test plan data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -557,27 +545,33 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI.close_plan"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.close_plan-96"><a href="#PlansAPI.close_plan-96"><span class="linenos"> 96</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI.close_plan-97"><a href="#PlansAPI.close_plan-97"><span class="linenos"> 97</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI.close_plan-98"><a href="#PlansAPI.close_plan-98"><span class="linenos"> 98</span></a><span class="sd">        Close a test plan.</span>
-</span><span id="PlansAPI.close_plan-99"><a href="#PlansAPI.close_plan-99"><span class="linenos"> 99</span></a><span class="sd">        </span>
-</span><span id="PlansAPI.close_plan-100"><a href="#PlansAPI.close_plan-100"><span class="linenos">100</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI.close_plan-101"><a href="#PlansAPI.close_plan-101"><span class="linenos">101</span></a><span class="sd">            plan_id (int): The ID of the test plan to close.</span>
-</span><span id="PlansAPI.close_plan-102"><a href="#PlansAPI.close_plan-102"><span class="linenos">102</span></a><span class="sd">            </span>
-</span><span id="PlansAPI.close_plan-103"><a href="#PlansAPI.close_plan-103"><span class="linenos">103</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI.close_plan-104"><a href="#PlansAPI.close_plan-104"><span class="linenos">104</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
-</span><span id="PlansAPI.close_plan-105"><a href="#PlansAPI.close_plan-105"><span class="linenos">105</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI.close_plan-106"><a href="#PlansAPI.close_plan-106"><span class="linenos">106</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;close_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.close_plan-84"><a href="#PlansAPI.close_plan-84"><span class="linenos">84</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">close_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI.close_plan-85"><a href="#PlansAPI.close_plan-85"><span class="linenos">85</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI.close_plan-86"><a href="#PlansAPI.close_plan-86"><span class="linenos">86</span></a><span class="sd">        Close a test plan.</span>
+</span><span id="PlansAPI.close_plan-87"><a href="#PlansAPI.close_plan-87"><span class="linenos">87</span></a><span class="sd">        </span>
+</span><span id="PlansAPI.close_plan-88"><a href="#PlansAPI.close_plan-88"><span class="linenos">88</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI.close_plan-89"><a href="#PlansAPI.close_plan-89"><span class="linenos">89</span></a><span class="sd">            plan_id (int): The ID of the test plan to close.</span>
+</span><span id="PlansAPI.close_plan-90"><a href="#PlansAPI.close_plan-90"><span class="linenos">90</span></a><span class="sd">            </span>
+</span><span id="PlansAPI.close_plan-91"><a href="#PlansAPI.close_plan-91"><span class="linenos">91</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI.close_plan-92"><a href="#PlansAPI.close_plan-92"><span class="linenos">92</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
+</span><span id="PlansAPI.close_plan-93"><a href="#PlansAPI.close_plan-93"><span class="linenos">93</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI.close_plan-94"><a href="#PlansAPI.close_plan-94"><span class="linenos">94</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;close_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Close a test plan.</p>
 
-<p>Args:
-    plan_id (int): The ID of the test plan to close.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>plan_id (int):</strong>  The ID of the test plan to close.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -593,27 +587,33 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI.delete_plan"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.delete_plan-108"><a href="#PlansAPI.delete_plan-108"><span class="linenos">108</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI.delete_plan-109"><a href="#PlansAPI.delete_plan-109"><span class="linenos">109</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI.delete_plan-110"><a href="#PlansAPI.delete_plan-110"><span class="linenos">110</span></a><span class="sd">        Delete a test plan.</span>
-</span><span id="PlansAPI.delete_plan-111"><a href="#PlansAPI.delete_plan-111"><span class="linenos">111</span></a><span class="sd">        </span>
-</span><span id="PlansAPI.delete_plan-112"><a href="#PlansAPI.delete_plan-112"><span class="linenos">112</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI.delete_plan-113"><a href="#PlansAPI.delete_plan-113"><span class="linenos">113</span></a><span class="sd">            plan_id (int): The ID of the test plan to delete.</span>
-</span><span id="PlansAPI.delete_plan-114"><a href="#PlansAPI.delete_plan-114"><span class="linenos">114</span></a><span class="sd">            </span>
-</span><span id="PlansAPI.delete_plan-115"><a href="#PlansAPI.delete_plan-115"><span class="linenos">115</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI.delete_plan-116"><a href="#PlansAPI.delete_plan-116"><span class="linenos">116</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
-</span><span id="PlansAPI.delete_plan-117"><a href="#PlansAPI.delete_plan-117"><span class="linenos">117</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI.delete_plan-118"><a href="#PlansAPI.delete_plan-118"><span class="linenos">118</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;delete_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.delete_plan-96"><a href="#PlansAPI.delete_plan-96"><span class="linenos"> 96</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">delete_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI.delete_plan-97"><a href="#PlansAPI.delete_plan-97"><span class="linenos"> 97</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI.delete_plan-98"><a href="#PlansAPI.delete_plan-98"><span class="linenos"> 98</span></a><span class="sd">        Delete a test plan.</span>
+</span><span id="PlansAPI.delete_plan-99"><a href="#PlansAPI.delete_plan-99"><span class="linenos"> 99</span></a><span class="sd">        </span>
+</span><span id="PlansAPI.delete_plan-100"><a href="#PlansAPI.delete_plan-100"><span class="linenos">100</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI.delete_plan-101"><a href="#PlansAPI.delete_plan-101"><span class="linenos">101</span></a><span class="sd">            plan_id (int): The ID of the test plan to delete.</span>
+</span><span id="PlansAPI.delete_plan-102"><a href="#PlansAPI.delete_plan-102"><span class="linenos">102</span></a><span class="sd">            </span>
+</span><span id="PlansAPI.delete_plan-103"><a href="#PlansAPI.delete_plan-103"><span class="linenos">103</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI.delete_plan-104"><a href="#PlansAPI.delete_plan-104"><span class="linenos">104</span></a><span class="sd">            dict: The response data if successful, None otherwise.</span>
+</span><span id="PlansAPI.delete_plan-105"><a href="#PlansAPI.delete_plan-105"><span class="linenos">105</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI.delete_plan-106"><a href="#PlansAPI.delete_plan-106"><span class="linenos">106</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;delete_plan/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Delete a test plan.</p>
 
-<p>Args:
-    plan_id (int): The ID of the test plan to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>plan_id (int):</strong>  The ID of the test plan to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -629,27 +629,33 @@ Test plans are used to organize and schedule test runs.</p>
 
     </div>
     <a class="headerlink" href="#PlansAPI.get_plan_stats"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.get_plan_stats-120"><a href="#PlansAPI.get_plan_stats-120"><span class="linenos">120</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-</span><span id="PlansAPI.get_plan_stats-121"><a href="#PlansAPI.get_plan_stats-121"><span class="linenos">121</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="PlansAPI.get_plan_stats-122"><a href="#PlansAPI.get_plan_stats-122"><span class="linenos">122</span></a><span class="sd">        Get statistics for a test plan.</span>
-</span><span id="PlansAPI.get_plan_stats-123"><a href="#PlansAPI.get_plan_stats-123"><span class="linenos">123</span></a><span class="sd">        </span>
-</span><span id="PlansAPI.get_plan_stats-124"><a href="#PlansAPI.get_plan_stats-124"><span class="linenos">124</span></a><span class="sd">        Args:</span>
-</span><span id="PlansAPI.get_plan_stats-125"><a href="#PlansAPI.get_plan_stats-125"><span class="linenos">125</span></a><span class="sd">            plan_id (int): The ID of the test plan to get statistics for.</span>
-</span><span id="PlansAPI.get_plan_stats-126"><a href="#PlansAPI.get_plan_stats-126"><span class="linenos">126</span></a><span class="sd">            </span>
-</span><span id="PlansAPI.get_plan_stats-127"><a href="#PlansAPI.get_plan_stats-127"><span class="linenos">127</span></a><span class="sd">        Returns:</span>
-</span><span id="PlansAPI.get_plan_stats-128"><a href="#PlansAPI.get_plan_stats-128"><span class="linenos">128</span></a><span class="sd">            dict: The test plan statistics if successful, None otherwise.</span>
-</span><span id="PlansAPI.get_plan_stats-129"><a href="#PlansAPI.get_plan_stats-129"><span class="linenos">129</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="PlansAPI.get_plan_stats-130"><a href="#PlansAPI.get_plan_stats-130"><span class="linenos">130</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan_stats/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="PlansAPI.get_plan_stats-108"><a href="#PlansAPI.get_plan_stats-108"><span class="linenos">108</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_plan_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span><span id="PlansAPI.get_plan_stats-109"><a href="#PlansAPI.get_plan_stats-109"><span class="linenos">109</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="PlansAPI.get_plan_stats-110"><a href="#PlansAPI.get_plan_stats-110"><span class="linenos">110</span></a><span class="sd">        Get statistics for a test plan.</span>
+</span><span id="PlansAPI.get_plan_stats-111"><a href="#PlansAPI.get_plan_stats-111"><span class="linenos">111</span></a><span class="sd">        </span>
+</span><span id="PlansAPI.get_plan_stats-112"><a href="#PlansAPI.get_plan_stats-112"><span class="linenos">112</span></a><span class="sd">        Args:</span>
+</span><span id="PlansAPI.get_plan_stats-113"><a href="#PlansAPI.get_plan_stats-113"><span class="linenos">113</span></a><span class="sd">            plan_id (int): The ID of the test plan to get statistics for.</span>
+</span><span id="PlansAPI.get_plan_stats-114"><a href="#PlansAPI.get_plan_stats-114"><span class="linenos">114</span></a><span class="sd">            </span>
+</span><span id="PlansAPI.get_plan_stats-115"><a href="#PlansAPI.get_plan_stats-115"><span class="linenos">115</span></a><span class="sd">        Returns:</span>
+</span><span id="PlansAPI.get_plan_stats-116"><a href="#PlansAPI.get_plan_stats-116"><span class="linenos">116</span></a><span class="sd">            dict: The test plan statistics if successful, None otherwise.</span>
+</span><span id="PlansAPI.get_plan_stats-117"><a href="#PlansAPI.get_plan_stats-117"><span class="linenos">117</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="PlansAPI.get_plan_stats-118"><a href="#PlansAPI.get_plan_stats-118"><span class="linenos">118</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api_request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;get_plan_stats/</span><span class="si">{</span><span class="n">plan_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Get statistics for a test plan.</p>
 
-<p>Args:
-    plan_id (int): The ID of the test plan to get statistics for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The test plan statistics if successful, None otherwise.</p>
+<ul>
+<li><strong>plan_id (int):</strong>  The ID of the test plan to get statistics for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The test plan statistics if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

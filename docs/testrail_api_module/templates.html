@@ -66,6 +66,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -459,11 +460,17 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Get a template by ID.</p>
 
-<p>Args:
-    template_id (int): The ID of the template to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The template data if successful, None otherwise.</p>
+<ul>
+<li><strong>template_id (int):</strong>  The ID of the template to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The template data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -495,11 +502,17 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Get all templates for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get templates for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of templates if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get templates for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of templates if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -548,19 +561,27 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Add a new template.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the template to.
-    name (str): The name of the template.
-    description (str, optional): The description of the template.
-    fields (list, optional): List of template fields, each containing:
-        - name (str): The name of the field
-        - type (str): The type of the field
-        - required (bool): Whether the field is required
-        - default_value (str, optional): The default value for the field
-        - options (list, optional): List of options for select/multi-select fields</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created template data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the template to.</li>
+<li><strong>name (str):</strong>  The name of the template.</li>
+<li><strong>description (str, optional):</strong>  The description of the template.</li>
+<li><strong>fields (list, optional):</strong>  List of template fields, each containing:
+<ul>
+<li>name (str): The name of the field</li>
+<li>type (str): The type of the field</li>
+<li>required (bool): Whether the field is required</li>
+<li>default_value (str, optional): The default value for the field</li>
+<li>options (list, optional): List of options for select/multi-select fields</li>
+</ul></li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created template data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -593,12 +614,18 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Update a template.</p>
 
-<p>Args:
-    template_id (int): The ID of the template to update.
-    **kwargs: The fields to update (name, description, fields).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated template data if successful, None otherwise.</p>
+<ul>
+<li><strong>template_id (int):</strong>  The ID of the template to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, fields).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated template data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -630,11 +657,17 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Delete a template.</p>
 
-<p>Args:
-    template_id (int): The ID of the template to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>template_id (int):</strong>  The ID of the template to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -666,11 +699,17 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Get all fields in a template.</p>
 
-<p>Args:
-    template_id (int): The ID of the template to get fields for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of template fields if successful, None otherwise.</p>
+<ul>
+<li><strong>template_id (int):</strong>  The ID of the template to get fields for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of template fields if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -726,23 +765,31 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Add a field to a template.</p>
 
-<p>Args:
-    template_id (int): The ID of the template to add the field to.
-    name (str): The name of the field.
-    field_type (str): The type of the field:
-        - text: Single-line text
-        - textarea: Multi-line text
-        - select: Single-select dropdown
-        - multiselect: Multi-select dropdown
-        - number: Numeric value
-        - date: Date value
-        - checkbox: Boolean value
-    required (bool, optional): Whether the field is required.
-    default_value (str, optional): The default value for the field.
-    options (list, optional): List of options for select/multi-select fields.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>template_id (int):</strong>  The ID of the template to add the field to.</li>
+<li><strong>name (str):</strong>  The name of the field.</li>
+<li><strong>field_type (str):</strong>  The type of the field:
+<ul>
+<li>text: Single-line text</li>
+<li>textarea: Multi-line text</li>
+<li>select: Single-select dropdown</li>
+<li>multiselect: Multi-select dropdown</li>
+<li>number: Numeric value</li>
+<li>date: Date value</li>
+<li>checkbox: Boolean value</li>
+</ul></li>
+<li><strong>required (bool, optional):</strong>  Whether the field is required.</li>
+<li><strong>default_value (str, optional):</strong>  The default value for the field.</li>
+<li><strong>options (list, optional):</strong>  List of options for select/multi-select fields.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -777,13 +824,19 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Update a field in a template.</p>
 
-<p>Args:
-    template_id (int): The ID of the template containing the field.
-    field_id (int): The ID of the field to update.
-    **kwargs: The fields to update (name, type, required, default_value, options).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>template_id (int):</strong>  The ID of the template containing the field.</li>
+<li><strong>field_id (int):</strong>  The ID of the field to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, type, required, default_value, options).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -816,12 +869,18 @@ Templates are used to define the structure and fields for test cases.</p>
 
             <div class="docstring"><p>Delete a field from a template.</p>
 
-<p>Args:
-    template_id (int): The ID of the template containing the field.
-    field_id (int): The ID of the field to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>template_id (int):</strong>  The ID of the template containing the field.</li>
+<li><strong>field_id (int):</strong>  The ID of the field to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 
-def run_tests(verbose=False, coverage=False, specific_test=None):
+def run_tests(verbose: bool = False, coverage: bool = False, specific_test: str | None = None) -> subprocess.CompletedProcess[bytes]:
     """Run the test suite with the specified options."""
     # Get the project root directory (utilities/../)
     project_root = Path(__file__).parent.parent

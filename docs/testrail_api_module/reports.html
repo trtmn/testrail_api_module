@@ -60,6 +60,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -377,11 +378,17 @@ Reports are used to analyze and visualize test results and metrics.</p>
 
             <div class="docstring"><p>Get a report by ID.</p>
 
-<p>Args:
-    report_id (int): The ID of the report to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The report data if successful, None otherwise.</p>
+<ul>
+<li><strong>report_id (int):</strong>  The ID of the report to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The report data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -413,11 +420,17 @@ Reports are used to analyze and visualize test results and metrics.</p>
 
             <div class="docstring"><p>Get all reports for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get reports for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of reports if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get reports for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of reports if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -480,32 +493,52 @@ Reports are used to analyze and visualize test results and metrics.</p>
 
             <div class="docstring"><p>Add a new report.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the report to.
-    name (str): The name of the report.
-    description (str, optional): The description of the report.
-    report_type (str, optional): The type of report:
-        - test_case: Test case report
-        - test_suite: Test suite report
-        - test_run: Test run report
-        - milestone: Milestone report
-        - project: Project report
-    parameters (dict, optional): Report-specific parameters:
-        - For test_case reports:
-            - suite_id (int): The ID of the test suite
-            - section_id (int, optional): The ID of the section
-            - case_ids (list, optional): List of test case IDs
-        - For test_suite reports:
-            - suite_id (int): The ID of the test suite
-        - For test_run reports:
-            - run_id (int): The ID of the test run
-        - For milestone reports:
-            - milestone_id (int): The ID of the milestone
-        - For project reports:
-            - milestone_id (int, optional): The ID of the milestone</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created report data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the report to.</li>
+<li><strong>name (str):</strong>  The name of the report.</li>
+<li><strong>description (str, optional):</strong>  The description of the report.</li>
+<li><strong>report_type (str, optional):</strong>  The type of report:
+<ul>
+<li>test_case: Test case report</li>
+<li>test_suite: Test suite report</li>
+<li>test_run: Test run report</li>
+<li>milestone: Milestone report</li>
+<li>project: Project report</li>
+</ul></li>
+<li><strong>parameters (dict, optional):</strong>  Report-specific parameters:
+<ul>
+<li>For test_case reports:
+<ul>
+<li>suite_id (int): The ID of the test suite</li>
+<li>section_id (int, optional): The ID of the section</li>
+<li>case_ids (list, optional): List of test case IDs</li>
+</ul></li>
+<li>For test_suite reports:
+<ul>
+<li>suite_id (int): The ID of the test suite</li>
+</ul></li>
+<li>For test_run reports:
+<ul>
+<li>run_id (int): The ID of the test run</li>
+</ul></li>
+<li>For milestone reports:
+<ul>
+<li>milestone_id (int): The ID of the milestone</li>
+</ul></li>
+<li>For project reports:
+<ul>
+<li>milestone_id (int, optional): The ID of the milestone</li>
+</ul></li>
+</ul></li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created report data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -538,12 +571,18 @@ Reports are used to analyze and visualize test results and metrics.</p>
 
             <div class="docstring"><p>Update a report.</p>
 
-<p>Args:
-    report_id (int): The ID of the report to update.
-    **kwargs: The fields to update (name, description, parameters).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated report data if successful, None otherwise.</p>
+<ul>
+<li><strong>report_id (int):</strong>  The ID of the report to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, parameters).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated report data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -575,11 +614,17 @@ Reports are used to analyze and visualize test results and metrics.</p>
 
             <div class="docstring"><p>Delete a report.</p>
 
-<p>Args:
-    report_id (int): The ID of the report to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>report_id (int):</strong>  The ID of the report to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -611,11 +656,17 @@ Reports are used to analyze and visualize test results and metrics.</p>
 
             <div class="docstring"><p>Run a report to generate results.</p>
 
-<p>Args:
-    report_id (int): The ID of the report to run.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The report results if successful, None otherwise.</p>
+<ul>
+<li><strong>report_id (int):</strong>  The ID of the report to run.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The report results if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -647,11 +698,17 @@ Reports are used to analyze and visualize test results and metrics.</p>
 
             <div class="docstring"><p>Get the results of a report.</p>
 
-<p>Args:
-    report_id (int): The ID of the report to get results for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The report results if successful, None otherwise.</p>
+<ul>
+<li><strong>report_id (int):</strong>  The ID of the report to get results for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The report results if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

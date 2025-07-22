@@ -54,6 +54,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -329,11 +330,17 @@ Roles are used to define user permissions and access levels.</p>
 
             <div class="docstring"><p>Get a role by ID.</p>
 
-<p>Args:
-    role_id (int): The ID of the role to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The role data if successful, None otherwise.</p>
+<ul>
+<li><strong>role_id (int):</strong>  The ID of the role to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The role data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -362,8 +369,11 @@ Roles are used to define user permissions and access levels.</p>
 
             <div class="docstring"><p>Get all roles.</p>
 
-<p>Returns:
-    list: List of roles if successful, None otherwise.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of roles if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -432,39 +442,47 @@ Roles are used to define user permissions and access levels.</p>
 
             <div class="docstring"><p>Add a new role.</p>
 
-<p>Args:
-    name (str): The name of the role.
-    description (str, optional): The description of the role.
-    permissions (dict, optional): Dictionary of permission flags:
-        - view_test_cases (bool): Can view test cases
-        - edit_test_cases (bool): Can edit test cases
-        - delete_test_cases (bool): Can delete test cases
-        - view_test_suites (bool): Can view test suites
-        - edit_test_suites (bool): Can edit test suites
-        - delete_test_suites (bool): Can delete test suites
-        - view_test_runs (bool): Can view test runs
-        - edit_test_runs (bool): Can edit test runs
-        - delete_test_runs (bool): Can delete test runs
-        - view_test_plans (bool): Can view test plans
-        - edit_test_plans (bool): Can edit test plans
-        - delete_test_plans (bool): Can delete test plans
-        - view_milestones (bool): Can view milestones
-        - edit_milestones (bool): Can edit milestones
-        - delete_milestones (bool): Can delete milestones
-        - view_reports (bool): Can view reports
-        - view_dashboard (bool): Can view dashboard
-        - view_users (bool): Can view users
-        - edit_users (bool): Can edit users
-        - delete_users (bool): Can delete users
-        - view_roles (bool): Can view roles
-        - edit_roles (bool): Can edit roles
-        - delete_roles (bool): Can delete roles
-        - view_projects (bool): Can view projects
-        - edit_projects (bool): Can edit projects
-        - delete_projects (bool): Can delete projects</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created role data if successful, None otherwise.</p>
+<ul>
+<li><strong>name (str):</strong>  The name of the role.</li>
+<li><strong>description (str, optional):</strong>  The description of the role.</li>
+<li><strong>permissions (dict, optional):</strong>  Dictionary of permission flags:
+<ul>
+<li>view_test_cases (bool): Can view test cases</li>
+<li>edit_test_cases (bool): Can edit test cases</li>
+<li>delete_test_cases (bool): Can delete test cases</li>
+<li>view_test_suites (bool): Can view test suites</li>
+<li>edit_test_suites (bool): Can edit test suites</li>
+<li>delete_test_suites (bool): Can delete test suites</li>
+<li>view_test_runs (bool): Can view test runs</li>
+<li>edit_test_runs (bool): Can edit test runs</li>
+<li>delete_test_runs (bool): Can delete test runs</li>
+<li>view_test_plans (bool): Can view test plans</li>
+<li>edit_test_plans (bool): Can edit test plans</li>
+<li>delete_test_plans (bool): Can delete test plans</li>
+<li>view_milestones (bool): Can view milestones</li>
+<li>edit_milestones (bool): Can edit milestones</li>
+<li>delete_milestones (bool): Can delete milestones</li>
+<li>view_reports (bool): Can view reports</li>
+<li>view_dashboard (bool): Can view dashboard</li>
+<li>view_users (bool): Can view users</li>
+<li>edit_users (bool): Can edit users</li>
+<li>delete_users (bool): Can delete users</li>
+<li>view_roles (bool): Can view roles</li>
+<li>edit_roles (bool): Can edit roles</li>
+<li>delete_roles (bool): Can delete roles</li>
+<li>view_projects (bool): Can view projects</li>
+<li>edit_projects (bool): Can edit projects</li>
+<li>delete_projects (bool): Can delete projects</li>
+</ul></li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created role data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -497,12 +515,18 @@ Roles are used to define user permissions and access levels.</p>
 
             <div class="docstring"><p>Update a role.</p>
 
-<p>Args:
-    role_id (int): The ID of the role to update.
-    **kwargs: The fields to update (name, description, permissions).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated role data if successful, None otherwise.</p>
+<ul>
+<li><strong>role_id (int):</strong>  The ID of the role to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, permissions).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated role data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -534,11 +558,17 @@ Roles are used to define user permissions and access levels.</p>
 
             <div class="docstring"><p>Delete a role.</p>
 
-<p>Args:
-    role_id (int): The ID of the role to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>role_id (int):</strong>  The ID of the role to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
