@@ -31,7 +31,6 @@ dev = [
     "build>=1.0.0",
     "toml>=0.10.0",
     "python-dotenv>=1.0.0",
-    "stubgen",
 ]
 
 [tool.setuptools.packages.find]

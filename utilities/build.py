@@ -3,6 +3,7 @@
 Build script for the TestRail API module.
 This script handles building, version management, and deployment preparation.
 """
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -11,7 +12,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich import print as rprint
+
 
 
 console = Console()
