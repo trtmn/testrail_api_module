@@ -20,7 +20,7 @@ from typing import Optional
 
 __version__ = '0.2.1'
 """The version of the module, used for compatibility checks and logging."""
-__author__ = 'Matt Troutman and Christian Thompson'
+__author__ = 'Matt Troutman, Christian Thompson, Andrew Tipper'
 
 # Update the docstring with the current version
 __doc__ = __doc__.format(version=__version__)
