@@ -105,65 +105,140 @@ def update_version() -> bool:
     if not Confirm.ask("Would you like to update the version?"):
         return False
 
-    console.print("\n[bold]Version bump options:[/bold]")
-    console.print(f"1. [cyan]patch[/cyan] - for bug fixes ({current_version} → {get_next_version(current_version, 'patch')})")
-    console.print(f"2. [cyan]minor[/cyan] - for new features ({current_version} → {get_next_version(current_version, 'minor')})")
-    console.print(f"3. [cyan]major[/cyan] - for breaking changes ({current_version} → {get_next_version(current_version, 'major')})")
+    # Ask for version update method
+    console.print("\n[bold]Version update options:[/bold]")
+    console.print("1. [cyan]Automatic bump[/cyan] - increment current version")
+    console.print("2. [cyan]Manual version[/cyan] - specify exact version")
 
-    part = Prompt.ask(
-        "Choose version bump type",
-        choices=["1", "2", "3"],
+    method = Prompt.ask(
+        "Choose version update method",
+        choices=["1", "2"],
         default="1",
     )
 
-    # Map choice to version part
-    part_map = {"1": "patch", "2": "minor", "3": "major"}
-    version_part = part_map[part]
+    if method == "1":
+        # Automatic version bump
+        console.print("\n[bold]Version bump options:[/bold]")
+        console.print(f"1. [cyan]patch[/cyan] - for bug fixes ({current_version} → {get_next_version(current_version, 'patch')})")
+        console.print(f"2. [cyan]minor[/cyan] - for new features ({current_version} → {get_next_version(current_version, 'minor')})")
+        console.print(f"3. [cyan]major[/cyan] - for breaking changes ({current_version} → {get_next_version(current_version, 'major')})")
 
-    console.print(f"\n🔄 Updating version ({version_part})...")
+        part = Prompt.ask(
+            "Choose version bump type",
+            choices=["1", "2", "3"],
+            default="1",
+        )
 
-    try:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Running version update...", total=None)
+        # Map choice to version part
+        part_map = {"1": "patch", "2": "minor", "3": "major"}
+        version_part = part_map[part]
 
-            result = subprocess.run(
-                ["python", "utilities/update_version.py", "bump", part],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
+        console.print(f"\n🔄 Updating version ({version_part})...")
 
-            progress.update(task, completed=True)
+        try:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                task = progress.add_task("Running version update...", total=None)
 
-        # Get the updated version
-        updated_version = get_current_version()
+                result = subprocess.run(
+                    ["python", "utilities/update_version.py", "bump", part],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+
+                progress.update(task, completed=True)
+
+            # Get the updated version
+            updated_version = get_current_version()
+            
+            console.print("✅ Version updated successfully!", style="green")
+            console.print(f"📋 New version: [bold]{updated_version}[/bold]")
+            console.print(result.stdout)
+            return True
+
+        except subprocess.CalledProcessError as e:
+            console.print(f"❌ Error updating version: {e}", style="red")
+            console.print(f"stderr: {e.stderr}", style="red")
+            return False
+
+    else:
+        # Manual version specification
+        new_version = Prompt.ask(
+            "Enter the new version (e.g., 1.0.0)",
+            default=""
+        )
         
-        console.print("✅ Version updated successfully!", style="green")
-        console.print(f"📋 New version: [bold]{updated_version}[/bold]")
-        console.print(result.stdout)
-        return True
+        if not new_version:
+            console.print("❌ No version specified", style="red")
+            return False
 
-    except subprocess.CalledProcessError as e:
-        console.print(f"❌ Error updating version: {e}", style="red")
-        console.print(f"stderr: {e.stderr}", style="red")
-        return False
+        console.print(f"\n🔄 Setting version to {new_version}...")
+
+        try:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                task = progress.add_task("Setting version...", total=None)
+
+                result = subprocess.run(
+                    ["python", "utilities/update_version.py", "set", new_version],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+
+                progress.update(task, completed=True)
+
+            console.print("✅ Version set successfully!", style="green")
+            console.print(f"📋 New version: [bold]{new_version}[/bold]")
+            console.print(result.stdout)
+            return True
+
+        except subprocess.CalledProcessError as e:
+            console.print(f"❌ Error setting version: {e}", style="red")
+            console.print(f"stderr: {e.stderr}", style="red")
+            return False
 
 
 def clean_build_artifacts() -> None:
-    """Clean previous build artifacts."""
-    console.print("🧹 Cleaning build artifacts...", style="blue")
+    """Clean previous build artifacts for current version only."""
+    console.print("🧹 Cleaning build artifacts for current version...", style="blue")
+    
+    current_version = get_current_version()
+    if current_version == "unknown":
+        console.print("⚠️  Could not determine current version, skipping cleanup", style="yellow")
+        return
 
-    build_dirs = ["build", "dist", "*.egg-info"]
+    # Clean build directory (always safe to remove)
+    build_dir = Path("build")
+    if build_dir.exists():
+        console.print(f"  Removing: {build_dir}")
+        subprocess.run(["rm", "-rf", str(build_dir)], check=True)
 
-    for pattern in build_dirs:
-        for path in Path(".").glob(pattern):
-            if path.is_dir():
-                console.print(f"  Removing: {path}")
-                subprocess.run(["rm", "-rf", str(path)], check=True)
+    # Clean egg-info directories for current version only
+    for egg_info in Path(".").glob("*.egg-info"):
+        if egg_info.is_dir():
+            console.print(f"  Removing: {egg_info}")
+            subprocess.run(["rm", "-rf", str(egg_info)], check=True)
+
+    # Clean dist files for current version only
+    dist_dir = Path("dist")
+    if dist_dir.exists():
+        for file_path in dist_dir.glob("*"):
+            if file_path.is_file():
+                filename = file_path.name
+                # Check if file contains current version
+                if current_version in filename:
+                    console.print(f"  Removing: {filename}")
+                    file_path.unlink()
+                else:
+                    console.print(f"  Preserving: {filename} (different version)", style="green")
 
 
 def run_tests() -> bool:

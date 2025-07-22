@@ -51,7 +51,7 @@ def bump_version(version: str, part: str) -> str:
     return f"{major}.{minor}.{patch}"
 
 
-def update_file_version(file_path: Path, old_version: str, new_version: str, pattern: str, replacement: str) -> bool:
+def update_file_version(file_path: Path, new_version: str, pattern: str, replacement: str) -> bool:
     """Update version in a file."""
     if not file_path.exists():
         click.secho(f"❌ File not found: {file_path}", fg="red")
@@ -59,15 +59,20 @@ def update_file_version(file_path: Path, old_version: str, new_version: str, pat
     
     content = file_path.read_text()
     
-    # Create the actual search and replace patterns
-    search_pattern = pattern.format(current_version=old_version)
+    # Create the replacement pattern with the new version
     replace_pattern = replacement.format(new_version=new_version)
     
-    if search_pattern not in content:
-        click.secho(f"❌ Version {old_version} not found in {file_path}", fg="red")
+    # Use regex to find and replace version patterns
+    import re
+    
+    # Pattern to match version assignments
+    version_pattern = re.compile(pattern)
+    
+    if not version_pattern.search(content):
+        click.secho(f"❌ Version pattern not found in {file_path}", fg="red")
         return False
     
-    new_content = content.replace(search_pattern, replace_pattern)
+    new_content = version_pattern.sub(replace_pattern, content)
     file_path.write_text(new_content)
     
     click.echo(f"✅ Updated {file_path}")
@@ -91,9 +96,8 @@ def run_version_update(project_root: Path, part: str, dry_run: bool = False) -> 
     pyproject_file = project_root / "pyproject.toml"
     update_file_version(
         pyproject_file,
-        current_version,
         new_version,
-        'version = "{current_version}"',
+        r'version\s*=\s*"[^"]*"',
         'version = "{new_version}"'
     )
     
@@ -101,13 +105,43 @@ def run_version_update(project_root: Path, part: str, dry_run: bool = False) -> 
     init_file = project_root / "src" / "testrail_api_module" / "__init__.py"
     update_file_version(
         init_file,
-        current_version,
         new_version,
-        "__version__ = '{current_version}'",
+        r"__version__\s*=\s*'[^']*'",
         "__version__ = '{new_version}'"
     )
     
     click.echo(f"✅ Version updated to {new_version}")
+
+
+def set_version(project_root: Path, new_version: str, dry_run: bool = False) -> None:
+    """Set version to a specific value in all configured files."""
+    click.echo(f"🔄 Setting version to {new_version}")
+    
+    if dry_run:
+        click.echo("📋 Dry run - would update:")
+        click.echo(f"  pyproject.toml: version = \"{new_version}\"")
+        click.echo(f"  __init__.py: __version__ = '{new_version}'")
+        return
+    
+    # Update pyproject.toml
+    pyproject_file = project_root / "pyproject.toml"
+    update_file_version(
+        pyproject_file,
+        new_version,
+        r'version\s*=\s*"[^"]*"',
+        'version = "{new_version}"'
+    )
+    
+    # Update __init__.py
+    init_file = project_root / "src" / "testrail_api_module" / "__init__.py"
+    update_file_version(
+        init_file,
+        new_version,
+        r"__version__\s*=\s*'[^']*'",
+        "__version__ = '{new_version}'"
+    )
+    
+    click.echo(f"✅ Version set to {new_version}")
 
 
 def check_bump_my_version_installed() -> bool:
@@ -184,6 +218,28 @@ def bump(part: str, dry_run: bool) -> None:
 
     if not dry_run:
         click.echo("\n🎉 Version update completed!")
+        click.echo("📋 Next steps:")
+        click.echo("   1. Review the changes")
+        click.echo("   2. Run tests to ensure everything works")
+        click.echo("   3. Commit the changes")
+        click.echo("   4. Generate documentation with new version")
+        click.echo("   5. Create a release tag")
+
+
+@cli.command("set")
+@click.argument("version", type=str)
+@click.option("--dry-run", is_flag=True, help="Show what would be changed without making changes")
+def set_version_cmd(version: str, dry_run: bool) -> None:
+    """Set the version to a specific value."""
+    project_root = Path(__file__).parent.parent
+    
+    click.echo(f"🔧 Setting version to {version} for TestRail API Module")
+    click.echo(f"📁 Project root: {project_root}")
+
+    set_version(project_root, version, dry_run)
+
+    if not dry_run:
+        click.echo("\n🎉 Version set completed!")
         click.echo("📋 Next steps:")
         click.echo("   1. Review the changes")
         click.echo("   2. Run tests to ensure everything works")
