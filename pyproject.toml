@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail_api_module"
-version = "0.3.1"
+version = "0.3.3"
 description = "A simple wrapper for the TestRail API"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
@@ -61,7 +61,7 @@ markers = [
 
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "0.3.3"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
