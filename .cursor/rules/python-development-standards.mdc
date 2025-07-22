@@ -1,0 +1,171 @@
+---
+description: Best Practices for working with python files and projects.
+alwaysApply: true
+---
+# Python Development Standards
+
+This project follows comprehensive Python development standards optimized for
+AI-assisted development and maintainability.
+
+## Project Structure
+
+- **Source code**: `src/` directory with modular organization
+- **Tests**: `tests/` directory with comprehensive test coverage
+- **Documentation**: Detailed docstrings and README files
+- **Configuration**: Environment variables and `pyproject.toml`
+- **Utilities**: Separate utilities directory for build and maintenance scripts
+
+## Code Standards
+
+### Type Annotations
+
+- **ALWAYS** add typing annotations to every function and class
+- Include return types for all functions
+- Use `Optional[T]` for nullable parameters
+- Use `List[T]`, `Dict[K, V]`, `Tuple[T, ...]` for collections
+- Import typing utilities: `from typing import Dict, Any, Optional, List`
+
+### Docstrings
+
+- Use PEP 257 convention for all docstrings
+- Include descriptive docstrings for all functions and classes
+- Format: `"""Brief description. Extended description if needed."""`
+- Include Args, Returns, Raises sections for complex functions
+
+### Error Handling
+
+- Implement robust error handling with context capture
+- Use specific exception types
+- Include meaningful error messages
+- Log errors with appropriate context
+
+### Code Style
+
+- Follow PEP 8 conventions
+- Keep line length under 88 characters
+- Use meaningful variable and function names
+
+## Testing Standards
+
+### Test Framework
+
+- **ONLY** use pytest or pytest plugins
+- **NEVER** use the unittest module
+- All tests must have typing annotations
+- All tests must be in `./tests/` directory
+
+### Test Structure
+
+- Create `__init__.py` files in test directories if missing
+- Use descriptive test class and method names
+- Include docstrings for all test functions
+- Use fixtures for common setup
+
+### Test Imports
+Always import these pytest types when using TYPE_CHECKING:
+```python
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from _pytest.capture import CaptureFixture
+    from _pytest.fixtures import FixtureRequest
+    from _pytest.logging import LogCaptureFixture
+    from _pytest.monkeypatch import MonkeyPatch
+    from pytest_mock.plugin import MockerFixture
+```
+
+### Test Patterns
+- Use `@pytest.fixture` for setup
+- Use `@pytest.mark.parametrize` for data-driven tests
+- Mock external dependencies with `pytest-mock`
+- Test edge cases and error conditions
+
+## Module Exports
+
+### Explicit Exports
+- Use `__all__` lists in modules to explicitly define public API
+- Example: `__all__ = ['ClassName', 'function_name']`
+- This helps with import resolution and linting
+
+## Dependency Management
+
+### Package Management
+- Use [uv](https://github.com/astral-sh/uv) for dependency management
+- Maintain virtual environments in `.venv/` directory
+- Use `pyproject.toml` for project configuration
+- Pin dependency versions for reproducibility
+
+### Development Dependencies
+- Separate runtime and development dependencies
+- Use optional dependencies for dev tools
+- Include testing, linting, and documentation tools
+
+## AI-Friendly Practices
+
+### Code Organization
+- Modular design with distinct responsibilities
+- Clear separation of concerns
+- Consistent naming conventions
+- Comprehensive documentation
+
+### Comments and Context
+- Preserve existing comments when modifying files
+- Add context for complex logic
+- Use inline comments sparingly but effectively
+- Document design decisions
+
+## File Creation Guidelines
+
+### New Python Files
+- Always include type annotations
+- Add comprehensive docstrings
+- Include proper imports
+- Follow project structure conventions
+
+### Test Files
+- Create in appropriate test directory
+- Include necessary `__init__.py` files
+- Use descriptive test names
+- Include edge case testing
+
+## Example Patterns
+
+### Function Definition
+```python
+from typing import Dict, Any, Optional, List
+
+def process_data(
+    data: List[Dict[str, Any]], 
+    config: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """Process the given data according to configuration.
+    
+    Args:
+        data: List of data dictionaries to process
+        config: Optional configuration dictionary
+        
+    Returns:
+        Dictionary containing processed results
+        
+    Raises:
+        ValueError: If data format is invalid
+    """
+    # Implementation here
+    pass
+```
+
+### Test Definition
+```python
+import pytest
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
+
+def test_process_data_success(mocker: MockerFixture) -> None:
+    """Test successful data processing."""
+    # Test implementation
+    pass
+```
+
+Follow these standards to maintain high-quality, AI-friendly Python code throughout the project.

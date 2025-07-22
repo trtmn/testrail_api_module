@@ -66,6 +66,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -389,11 +390,17 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Get a group by ID.</p>
 
-<p>Args:
-    group_id (int): The ID of the group to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The group data if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the group to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The group data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -425,11 +432,17 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Get all groups for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get groups for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of groups if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get groups for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of groups if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -469,13 +482,19 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Add a new group.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the group to.
-    name (str): The name of the group.
-    description (str, optional): The description of the group.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created group data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the group to.</li>
+<li><strong>name (str):</strong>  The name of the group.</li>
+<li><strong>description (str, optional):</strong>  The description of the group.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created group data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -508,12 +527,18 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Update a group.</p>
 
-<p>Args:
-    group_id (int): The ID of the group to update.
-    **kwargs: The fields to update (name, description).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated group data if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the group to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated group data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -545,11 +570,17 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Delete a group.</p>
 
-<p>Args:
-    group_id (int): The ID of the group to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the group to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -582,12 +613,18 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Add a group to a test suite.</p>
 
-<p>Args:
-    group_id (int): The ID of the group to add.
-    suite_id (int): The ID of the test suite to add the group to.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the group to add.</li>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to add the group to.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -620,12 +657,18 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Remove a group from a test suite.</p>
 
-<p>Args:
-    group_id (int): The ID of the group to remove.
-    suite_id (int): The ID of the test suite to remove the group from.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the group to remove.</li>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to remove the group from.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -657,11 +700,17 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Get all test cases in a group.</p>
 
-<p>Args:
-    group_id (int): The ID of the group to get test cases for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test cases if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the group to get test cases for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test cases if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -693,11 +742,17 @@ Groups are used to organize test cases and test suites.</p>
 
             <div class="docstring"><p>Get all test suites in a group.</p>
 
-<p>Args:
-    group_id (int): The ID of the group to get test suites for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test suites if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the group to get test suites for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test suites if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

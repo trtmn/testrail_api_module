@@ -66,6 +66,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -405,11 +406,17 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Get a project by ID.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The project data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The project data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -438,8 +445,11 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Get all projects.</p>
 
-<p>Returns:
-    list: List of projects if successful, None otherwise.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of projects if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -483,14 +493,20 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Add a new project.</p>
 
-<p>Args:
-    name (str): The name of the project.
-    announcement (str, optional): The announcement text for the project.
-    show_announcement (bool, optional): Whether to show the announcement.
-    is_completed (bool, optional): Whether the project is completed.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created project data if successful, None otherwise.</p>
+<ul>
+<li><strong>name (str):</strong>  The name of the project.</li>
+<li><strong>announcement (str, optional):</strong>  The announcement text for the project.</li>
+<li><strong>show_announcement (bool, optional):</strong>  Whether to show the announcement.</li>
+<li><strong>is_completed (bool, optional):</strong>  Whether the project is completed.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created project data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -523,12 +539,18 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Update a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to update.
-    **kwargs: The fields to update (name, announcement, show_announcement, is_completed).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated project data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, announcement, show_announcement, is_completed).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated project data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -560,11 +582,17 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Delete a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -596,11 +624,17 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Get statistics for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get statistics for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The project statistics if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get statistics for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The project statistics if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -632,11 +666,17 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Get the activity log for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get activity for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of activity entries if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get activity for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of activity entries if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -668,11 +708,17 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Get all attachments for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get attachments for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of attachments if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get attachments for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of attachments if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -713,13 +759,19 @@ Projects are the top-level containers for test cases, suites, and other test man
 
             <div class="docstring"><p>Add an attachment to a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the attachment to.
-    file_path (str): The path to the file to attach.
-    description (str, optional): The description of the attachment.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the attachment to.</li>
+<li><strong>file_path (str):</strong>  The path to the file to attach.</li>
+<li><strong>description (str, optional):</strong>  The description of the attachment.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

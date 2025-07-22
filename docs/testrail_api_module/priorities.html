@@ -60,6 +60,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -331,11 +332,17 @@ Priorities are used to indicate the importance of test cases.</p>
 
             <div class="docstring"><p>Get a priority by ID.</p>
 
-<p>Args:
-    priority_id (int): The ID of the priority to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The priority data if successful, None otherwise.</p>
+<ul>
+<li><strong>priority_id (int):</strong>  The ID of the priority to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The priority data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -364,8 +371,11 @@ Priorities are used to indicate the importance of test cases.</p>
 
             <div class="docstring"><p>Get all available priorities.</p>
 
-<p>Returns:
-    list: List of priorities if successful, None otherwise.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of priorities if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -408,14 +418,20 @@ Priorities are used to indicate the importance of test cases.</p>
 
             <div class="docstring"><p>Add a new priority.</p>
 
-<p>Args:
-    name (str): The name of the priority.
-    short_name (str): The short name of the priority.
-    color (str): The color of the priority (hex code).
-    is_default (bool, optional): Whether this is the default priority.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created priority data if successful, None otherwise.</p>
+<ul>
+<li><strong>name (str):</strong>  The name of the priority.</li>
+<li><strong>short_name (str):</strong>  The short name of the priority.</li>
+<li><strong>color (str):</strong>  The color of the priority (hex code).</li>
+<li><strong>is_default (bool, optional):</strong>  Whether this is the default priority.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created priority data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -448,12 +464,18 @@ Priorities are used to indicate the importance of test cases.</p>
 
             <div class="docstring"><p>Update a priority.</p>
 
-<p>Args:
-    priority_id (int): The ID of the priority to update.
-    **kwargs: The fields to update (name, short_name, color, is_default).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated priority data if successful, None otherwise.</p>
+<ul>
+<li><strong>priority_id (int):</strong>  The ID of the priority to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, short_name, color, is_default).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated priority data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -485,11 +507,17 @@ Priorities are used to indicate the importance of test cases.</p>
 
             <div class="docstring"><p>Delete a priority.</p>
 
-<p>Args:
-    priority_id (int): The ID of the priority to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>priority_id (int):</strong>  The ID of the priority to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -521,11 +549,17 @@ Priorities are used to indicate the importance of test cases.</p>
 
             <div class="docstring"><p>Get the count of test cases by priority for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get priority counts for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: Dictionary mapping priority IDs to counts if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get priority counts for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: Dictionary mapping priority IDs to counts if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -557,11 +591,17 @@ Priorities are used to indicate the importance of test cases.</p>
 
             <div class="docstring"><p>Get statistics about priorities in a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get priority statistics for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The priority statistics if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get priority statistics for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The priority statistics if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

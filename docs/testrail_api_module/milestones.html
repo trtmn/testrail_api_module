@@ -57,6 +57,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -326,11 +327,17 @@ Milestones are used to track project progress and organize test runs.</p>
 
             <div class="docstring"><p>Get a milestone by ID.</p>
 
-<p>Args:
-    milestone_id (int): The ID of the milestone to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The milestone data if successful, None otherwise.</p>
+<ul>
+<li><strong>milestone_id (int):</strong>  The ID of the milestone to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The milestone data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -362,11 +369,17 @@ Milestones are used to track project progress and organize test runs.</p>
 
             <div class="docstring"><p>Get all milestones for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get milestones for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of milestones if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get milestones for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of milestones if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -417,16 +430,22 @@ Milestones are used to track project progress and organize test runs.</p>
 
             <div class="docstring"><p>Add a new milestone.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the milestone to.
-    name (str): The name of the milestone.
-    description (str, optional): The description of the milestone.
-    due_on (str, optional): The due date of the milestone (ISO 8601 format).
-    parent_id (int, optional): The ID of the parent milestone.
-    start_on (str, optional): The start date of the milestone (ISO 8601 format).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created milestone data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the milestone to.</li>
+<li><strong>name (str):</strong>  The name of the milestone.</li>
+<li><strong>description (str, optional):</strong>  The description of the milestone.</li>
+<li><strong>due_on (str, optional):</strong>  The due date of the milestone (ISO 8601 format).</li>
+<li><strong>parent_id (int, optional):</strong>  The ID of the parent milestone.</li>
+<li><strong>start_on (str, optional):</strong>  The start date of the milestone (ISO 8601 format).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created milestone data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -459,12 +478,18 @@ Milestones are used to track project progress and organize test runs.</p>
 
             <div class="docstring"><p>Update a milestone.</p>
 
-<p>Args:
-    milestone_id (int): The ID of the milestone to update.
-    **kwargs: The fields to update (name, description, due_on, parent_id, start_on).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated milestone data if successful, None otherwise.</p>
+<ul>
+<li><strong>milestone_id (int):</strong>  The ID of the milestone to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, due_on, parent_id, start_on).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated milestone data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -496,11 +521,17 @@ Milestones are used to track project progress and organize test runs.</p>
 
             <div class="docstring"><p>Delete a milestone.</p>
 
-<p>Args:
-    milestone_id (int): The ID of the milestone to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>milestone_id (int):</strong>  The ID of the milestone to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -532,11 +563,17 @@ Milestones are used to track project progress and organize test runs.</p>
 
             <div class="docstring"><p>Get statistics for a milestone.</p>
 
-<p>Args:
-    milestone_id (int): The ID of the milestone to get statistics for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The milestone statistics if successful, None otherwise.</p>
+<ul>
+<li><strong>milestone_id (int):</strong>  The ID of the milestone to get statistics for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The milestone statistics if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

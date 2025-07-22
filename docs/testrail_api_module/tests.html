@@ -54,6 +54,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -321,11 +322,17 @@ Tests represent individual test executions within a test run.</p>
 
             <div class="docstring"><p>Get a test by ID.</p>
 
-<p>Args:
-    test_id: The ID of the test to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the test data.</p>
+<ul>
+<li><strong>test_id:</strong>  The ID of the test to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the test data.</p>
+</blockquote>
 </div>
 
 
@@ -357,11 +364,17 @@ Tests represent individual test executions within a test run.</p>
 
             <div class="docstring"><p>Get all tests for a test run.</p>
 
-<p>Args:
-    run_id: The ID of the test run to get tests for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    List of dictionaries containing test data.</p>
+<ul>
+<li><strong>run_id:</strong>  The ID of the test run to get tests for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>List of dictionaries containing test data.</p>
+</blockquote>
 </div>
 
 
@@ -393,11 +406,17 @@ Tests represent individual test executions within a test run.</p>
 
             <div class="docstring"><p>Get all results for a test.</p>
 
-<p>Args:
-    test_id: The ID of the test to get results for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    List of dictionaries containing test result data.</p>
+<ul>
+<li><strong>test_id:</strong>  The ID of the test to get results for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>List of dictionaries containing test result data.</p>
+</blockquote>
 </div>
 
 
@@ -455,18 +474,24 @@ Tests represent individual test executions within a test run.</p>
 
             <div class="docstring"><p>Add a test result for a test.</p>
 
-<p>Args:
-    test_id: The ID of the test to add the result for.
-    status_id: The status ID of the test result.
-    comment: Optional comment for the test result.
-    version: Optional version of the software under test.
-    elapsed: Optional time taken to execute the test.
-    defects: Optional comma-separated list of defects.
-    assignedto_id: Optional ID of the user the test is assigned to.
-    custom_fields: Optional dictionary of custom field values.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the created test result data.</p>
+<ul>
+<li><strong>test_id:</strong>  The ID of the test to add the result for.</li>
+<li><strong>status_id:</strong>  The status ID of the test result.</li>
+<li><strong>comment:</strong>  Optional comment for the test result.</li>
+<li><strong>version:</strong>  Optional version of the software under test.</li>
+<li><strong>elapsed:</strong>  Optional time taken to execute the test.</li>
+<li><strong>defects:</strong>  Optional comma-separated list of defects.</li>
+<li><strong>assignedto_id:</strong>  Optional ID of the user the test is assigned to.</li>
+<li><strong>custom_fields:</strong>  Optional dictionary of custom field values.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the created test result data.</p>
+</blockquote>
 </div>
 
 
@@ -503,12 +528,18 @@ Tests represent individual test executions within a test run.</p>
 
             <div class="docstring"><p>Add test results for multiple tests.</p>
 
-<p>Args:
-    test_ids: List of test IDs to add results for.
-    results: List of dictionaries containing test result data.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    List of dictionaries containing the created test result data.</p>
+<ul>
+<li><strong>test_ids:</strong>  List of test IDs to add results for.</li>
+<li><strong>results:</strong>  List of dictionaries containing test result data.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>List of dictionaries containing the created test result data.</p>
+</blockquote>
 </div>
 
 

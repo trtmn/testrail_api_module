@@ -66,6 +66,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -391,11 +392,17 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Get a user by ID.</p>
 
-<p>Args:
-    user_id (int): The ID of the user to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The user data if successful, None otherwise.</p>
+<ul>
+<li><strong>user_id (int):</strong>  The ID of the user to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The user data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -424,8 +431,11 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Get all users.</p>
 
-<p>Returns:
-    list: List of users if successful, None otherwise.</p>
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of users if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -457,11 +467,17 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Get a user by email address.</p>
 
-<p>Args:
-    email (str): The email address of the user to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The user data if successful, None otherwise.</p>
+<ul>
+<li><strong>email (str):</strong>  The email address of the user to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The user data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -507,15 +523,21 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Add a new user.</p>
 
-<p>Args:
-    name (str): The name of the user.
-    email (str): The email address of the user.
-    password (str): The password for the user.
-    role_id (int, optional): The ID of the role to assign to the user.
-    is_active (bool, optional): Whether the user is active.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created user data if successful, None otherwise.</p>
+<ul>
+<li><strong>name (str):</strong>  The name of the user.</li>
+<li><strong>email (str):</strong>  The email address of the user.</li>
+<li><strong>password (str):</strong>  The password for the user.</li>
+<li><strong>role_id (int, optional):</strong>  The ID of the role to assign to the user.</li>
+<li><strong>is_active (bool, optional):</strong>  Whether the user is active.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created user data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -548,12 +570,18 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Update a user.</p>
 
-<p>Args:
-    user_id (int): The ID of the user to update.
-    **kwargs: The fields to update (name, email, password, role_id, is_active).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated user data if successful, None otherwise.</p>
+<ul>
+<li><strong>user_id (int):</strong>  The ID of the user to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, email, password, role_id, is_active).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated user data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -585,11 +613,17 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Delete a user.</p>
 
-<p>Args:
-    user_id (int): The ID of the user to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>user_id (int):</strong>  The ID of the user to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -621,11 +655,17 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Get the activity log for a user.</p>
 
-<p>Args:
-    user_id (int): The ID of the user to get activity for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of activity entries if successful, None otherwise.</p>
+<ul>
+<li><strong>user_id (int):</strong>  The ID of the user to get activity for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of activity entries if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -657,11 +697,17 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Get all projects a user has access to.</p>
 
-<p>Args:
-    user_id (int): The ID of the user to get projects for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of projects if successful, None otherwise.</p>
+<ul>
+<li><strong>user_id (int):</strong>  The ID of the user to get projects for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of projects if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -693,11 +739,17 @@ Users are the people who can access and interact with TestRail.</p>
 
             <div class="docstring"><p>Get all roles assigned to a user.</p>
 
-<p>Args:
-    user_id (int): The ID of the user to get roles for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of roles if successful, None otherwise.</p>
+<ul>
+<li><strong>user_id (int):</strong>  The ID of the user to get roles for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of roles if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

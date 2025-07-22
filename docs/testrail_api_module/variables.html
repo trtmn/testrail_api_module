@@ -66,6 +66,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -411,11 +412,17 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Get a variable by ID.</p>
 
-<p>Args:
-    variable_id (int): The ID of the variable to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The variable data if successful, None otherwise.</p>
+<ul>
+<li><strong>variable_id (int):</strong>  The ID of the variable to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The variable data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -447,11 +454,17 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Get all variables for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get variables for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of variables if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get variables for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of variables if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -494,14 +507,20 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Add a new variable.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the variable to.
-    name (str): The name of the variable.
-    value (str): The value of the variable.
-    description (str, optional): The description of the variable.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created variable data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the variable to.</li>
+<li><strong>name (str):</strong>  The name of the variable.</li>
+<li><strong>value (str):</strong>  The value of the variable.</li>
+<li><strong>description (str, optional):</strong>  The description of the variable.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created variable data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -534,12 +553,18 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Update a variable.</p>
 
-<p>Args:
-    variable_id (int): The ID of the variable to update.
-    **kwargs: The fields to update (name, value, description).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated variable data if successful, None otherwise.</p>
+<ul>
+<li><strong>variable_id (int):</strong>  The ID of the variable to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, value, description).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated variable data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -571,11 +596,17 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Delete a variable.</p>
 
-<p>Args:
-    variable_id (int): The ID of the variable to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>variable_id (int):</strong>  The ID of the variable to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -607,11 +638,17 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Get all variable groups for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get variable groups for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of variable groups if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get variable groups for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of variable groups if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -652,13 +689,19 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Add a new variable group.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the variable group to.
-    name (str): The name of the variable group.
-    description (str, optional): The description of the variable group.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created variable group data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the variable group to.</li>
+<li><strong>name (str):</strong>  The name of the variable group.</li>
+<li><strong>description (str, optional):</strong>  The description of the variable group.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created variable group data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -691,12 +734,18 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Update a variable group.</p>
 
-<p>Args:
-    group_id (int): The ID of the variable group to update.
-    **kwargs: The fields to update (name, description).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated variable group data if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the variable group to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated variable group data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -728,11 +777,17 @@ Variables are used to store and manage test parameters and configuration values.
 
             <div class="docstring"><p>Delete a variable group.</p>
 
-<p>Args:
-    group_id (int): The ID of the variable group to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>group_id (int):</strong>  The ID of the variable group to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

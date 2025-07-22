@@ -54,6 +54,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -283,11 +284,17 @@ Shared steps are reusable test steps that can be referenced by multiple test cas
 
             <div class="docstring"><p>Get a shared step by ID.</p>
 
-<p>Args:
-    shared_step_id: The ID of the shared step to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the shared step data.</p>
+<ul>
+<li><strong>shared_step_id:</strong>  The ID of the shared step to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the shared step data.</p>
+</blockquote>
 </div>
 
 
@@ -319,11 +326,17 @@ Shared steps are reusable test steps that can be referenced by multiple test cas
 
             <div class="docstring"><p>Get all shared steps for a project.</p>
 
-<p>Args:
-    project_id: The ID of the project to get shared steps for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    List of dictionaries containing shared step data.</p>
+<ul>
+<li><strong>project_id:</strong>  The ID of the project to get shared steps for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>List of dictionaries containing shared step data.</p>
+</blockquote>
 </div>
 
 
@@ -366,14 +379,20 @@ Shared steps are reusable test steps that can be referenced by multiple test cas
 
             <div class="docstring"><p>Add a new shared step.</p>
 
-<p>Args:
-    project_id: The ID of the project to add the shared step to.
-    title: The title of the shared step.
-    steps: List of dictionaries containing step data.
-    description: Optional description of the shared step.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the created shared step data.</p>
+<ul>
+<li><strong>project_id:</strong>  The ID of the project to add the shared step to.</li>
+<li><strong>title:</strong>  The title of the shared step.</li>
+<li><strong>steps:</strong>  List of dictionaries containing step data.</li>
+<li><strong>description:</strong>  Optional description of the shared step.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the created shared step data.</p>
+</blockquote>
 </div>
 
 
@@ -406,12 +425,18 @@ Shared steps are reusable test steps that can be referenced by multiple test cas
 
             <div class="docstring"><p>Update a shared step.</p>
 
-<p>Args:
-    shared_step_id: The ID of the shared step to update.
-    **kwargs: The fields to update (title, steps, description).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the updated shared step data.</p>
+<ul>
+<li><strong>shared_step_id:</strong>  The ID of the shared step to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (title, steps, description).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the updated shared step data.</p>
+</blockquote>
 </div>
 
 
@@ -443,11 +468,17 @@ Shared steps are reusable test steps that can be referenced by multiple test cas
 
             <div class="docstring"><p>Delete a shared step.</p>
 
-<p>Args:
-    shared_step_id: The ID of the shared step to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the response data.</p>
+<ul>
+<li><strong>shared_step_id:</strong>  The ID of the shared step to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the response data.</p>
+</blockquote>
 </div>
 
 

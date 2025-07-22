@@ -54,6 +54,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -285,11 +286,17 @@ Configurations are used to define different test environments and settings.</p>
 
             <div class="docstring"><p>Get a configuration by ID.</p>
 
-<p>Args:
-    config_id: The ID of the configuration to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the configuration data.</p>
+<ul>
+<li><strong>config_id:</strong>  The ID of the configuration to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the configuration data.</p>
+</blockquote>
 </div>
 
 
@@ -321,11 +328,17 @@ Configurations are used to define different test environments and settings.</p>
 
             <div class="docstring"><p>Get all configurations for a project.</p>
 
-<p>Args:
-    project_id: The ID of the project to get configurations for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    List of dictionaries containing configuration data.</p>
+<ul>
+<li><strong>project_id:</strong>  The ID of the project to get configurations for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>List of dictionaries containing configuration data.</p>
+</blockquote>
 </div>
 
 
@@ -369,14 +382,20 @@ Configurations are used to define different test environments and settings.</p>
 
             <div class="docstring"><p>Add a new configuration.</p>
 
-<p>Args:
-    project_id: The ID of the project to add the configuration to.
-    name: The name of the configuration.
-    description: Optional description of the configuration.
-    group_id: Optional ID of the configuration group.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the created configuration data.</p>
+<ul>
+<li><strong>project_id:</strong>  The ID of the project to add the configuration to.</li>
+<li><strong>name:</strong>  The name of the configuration.</li>
+<li><strong>description:</strong>  Optional description of the configuration.</li>
+<li><strong>group_id:</strong>  Optional ID of the configuration group.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the created configuration data.</p>
+</blockquote>
 </div>
 
 
@@ -409,12 +428,18 @@ Configurations are used to define different test environments and settings.</p>
 
             <div class="docstring"><p>Update a configuration.</p>
 
-<p>Args:
-    config_id: The ID of the configuration to update.
-    **kwargs: The fields to update (name, description, group_id).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the updated configuration data.</p>
+<ul>
+<li><strong>config_id:</strong>  The ID of the configuration to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, group_id).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the updated configuration data.</p>
+</blockquote>
 </div>
 
 
@@ -446,11 +471,17 @@ Configurations are used to define different test environments and settings.</p>
 
             <div class="docstring"><p>Delete a configuration.</p>
 
-<p>Args:
-    config_id: The ID of the configuration to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    Dict containing the response data.</p>
+<ul>
+<li><strong>config_id:</strong>  The ID of the configuration to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>Dict containing the response data.</p>
+</blockquote>
 </div>
 
 

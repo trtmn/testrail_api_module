@@ -60,6 +60,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -373,11 +374,17 @@ Test runs are used to execute test cases and track their results.</p>
 
             <div class="docstring"><p>Get a test run by ID.</p>
 
-<p>Args:
-    run_id (int): The ID of the test run to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The test run data if successful, None otherwise.</p>
+<ul>
+<li><strong>run_id (int):</strong>  The ID of the test run to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The test run data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -413,12 +420,18 @@ Test runs are used to execute test cases and track their results.</p>
 
             <div class="docstring"><p>Get all test runs for a project and optionally a specific suite.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get test runs for.
-    suite_id (int, optional): The ID of the suite to get test runs for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test runs if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get test runs for.</li>
+<li><strong>suite_id (int, optional):</strong>  The ID of the suite to get test runs for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test runs if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -475,18 +488,24 @@ Test runs are used to execute test cases and track their results.</p>
 
             <div class="docstring"><p>Add a new test run.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the test run to.
-    name (str): The name of the test run.
-    description (str, optional): The description of the test run.
-    suite_id (int, optional): The ID of the suite to add the test run to.
-    milestone_id (int, optional): The ID of the milestone to add the test run to.
-    assignedto_id (int, optional): The ID of the user to assign the test run to.
-    include_all (bool, optional): Whether to include all test cases from the suite.
-    case_ids (list, optional): List of test case IDs to include in the run.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created test run data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the test run to.</li>
+<li><strong>name (str):</strong>  The name of the test run.</li>
+<li><strong>description (str, optional):</strong>  The description of the test run.</li>
+<li><strong>suite_id (int, optional):</strong>  The ID of the suite to add the test run to.</li>
+<li><strong>milestone_id (int, optional):</strong>  The ID of the milestone to add the test run to.</li>
+<li><strong>assignedto_id (int, optional):</strong>  The ID of the user to assign the test run to.</li>
+<li><strong>include_all (bool, optional):</strong>  Whether to include all test cases from the suite.</li>
+<li><strong>case_ids (list, optional):</strong>  List of test case IDs to include in the run.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created test run data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -519,12 +538,18 @@ Test runs are used to execute test cases and track their results.</p>
 
             <div class="docstring"><p>Update a test run.</p>
 
-<p>Args:
-    run_id (int): The ID of the test run to update.
-    **kwargs: The fields to update (name, description, milestone_id, assignedto_id, etc.).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated test run data if successful, None otherwise.</p>
+<ul>
+<li><strong>run_id (int):</strong>  The ID of the test run to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, milestone_id, assignedto_id, etc.).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated test run data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -556,11 +581,17 @@ Test runs are used to execute test cases and track their results.</p>
 
             <div class="docstring"><p>Close a test run.</p>
 
-<p>Args:
-    run_id (int): The ID of the test run to close.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>run_id (int):</strong>  The ID of the test run to close.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -592,11 +623,17 @@ Test runs are used to execute test cases and track their results.</p>
 
             <div class="docstring"><p>Delete a test run.</p>
 
-<p>Args:
-    run_id (int): The ID of the test run to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>run_id (int):</strong>  The ID of the test run to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -628,11 +665,17 @@ Test runs are used to execute test cases and track their results.</p>
 
             <div class="docstring"><p>Get statistics for a test run.</p>
 
-<p>Args:
-    run_id (int): The ID of the test run to get statistics for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The test run statistics if successful, None otherwise.</p>
+<ul>
+<li><strong>run_id (int):</strong>  The ID of the test run to get statistics for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The test run statistics if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

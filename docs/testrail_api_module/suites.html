@@ -63,6 +63,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -366,11 +367,17 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Get a test suite by ID.</p>
 
-<p>Args:
-    suite_id (int): The ID of the test suite to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The test suite data if successful, None otherwise.</p>
+<ul>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The test suite data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -402,11 +409,17 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Get all test suites for a project.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get test suites for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test suites if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get test suites for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test suites if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -450,14 +463,20 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Add a new test suite.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the test suite to.
-    name (str): The name of the test suite.
-    description (str, optional): The description of the test suite.
-    url (str, optional): The URL of the test suite.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created test suite data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the test suite to.</li>
+<li><strong>name (str):</strong>  The name of the test suite.</li>
+<li><strong>description (str, optional):</strong>  The description of the test suite.</li>
+<li><strong>url (str, optional):</strong>  The URL of the test suite.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created test suite data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -490,12 +509,18 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Update a test suite.</p>
 
-<p>Args:
-    suite_id (int): The ID of the test suite to update.
-    **kwargs: The fields to update (name, description, url).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated test suite data if successful, None otherwise.</p>
+<ul>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, url).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated test suite data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -527,11 +552,17 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Delete a test suite.</p>
 
-<p>Args:
-    suite_id (int): The ID of the test suite to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -563,11 +594,17 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Get all test cases in a test suite.</p>
 
-<p>Args:
-    suite_id (int): The ID of the test suite to get test cases for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test cases if successful, None otherwise.</p>
+<ul>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to get test cases for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test cases if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -599,11 +636,17 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Get statistics for a test suite.</p>
 
-<p>Args:
-    suite_id (int): The ID of the test suite to get statistics for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The test suite statistics if successful, None otherwise.</p>
+<ul>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to get statistics for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The test suite statistics if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -635,11 +678,17 @@ Test suites are used to organize and group related test cases.</p>
 
             <div class="docstring"><p>Get all test runs for a test suite.</p>
 
-<p>Args:
-    suite_id (int): The ID of the test suite to get test runs for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test runs if successful, None otherwise.</p>
+<ul>
+<li><strong>suite_id (int):</strong>  The ID of the test suite to get test runs for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test runs if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 

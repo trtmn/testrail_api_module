@@ -60,6 +60,7 @@
     </ul>
 
 
+            <footer>TestRail API Module v0.3.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -353,11 +354,17 @@ Sections are used to organize test cases into hierarchical structures.</p>
 
             <div class="docstring"><p>Get a section by ID.</p>
 
-<p>Args:
-    section_id (int): The ID of the section to retrieve.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The section data if successful, None otherwise.</p>
+<ul>
+<li><strong>section_id (int):</strong>  The ID of the section to retrieve.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The section data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -393,12 +400,18 @@ Sections are used to organize test cases into hierarchical structures.</p>
 
             <div class="docstring"><p>Get all sections for a project and optionally a specific suite.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to get sections for.
-    suite_id (int, optional): The ID of the suite to get sections for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of sections if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to get sections for.</li>
+<li><strong>suite_id (int, optional):</strong>  The ID of the suite to get sections for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of sections if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -445,15 +458,21 @@ Sections are used to organize test cases into hierarchical structures.</p>
 
             <div class="docstring"><p>Add a new section.</p>
 
-<p>Args:
-    project_id (int): The ID of the project to add the section to.
-    name (str): The name of the section.
-    description (str, optional): The description of the section.
-    suite_id (int, optional): The ID of the suite to add the section to.
-    parent_id (int, optional): The ID of the parent section.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The created section data if successful, None otherwise.</p>
+<ul>
+<li><strong>project_id (int):</strong>  The ID of the project to add the section to.</li>
+<li><strong>name (str):</strong>  The name of the section.</li>
+<li><strong>description (str, optional):</strong>  The description of the section.</li>
+<li><strong>suite_id (int, optional):</strong>  The ID of the suite to add the section to.</li>
+<li><strong>parent_id (int, optional):</strong>  The ID of the parent section.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The created section data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -486,12 +505,18 @@ Sections are used to organize test cases into hierarchical structures.</p>
 
             <div class="docstring"><p>Update a section.</p>
 
-<p>Args:
-    section_id (int): The ID of the section to update.
-    **kwargs: The fields to update (name, description, parent_id).</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The updated section data if successful, None otherwise.</p>
+<ul>
+<li><strong>section_id (int):</strong>  The ID of the section to update.</li>
+<li><strong>**kwargs:</strong>  The fields to update (name, description, parent_id).</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The updated section data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -523,11 +548,17 @@ Sections are used to organize test cases into hierarchical structures.</p>
 
             <div class="docstring"><p>Delete a section.</p>
 
-<p>Args:
-    section_id (int): The ID of the section to delete.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The response data if successful, None otherwise.</p>
+<ul>
+<li><strong>section_id (int):</strong>  The ID of the section to delete.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The response data if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -559,11 +590,17 @@ Sections are used to organize test cases into hierarchical structures.</p>
 
             <div class="docstring"><p>Get all test cases in a section.</p>
 
-<p>Args:
-    section_id (int): The ID of the section to get test cases for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    list: List of test cases if successful, None otherwise.</p>
+<ul>
+<li><strong>section_id (int):</strong>  The ID of the section to get test cases for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>list: List of test cases if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
@@ -595,11 +632,17 @@ Sections are used to organize test cases into hierarchical structures.</p>
 
             <div class="docstring"><p>Get statistics for a section.</p>
 
-<p>Args:
-    section_id (int): The ID of the section to get statistics for.</p>
+<h6 id="arguments">Arguments:</h6>
 
-<p>Returns:
-    dict: The section statistics if successful, None otherwise.</p>
+<ul>
+<li><strong>section_id (int):</strong>  The ID of the section to get statistics for.</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict: The section statistics if successful, None otherwise.</p>
+</blockquote>
 </div>
 
 
