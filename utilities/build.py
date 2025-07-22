@@ -280,7 +280,6 @@ def show_build_summary() -> None:
 
 def main() -> None:
     """Main build function."""
-    
     parser = argparse.ArgumentParser(
         description="Build script for TestRail API module"
     )
