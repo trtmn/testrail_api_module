@@ -1,9 +1,7 @@
 # testrail_api_module
 
-[![PyPI - Version](https://img.shields.io/pypi/v/testrail-api-module?label=Latest%20Version)](https://pypi.org/project/testrail-api-module/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/testrail-api-module?color=brightgreen)](https://pypi.org/project/testrail-api-module/)
-[![GitHub Source](https://img.shields.io/badge/github-source-blue?logo=github)](https://github.com/trtmn/testrail-api-module/)
-[![PyPI Stats](https://img.shields.io/badge/%F0%9F%93%96%20Stats-%20%F0%9F%94%97-blue)](https://pypistats.org/packages/testrail-api-module/)
+[![PyPI - Version](https://img.shields.io/pypi/v/testrail-api-module?label=Latest%20Version)](https://pypi.org/project/testrail-api-module/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/testrail-api-module?color=purple)](https://pypi.org/project/testrail-api-module/) [![GitHub Source](https://img.shields.io/badge/github-source-blue?logo=github)](https://github.com/trtmn/testrail-api-module/) [![PyPI Stats](https://img.shields.io/badge/%20%F0%9F%94%97-blue?label="📈%20Stats")](https://pypistats.org/packages/testrail-api-module/) [![Docs](https://img.shields.io/pypi/v/testrail-api-module?label=📖%20Docs&color=blue)](https://trtmn.github.io/testrail_api_module/)
+
 
 A comprehensive Python wrapper for the TestRail API that provides easy access to all
 TestRail functionalities.
@@ -39,8 +37,6 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 # Install development dependencies using pip-tools
 pip-compile --extra dev | pip-sync
 
-# Alternative: Install in development mode with all dev dependencies
-pip install -e .[dev]
 ```
 
 ## Quick Start
@@ -165,18 +161,12 @@ except Exception as e:
 ## Documentation
 
 For complete documentation, visit our
-[documentation site](https://trtmn.github.io/testrail-api-module/).
+[docs](https://trtmn.github.io/testrail-api-module/).
 
 ## Dependency Management
 
 This project uses modern Python packaging with `pyproject.toml` for dependency
 management.
-
-### For Developers
-
-- **Development dependencies**: Use `pip install -e .[dev]` for all development
-  tools
-- **Automatic resolution**: pip handles all dependency resolution
 
 ### Files
 
@@ -195,6 +185,7 @@ details.
 
 - Matt Troutman
 - Christian Thompson
+- Andrew Tipper
 
 ## Support
 
