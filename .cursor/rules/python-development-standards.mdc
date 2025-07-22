@@ -1,6 +1,6 @@
 ---
 description: Best Practices for working with python files and projects.
-alwaysApply: false
+alwaysApply: true
 ---
 # Python Development Standards
 

@@ -71,6 +71,31 @@ def get_current_version() -> str:
         return "unknown"
 
 
+def get_next_version(current_version: str, bump_type: str) -> str:
+    """Calculate the next version based on current version and bump type."""
+    if current_version == "unknown":
+        return "unknown"
+    
+    try:
+        # Parse current version
+        parts = current_version.split('.')
+        if len(parts) != 3:
+            return "unknown"
+        
+        major, minor, patch = map(int, parts)
+        
+        if bump_type == "patch":
+            return f"{major}.{minor}.{patch + 1}"
+        elif bump_type == "minor":
+            return f"{major}.{minor + 1}.0"
+        elif bump_type == "major":
+            return f"{major + 1}.0.0"
+        else:
+            return "unknown"
+    except (ValueError, IndexError):
+        return "unknown"
+
+
 def update_version() -> bool:
     """Prompt user to update version and run update_version.py."""
     current_version = get_current_version()
@@ -81,9 +106,9 @@ def update_version() -> bool:
         return False
 
     console.print("\n[bold]Version bump options:[/bold]")
-    console.print("1. [cyan]patch[/cyan] - for bug fixes (0.2.0 → 0.2.1)")
-    console.print("2. [cyan]minor[/cyan] - for new features (0.2.0 → 0.3.0)")
-    console.print("3. [cyan]major[/cyan] - for breaking changes (1.0.0 → 2.0.0)")
+    console.print(f"1. [cyan]patch[/cyan] - for bug fixes ({current_version} → {get_next_version(current_version, 'patch')})")
+    console.print(f"2. [cyan]minor[/cyan] - for new features ({current_version} → {get_next_version(current_version, 'minor')})")
+    console.print(f"3. [cyan]major[/cyan] - for breaking changes ({current_version} → {get_next_version(current_version, 'major')})")
 
     part = Prompt.ask(
         "Choose version bump type",
@@ -91,7 +116,11 @@ def update_version() -> bool:
         default="1",
     )
 
-    console.print(f"\n🔄 Updating version ({part})...")
+    # Map choice to version part
+    part_map = {"1": "patch", "2": "minor", "3": "major"}
+    version_part = part_map[part]
+
+    console.print(f"\n🔄 Updating version ({version_part})...")
 
     try:
         with Progress(
@@ -110,7 +139,11 @@ def update_version() -> bool:
 
             progress.update(task, completed=True)
 
+        # Get the updated version
+        updated_version = get_current_version()
+        
         console.print("✅ Version updated successfully!", style="green")
+        console.print(f"📋 New version: [bold]{updated_version}[/bold]")
         console.print(result.stdout)
         return True
 
@@ -195,35 +228,7 @@ def generate_documentation() -> bool:
         return False
 
 
-def generate_stubs() -> bool:
-    """Generate type stubs."""
-    console.print("\n🔧 Generating type stubs...", style="blue")
 
-    try:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Generating stubs...", total=None)
-
-            result = subprocess.run(
-                ["python", "utilities/generate_stubs.py"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-
-            progress.update(task, completed=True)
-
-        console.print("✅ Type stubs generated!", style="green")
-        console.print(result.stdout)
-        return True
-
-    except subprocess.CalledProcessError as e:
-        console.print(f"❌ Error generating stubs: {e}", style="red")
-        console.print(f"stderr: {e.stderr}", style="red")
-        return False
 
 
 def build_package() -> bool:
@@ -253,6 +258,65 @@ def build_package() -> bool:
 
     except subprocess.CalledProcessError as e:
         console.print(f"❌ Build failed: {e}", style="red")
+        console.print(f"stderr: {e.stderr}", style="red")
+        return False
+
+
+def test_built_package() -> bool:
+    """Test the built wheel by installing it and running tests."""
+    console.print("\n🧪 Testing built package...", style="blue")
+    
+    dist_dir = Path("dist")
+    if not dist_dir.exists():
+        console.print("❌ No dist directory found", style="red")
+        return False
+    
+    # Find the wheel file
+    wheel_files = list(dist_dir.glob("*.whl"))
+    if not wheel_files:
+        console.print("❌ No wheel files found in dist directory", style="red")
+        return False
+    
+    wheel_file = wheel_files[0]  # Use the first wheel file
+    
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Installing built wheel...", total=None)
+            
+            # Install the wheel in a temporary environment or uninstall first
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "--force-reinstall", str(wheel_file)],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            
+            progress.update(task, completed=True)
+        
+        console.print("✅ Built package installed successfully!", style="green")
+        
+        # Run tests against the installed package
+        task = progress.add_task("Running tests against installed package...", total=None)
+        
+        result = subprocess.run(
+            ["python", "utilities/run_tests.py"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        progress.update(task, completed=True)
+        
+        console.print("✅ Tests passed against installed package!", style="green")
+        console.print(result.stdout)
+        return True
+        
+    except subprocess.CalledProcessError as e:
+        console.print(f"❌ Error testing built package: {e}", style="red")
         console.print(f"stderr: {e.stderr}", style="red")
         return False
 
@@ -298,15 +362,16 @@ def main() -> None:
         action="store_true",
         help="Skip generating documentation",
     )
-    parser.add_argument(
-        "--skip-stubs",
-        action="store_true",
-        help="Skip generating type stubs",
-    )
+
     parser.add_argument(
         "--skip-version",
         action="store_true",
         help="Skip version update prompts",
+    )
+    parser.add_argument(
+        "--skip-wheel-test",
+        action="store_true",
+        help="Skip testing the built wheel",
     )
 
     args = parser.parse_args()
@@ -329,29 +394,9 @@ def main() -> None:
 
     # Ask about version update
     if not args.skip_version:
-        if update_version():
-            # If version was updated, automatically regenerate docs and stubs
-            console.print(
-                "\n🔄 Version updated - regenerating docs and stubs...", style="blue"
-            )
+        update_version()
 
-            if not args.skip_docs:
-                if not generate_documentation():
-                    console.print(
-                        "⚠️  Documentation generation failed", style="yellow"
-                    )
-                else:
-                    console.print(
-                        "✅ Documentation regenerated with new version", style="green"
-                    )
 
-            if not args.skip_stubs:
-                if not generate_stubs():
-                    console.print("⚠️  Stub generation failed", style="yellow")
-                else:
-                    console.print(
-                        "✅ Type stubs regenerated with new version", style="green"
-                    )
 
     # Run tests
     if not args.skip_tests:
@@ -375,15 +420,7 @@ def main() -> None:
         else:
             console.print("⚠️  Skipping documentation...", style="yellow")
 
-    # Generate stubs
-    if not args.skip_stubs:
-        if args.non_interactive or Confirm.ask(
-            "Would you like to generate type stubs?"
-        ):
-            if not generate_stubs():
-                console.print("⚠️  Stub generation failed", style="yellow")
-        else:
-            console.print("⚠️  Skipping stubs...", style="yellow")
+
 
     # Clean previous builds
     clean_build_artifacts()
@@ -392,6 +429,15 @@ def main() -> None:
     if not build_package():
         console.print("❌ Build failed!", style="red")
         sys.exit(1)
+
+    # Test the built package
+    if not args.skip_wheel_test:
+        if args.non_interactive or Confirm.ask("Would you like to test the built package?"):
+            if not test_built_package():
+                if not args.non_interactive and not Confirm.ask("Built package test failed. Continue anyway?"):
+                    sys.exit(1)
+        else:
+            console.print("⚠️  Skipping built package test...", style="yellow")
 
     # Show summary
     show_build_summary()
