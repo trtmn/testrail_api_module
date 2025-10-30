@@ -18,7 +18,7 @@ Attributes:
 import os
 from typing import Optional
 
-__version__ = '0.3.3'
+__version__ = '0.4.0'
 """The version of the module, used for compatibility checks and logging."""
 __author__ = 'Matt Troutman, Christian Thompson, Andrew Tipper'
 
@@ -30,30 +30,43 @@ class TestRailAPI:
     Main class for interacting with the TestRail API.
     This class serves as the entry point for all TestRail API functionality.
     """
-    def __init__(self, base_url: str, username: str, api_key: Optional[str] = None, password: Optional[str] = None):
+    def __init__(self, base_url: str, username: str, api_key: Optional[str] = None, 
+                 password: Optional[str] = None, timeout: int = 30):
         """
         Initialize the TestRail API client.
         
         Args:
-            base_url (str): The base URL of your TestRail instance (e.g., 'https://your-instance.testrail.io')
-            username (str): Your TestRail username
-            api_key (str, optional): Your TestRail API key. Either api_key or password must be provided.
-            password (str, optional): Your TestRail password. Either api_key or password must be provided.
+            base_url: The base URL of your TestRail instance (e.g., 'https://your-instance.testrail.io')
+            username: Your TestRail username (typically your email address)
+            api_key: Your TestRail API key. Either api_key or password must be provided.
+            password: Your TestRail password. Either api_key or password must be provided.
+            timeout: Request timeout in seconds (default: 30)
             
         Raises:
             ValueError: If neither api_key nor password is provided.
+            ValueError: If base_url is not a valid URL format.
         """
         if not api_key and not password:
             raise ValueError("Either api_key or password must be provided for authentication")
+        
+        if not base_url or not base_url.startswith(('http://', 'https://')):
+            raise ValueError("base_url must be a valid HTTP/HTTPS URL")
             
-        self.base_url = base_url
+        # Normalize base_url (remove trailing slash)
+        self.base_url = base_url.rstrip('/')
         """The base URL of your TestRail instance."""
+        
         self.username = username
         """Your TestRail username. Required for authentication."""
+        
         self.api_key = api_key
         """Your TestRail API key. Either api_key or password must be provided for authentication."""
+        
         self.password = password
         """Your TestRail password. Either api_key or password must be provided for authentication."""
+        
+        self.timeout = timeout
+        """Request timeout in seconds."""
         
         # Initialize all submodules
         from . import attachments
@@ -150,9 +163,16 @@ class TestRailAPI:
         self.variables = variables.VariablesAPI(self)
         """API for managing variables in TestRail. See [VariablesAPI](testrail_api_module/variables.html) for details."""
 
-# Export the main class and all submodules
+# Import exception classes for easy access
+from .base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError, TestRailAPIException
+
+# Export the main class, exception classes, and all submodules
 __all__ = [
     'TestRailAPI',
+    'TestRailAPIError',
+    'TestRailAuthenticationError', 
+    'TestRailRateLimitError',
+    'TestRailAPIException',
     'attachments',
     'bdd',
     'cases',
