@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail_api_module"
-version = "0.3.3"
-description = "A simple wrapper for the TestRail API"
+version = "0.4.0rc1"
+description = "A comprehensive Python wrapper for the TestRail API with enhanced error handling and performance improvements"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
     { name = "Christian Thompson", email = "example@example.com" }
@@ -32,6 +32,11 @@ dev = [
     "toml>=0.10.0",
     "python-dotenv>=1.0.0",
     "twine>=6.0.0",
+]
+
+# Optional docs extra so consumers can install only what's needed to build docs
+docs = [
+    "pdoc>=14.0.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -61,7 +66,7 @@ markers = [
 
 
 [tool.mypy]
-python_version = "0.3.3"
+python_version = "0.4.0"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

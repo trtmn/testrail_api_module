@@ -7,6 +7,19 @@ import sys
 from pathlib import Path
 
 
+def check_pdoc_available() -> bool:
+    """Check if pdoc is available in the current environment."""
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pdoc", "--version"],
+            capture_output=True,
+            text=True,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
 def get_version() -> str:
     """Get the current version from the module."""
     try:
@@ -57,6 +70,15 @@ def cleanup_version_file(project_root: Path) -> None:
 
 def main() -> None:
     """Generate documentation using pdoc."""
+    # Check if pdoc is available
+    if not check_pdoc_available():
+        print("❌ pdoc is not installed or not available in the current environment.")
+        print("\nTo install it, run one of the following:")
+        print("  uv sync --extra dev")
+        print("  uv pip install --extra dev")
+        print("  uv run --with pdoc python utilities/generate_docs.py")
+        sys.exit(1)
+    
     # Get the project root directory (utilities/../)
     project_root = Path(__file__).parent.parent
     
@@ -78,6 +100,8 @@ def main() -> None:
     try:
         subprocess.run(
             [
+                sys.executable,
+                "-m",
                 "pdoc",
                 "--output-directory",
                 str(docs_dir),
@@ -99,6 +123,12 @@ def main() -> None:
         )
     except subprocess.CalledProcessError as e:
         print(f"❌ Error generating documentation: {e}")
+        if e.returncode == 1 and "No module named pdoc" in str(e):
+            print("\n💡 Tip: Install pdoc with: uv sync --extra dev")
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"❌ Error: {e}")
+        print("\n💡 Tip: Make sure pdoc is installed. Run: uv sync --extra dev")
         sys.exit(1)
     finally:
         # Clean up the temporary version file

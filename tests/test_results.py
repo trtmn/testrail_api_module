@@ -7,8 +7,13 @@ including edge cases, error handling, and proper API request formatting.
 
 import pytest
 from unittest.mock import Mock, patch
+from typing import TYPE_CHECKING
 
 from testrail_api_module.results import ResultsAPI
+from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
 
 
 class TestResultsAPI:
@@ -47,10 +52,10 @@ class TestResultsAPI:
         assert api.client == mock_client
         assert hasattr(api, 'logger')
 
-    def test_add_result_minimal(self, results_api):
+    def test_add_result_minimal(self, results_api: ResultsAPI) -> None:
         """Test add_result with minimal required parameters."""
-        with patch.object(results_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, "status_id": 1}
+        with patch.object(results_api, '_post') as mock_post:
+            mock_post.return_value = {"id": 1, "status_id": 1}
             
             result = results_api.add_result(
                 run_id=1, 
@@ -59,18 +64,17 @@ class TestResultsAPI:
             )
             
             expected_data = {"status_id": 1}
-            mock_request.assert_called_once_with(
-                'POST', 
+            mock_post.assert_called_once_with(
                 'add_result_for_case/1/1', 
-                expected_data
+                data=expected_data
             )
             assert result == {"id": 1, "status_id": 1}
 
-    def test_add_result_with_all_parameters(self, results_api,
-                                          sample_result_data):
+    def test_add_result_with_all_parameters(self, results_api: ResultsAPI,
+                                          sample_result_data: dict) -> None:
         """Test add_result with all optional parameters."""
-        with patch.object(results_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, **sample_result_data}
+        with patch.object(results_api, '_post') as mock_post:
+            mock_post.return_value = {"id": 1, **sample_result_data}
             
             result = results_api.add_result(
                 run_id=1,
@@ -93,10 +97,9 @@ class TestResultsAPI:
                 "assignedto_id": 1,
                 "custom1": "value1"
             }
-            mock_request.assert_called_once_with(
-                'POST', 
+            mock_post.assert_called_once_with(
                 'add_result_for_case/1/1', 
-                expected_data
+                data=expected_data
             )
             assert result == {"id": 1, **sample_result_data}
 
@@ -297,18 +300,41 @@ class TestResultsAPI:
             )
             assert result == {"results": [{"id": 1}, {"id": 2}]}
 
-    def test_api_request_failure(self, results_api):
+    def test_api_request_failure(self, results_api: ResultsAPI) -> None:
         """Test behavior when API request fails."""
-        with patch.object(results_api, '_api_request') as mock_request:
-            mock_request.return_value = None
+        with patch.object(results_api, '_post') as mock_post:
+            mock_post.side_effect = TestRailAPIError("API request failed")
             
-            result = results_api.add_result(
-                run_id=1, 
-                case_id=1, 
-                status_id=1
-            )
+            with pytest.raises(TestRailAPIError, match="API request failed"):
+                results_api.add_result(
+                    run_id=1, 
+                    case_id=1, 
+                    status_id=1
+                )
+    
+    def test_authentication_error(self, results_api: ResultsAPI) -> None:
+        """Test behavior when authentication fails."""
+        with patch.object(results_api, '_post') as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError("Authentication failed")
             
-            assert result is None
+            with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
+                results_api.add_result(
+                    run_id=1, 
+                    case_id=1, 
+                    status_id=1
+                )
+    
+    def test_rate_limit_error(self, results_api: ResultsAPI) -> None:
+        """Test behavior when rate limit is exceeded."""
+        with patch.object(results_api, '_post') as mock_post:
+            mock_post.side_effect = TestRailRateLimitError("Rate limit exceeded")
+            
+            with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
+                results_api.add_result(
+                    run_id=1, 
+                    case_id=1, 
+                    status_id=1
+                )
 
     def test_custom_fields_override(self, results_api):
         """Test that custom_fields properly override explicit parameters."""
