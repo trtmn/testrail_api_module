@@ -153,12 +153,26 @@ class ResultsAPI(BaseAPI):
             
         return self._post(f'add_result_for_run/{run_id}', data=data)
 
-    def get_results(self, run_id: int) -> List[Dict[str, Any]]:
+    def get_results(self, run_id: int,
+                   status_id: Optional[Union[int, List[int]]] = None,
+                   created_after: Optional[int] = None,
+                   created_before: Optional[int] = None,
+                   created_by: Optional[Union[int, List[int]]] = None,
+                   defects_filter: Optional[str] = None,
+                   limit: Optional[int] = None,
+                   offset: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Get all test results for a test run.
 
         Args:
             run_id: The ID of the test run.
+            status_id: Optional status ID(s) to filter by (comma-separated if multiple).
+            created_after: Optional timestamp to filter results created after this time.
+            created_before: Optional timestamp to filter results created before this time.
+            created_by: Optional user ID(s) to filter results created by specific users.
+            defects_filter: Optional defect ID to filter by (e.g., 'TR-1', '4291').
+            limit: Optional limit on number of results to return (default 250).
+            offset: Optional offset for pagination.
 
         Returns:
             List of dictionaries containing test result data.
@@ -170,8 +184,32 @@ class ResultsAPI(BaseAPI):
             >>> results = api.results.get_results(run_id=1)
             >>> for result in results:
             ...     print(f"Case {result['case_id']}: Status {result['status_id']}")
+            >>> # Filter by status and limit results
+            >>> results = api.results.get_results(
+            ...     run_id=1,
+            ...     status_id=[1, 5],
+            ...     limit=100
+            ... )
         """
-        return self._get(f'get_results_for_run/{run_id}')
+        params = {}
+        if status_id is not None:
+            # Convert list to comma-separated string if needed
+            params['status_id'] = ','.join(map(str, status_id)) if isinstance(status_id, list) else status_id
+        if created_after is not None:
+            params['created_after'] = created_after
+        if created_before is not None:
+            params['created_before'] = created_before
+        if created_by is not None:
+            # Convert list to comma-separated string if needed
+            params['created_by'] = ','.join(map(str, created_by)) if isinstance(created_by, list) else created_by
+        if defects_filter is not None:
+            params['defects_filter'] = defects_filter
+        if limit is not None:
+            params['limit'] = limit
+        if offset is not None:
+            params['offset'] = offset
+            
+        return self._get(f'get_results_for_run/{run_id}', params=params)
 
     def get_results_for_case(self, run_id: int, case_id: int) -> List[Dict[str, Any]]:
         """
@@ -194,12 +232,26 @@ class ResultsAPI(BaseAPI):
         """
         return self._get(f'get_results_for_case/{run_id}/{case_id}')
 
-    def get_results_for_run(self, run_id: int) -> List[Dict[str, Any]]:
+    def get_results_for_run(self, run_id: int,
+                           status_id: Optional[Union[int, List[int]]] = None,
+                           created_after: Optional[int] = None,
+                           created_before: Optional[int] = None,
+                           created_by: Optional[Union[int, List[int]]] = None,
+                           defects_filter: Optional[str] = None,
+                           limit: Optional[int] = None,
+                           offset: Optional[int] = None) -> List[Dict[str, Any]]:
         """
-        Get all test results for a test run (alias for get_results).
+        Get all test results for a test run.
 
         Args:
             run_id: The ID of the test run.
+            status_id: Optional status ID(s) to filter by (comma-separated if multiple).
+            created_after: Optional timestamp to filter results created after this time.
+            created_before: Optional timestamp to filter results created before this time.
+            created_by: Optional user ID(s) to filter results created by specific users.
+            defects_filter: Optional defect ID to filter by (e.g., 'TR-1', '4291').
+            limit: Optional limit on number of results to return (default 250).
+            offset: Optional offset for pagination.
 
         Returns:
             List of dictionaries containing test result data.
@@ -209,8 +261,33 @@ class ResultsAPI(BaseAPI):
             
         Example:
             >>> results = api.results.get_results_for_run(run_id=1)
+            >>> # Filter by status and created date
+            >>> results = api.results.get_results_for_run(
+            ...     run_id=1,
+            ...     status_id=[1, 5],
+            ...     created_after=1609459200,
+            ...     limit=50
+            ... )
         """
-        return self._get(f'get_results_for_run/{run_id}')
+        params = {}
+        if status_id is not None:
+            # Convert list to comma-separated string if needed
+            params['status_id'] = ','.join(map(str, status_id)) if isinstance(status_id, list) else status_id
+        if created_after is not None:
+            params['created_after'] = created_after
+        if created_before is not None:
+            params['created_before'] = created_before
+        if created_by is not None:
+            # Convert list to comma-separated string if needed
+            params['created_by'] = ','.join(map(str, created_by)) if isinstance(created_by, list) else created_by
+        if defects_filter is not None:
+            params['defects_filter'] = defects_filter
+        if limit is not None:
+            params['limit'] = limit
+        if offset is not None:
+            params['offset'] = offset
+            
+        return self._get(f'get_results_for_run/{run_id}', params=params)
 
     def add_results(self, run_id: int, results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
