@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail_api_module"
-version = "0.3.3"
-description = "A simple wrapper for the TestRail API"
+version = "0.4.0"
+description = "A comprehensive Python wrapper for the TestRail API with enhanced error handling and performance improvements"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
     { name = "Christian Thompson", email = "example@example.com" }
@@ -24,14 +24,13 @@ dev = [
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "mypy>=1.0.0",
-    "bump-my-version>=1.0.0",
-    "rich>=13.0.0",
-    "click>=8.0.0",
-    "wheel>=0.40.0",
-    "build>=1.0.0",
     "toml>=0.10.0",
     "python-dotenv>=1.0.0",
-    "twine>=6.0.0",
+]
+
+# Optional docs extra so consumers can install only what's needed to build docs
+docs = [
+    "pdoc>=14.0.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -61,7 +60,7 @@ markers = [
 
 
 [tool.mypy]
-python_version = "0.3.3"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -78,3 +77,26 @@ strict_equality = true
 # Include stubs in the package
 [tool.setuptools.package-data]
 testrail_api_module = ["*.pyi", "py.typed"]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["src/testrail_api_module"]
+omit = [
+    "*/utilities/*",
+    "*/tests/*",
+    "*/build/*",
+    "*/dist/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

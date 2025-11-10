@@ -1,0 +1,520 @@
+---
+description: Test writing standards and conventions for testrail_api_module test suite
+alwaysApply: true
+---
+
+# Test Writing Standards
+
+This document defines the consistent test writing style and conventions for the testrail_api_module test suite.
+
+## File Structure
+
+### Module Docstrings
+
+Every test file MUST start with a comprehensive module docstring:
+
+```python
+"""
+Tests for the <ModuleName> module.
+
+This module contains comprehensive tests for all methods in the <ClassName> class,
+including edge cases, error handling, and proper API request formatting.
+"""
+```
+
+### Imports
+
+Follow this exact import order and structure:
+
+```python
+import pytest
+from unittest.mock import Mock, patch
+from typing import TYPE_CHECKING
+
+from testrail_api_module.<module> import <ClassName>
+from testrail_api_module.base import (
+    TestRailAPIError,
+    TestRailAuthenticationError,
+    TestRailRateLimitError
+)
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
+```
+
+## Test Class Structure
+
+### Class Naming
+
+- Test classes MUST be named `Test<ClassName>` (e.g., `TestCasesAPI`, `TestResultsAPI`)
+- Each test class MUST have a docstring: `"""Test suite for <ClassName> class."""`
+
+### Class Organization
+
+```python
+class TestCasesAPI:
+    """Test suite for CasesAPI class."""
+
+    # 1. Fixtures first
+    @pytest.fixture
+    def mock_client(self):
+        """Create a mock TestRail client."""
+        # ...
+
+    @pytest.fixture
+    def cases_api(self, mock_client):
+        """Create a CasesAPI instance with mocked client."""
+        # ...
+
+    @pytest.fixture
+    def sample_case_data(self):
+        """Sample test case data for testing."""
+        # ...
+
+    # 2. Initialization test
+    def test_init(self, mock_client):
+        """Test CasesAPI initialization."""
+        # ...
+
+    # 3. Method tests (minimal, all parameters, edge cases)
+    def test_get_case(self, cases_api: CasesAPI) -> None:
+        """Test get_case method."""
+        # ...
+
+    # 4. Error handling tests
+    def test_api_request_failure(self, cases_api: CasesAPI) -> None:
+        """Test behavior when API request fails."""
+        # ...
+
+    # 5. Parametrized tests
+    @pytest.mark.parametrize("type_id", [1, 2, 3, 4, 5, 6])
+    def test_different_type_ids(self, cases_api: CasesAPI, type_id: int) -> None:
+        """Test add_case with different type IDs."""
+        # ...
+```
+
+## Fixtures
+
+### Standard Fixtures
+
+Every test class MUST include these fixtures:
+
+1. **`mock_client`**: Mock TestRail client
+   ```python
+   @pytest.fixture
+   def mock_client(self):
+       """Create a mock TestRail client."""
+       client = Mock()
+       client.base_url = "https://testrail.example.com"
+       client.username = "testuser"
+       client.api_key = "test_api_key"
+       return client
+   ```
+
+2. **`<api_name>_api`**: API instance with mocked client
+   ```python
+   @pytest.fixture
+   def cases_api(self, mock_client):
+       """Create a CasesAPI instance with mocked client."""
+       return CasesAPI(mock_client)
+   ```
+
+3. **`sample_<entity>_data`**: Sample data for testing (if applicable)
+   ```python
+   @pytest.fixture
+   def sample_case_data(self):
+       """Sample test case data for testing."""
+       return {
+           "id": 1,
+           "title": "Test Case Title",
+           # ... other fields
+       }
+   ```
+
+### Fixture Requirements
+
+- ALL fixtures MUST have docstrings
+- Use descriptive names that match the entity being tested
+- Return appropriate mock data structures
+
+## Test Method Standards
+
+### Method Naming
+
+Follow this naming convention:
+
+- `test_<method_name>` - Basic method test
+- `test_<method_name>_minimal` - Test with minimal required parameters
+- `test_<method_name>_with_all_parameters` - Test with all optional parameters
+- `test_<method_name>_with_none_values` - Test None value handling
+- `test_<method_name>_with_<feature>` - Test specific feature (e.g., `test_add_case_with_custom_fields`)
+- `test_<scenario>` - Test specific scenario (e.g., `test_api_request_failure`)
+
+### Method Structure
+
+Every test method MUST:
+
+1. Have a type annotation: `-> None`
+2. Have a descriptive docstring
+3. Use `patch.object` for mocking internal methods
+4. Assert both mock calls AND return values
+
+### Example Test Method
+
+```python
+def test_get_case(self, cases_api: CasesAPI) -> None:
+    """Test get_case method."""
+    with patch.object(cases_api, '_get') as mock_get:
+        mock_get.return_value = {"id": 1, "title": "Test Case"}
+        
+        result = cases_api.get_case(case_id=1)
+        
+        mock_get.assert_called_once_with('get_case/1')
+        assert result == {"id": 1, "title": "Test Case"}
+```
+
+## Required Test Patterns
+
+### 1. Initialization Test
+
+Every test class MUST include:
+
+```python
+def test_init(self, mock_client):
+    """Test <ClassName> initialization."""
+    api = <ClassName>(mock_client)
+    assert api.client == mock_client
+    assert hasattr(api, 'logger')
+```
+
+### 2. Minimal Parameters Test
+
+Test methods with minimal required parameters:
+
+```python
+def test_add_case_minimal(self, cases_api: CasesAPI) -> None:
+    """Test add_case with minimal required parameters."""
+    with patch.object(cases_api, '_post') as mock_post:
+        mock_post.return_value = {"id": 1, "title": "Test Case"}
+        
+        result = cases_api.add_case(
+            section_id=1,
+            title="Test Case"
+        )
+        
+        expected_data = {"title": "Test Case"}
+        mock_post.assert_called_once_with(
+            'add_case/1',
+            data=expected_data
+        )
+        assert result == {"id": 1, "title": "Test Case"}
+```
+
+### 3. All Parameters Test
+
+Test methods with all optional parameters:
+
+```python
+def test_add_case_with_all_parameters(
+    self,
+    cases_api: CasesAPI,
+    sample_case_data: dict
+) -> None:
+    """Test add_case with all optional parameters."""
+    with patch.object(cases_api, '_post') as mock_post:
+        mock_post.return_value = sample_case_data
+        
+        result = cases_api.add_case(
+            section_id=1,
+            title="Test Case Title",
+            # ... all parameters
+        )
+        
+        expected_data = {
+            "title": "Test Case Title",
+            # ... all expected fields
+        }
+        mock_post.assert_called_once_with(
+            'add_case/1',
+            data=expected_data
+        )
+        assert result == sample_case_data
+```
+
+### 4. None Values Test
+
+Test that None values are properly filtered:
+
+```python
+def test_add_case_with_none_values(self, cases_api: CasesAPI) -> None:
+    """Test add_case with None values for optional parameters."""
+    with patch.object(cases_api, '_post') as mock_post:
+        mock_post.return_value = {"id": 1, "title": "Test Case"}
+        
+        result = cases_api.add_case(
+            section_id=1,
+            title="Test Case",
+            template_id=None,
+            type_id=None,
+            # ... all None
+        )
+        
+        expected_data = {"title": "Test Case"}
+        mock_post.assert_called_once_with(
+            'add_case/1',
+            data=expected_data
+        )
+        assert result == {"id": 1, "title": "Test Case"}
+```
+
+### 5. Error Handling Tests
+
+Test all error conditions:
+
+```python
+def test_api_request_failure(self, cases_api: CasesAPI) -> None:
+    """Test behavior when API request fails."""
+    with patch.object(cases_api, '_get') as mock_get:
+        mock_get.side_effect = TestRailAPIError("API request failed")
+        
+        with pytest.raises(TestRailAPIError, match="API request failed"):
+            cases_api.get_case(case_id=1)
+
+def test_authentication_error(self, cases_api: CasesAPI) -> None:
+    """Test behavior when authentication fails."""
+    with patch.object(cases_api, '_get') as mock_get:
+        mock_get.side_effect = TestRailAuthenticationError("Authentication failed")
+        
+        with pytest.raises(
+            TestRailAuthenticationError,
+            match="Authentication failed"
+        ):
+            cases_api.get_case(case_id=1)
+
+def test_rate_limit_error(self, cases_api: CasesAPI) -> None:
+    """Test behavior when rate limit is exceeded."""
+    with patch.object(cases_api, '_get') as mock_get:
+        mock_get.side_effect = TestRailRateLimitError("Rate limit exceeded")
+        
+        with pytest.raises(
+            TestRailRateLimitError,
+            match="Rate limit exceeded"
+        ):
+            cases_api.get_case(case_id=1)
+```
+
+### 6. Edge Cases
+
+Test edge cases and boundary conditions:
+
+- Empty lists/collections
+- Large IDs
+- Complex custom fields
+- Empty strings vs None
+- Single values vs lists
+
+Example:
+
+```python
+def test_empty_case_ids_list(self, cases_api: CasesAPI) -> None:
+    """Test copy_cases_to_section with empty case_ids list."""
+    with patch.object(cases_api, '_post') as mock_post:
+        mock_post.return_value = []
+        
+        result = cases_api.copy_cases_to_section(
+            case_ids=[],
+            section_id=1
+        )
+        
+        expected_data = {"case_ids": []}
+        mock_post.assert_called_once_with(
+            'copy_cases_to_section/1',
+            data=expected_data
+        )
+        assert result == []
+```
+
+### 7. Parametrized Tests
+
+Use `@pytest.mark.parametrize` for testing multiple similar scenarios:
+
+```python
+@pytest.mark.parametrize("type_id", [1, 2, 3, 4, 5, 6])
+def test_different_type_ids(
+    self,
+    cases_api: CasesAPI,
+    type_id: int
+) -> None:
+    """Test add_case with different type IDs."""
+    with patch.object(cases_api, '_post') as mock_post:
+        mock_post.return_value = {"id": 1, "type_id": type_id}
+        
+        result = cases_api.add_case(
+            section_id=1,
+            title="Test Case",
+            type_id=type_id
+        )
+        
+        expected_data = {"title": "Test Case", "type_id": type_id}
+        mock_post.assert_called_once_with(
+            'add_case/1',
+            data=expected_data
+        )
+        assert result["type_id"] == type_id
+```
+
+## Mocking Standards
+
+### Using patch.object
+
+- ALWAYS use `patch.object` to mock internal methods (`_get`, `_post`, etc.)
+- Use context managers: `with patch.object(...) as mock_<method>:`
+- Set `return_value` for successful calls
+- Set `side_effect` for error conditions
+
+### Assertions
+
+- ALWAYS assert mock was called: `mock_get.assert_called_once_with(...)`
+- ALWAYS assert return values: `assert result == expected_value`
+- For GET requests, assert endpoint and params
+- For POST requests, assert endpoint and data
+
+### Expected Data
+
+- Create `expected_data` or `expected_params` dictionaries
+- Use descriptive variable names
+- Match the exact structure sent to the API
+
+## Code Style
+
+### Type Annotations
+
+- ALL test methods MUST have return type `-> None`
+- Use type hints for fixture parameters: `cases_api: CasesAPI`
+- Use type hints in parametrized tests: `type_id: int`
+
+### Formatting
+
+- Use 4 spaces for indentation
+- Keep lines under 88 characters (Black default)
+- Use blank lines to separate logical sections
+- Align multi-line function calls and dictionaries
+
+### Docstrings
+
+- ALL test methods MUST have docstrings
+- Use imperative mood: "Test X" not "Tests X"
+- Be specific: "Test add_case with minimal required parameters" not "Test add_case"
+
+## Test Coverage Requirements
+
+Every API method MUST have tests for:
+
+1. ✅ Initialization
+2. ✅ Minimal required parameters
+3. ✅ All optional parameters
+4. ✅ None value handling
+5. ✅ Custom fields (if applicable)
+6. ✅ Error conditions (API, auth, rate limit)
+7. ✅ Edge cases (empty lists, large IDs, etc.)
+8. ✅ Parametrized tests for enum-like values (if applicable)
+
+## Common Patterns
+
+### Testing GET Methods
+
+```python
+def test_get_cases_minimal(self, cases_api: CasesAPI) -> None:
+    """Test get_cases with minimal required parameters."""
+    with patch.object(cases_api, '_get') as mock_get:
+        mock_get.return_value = [
+            {"id": 1, "title": "Case 1"},
+            {"id": 2, "title": "Case 2"}
+        ]
+        
+        result = cases_api.get_cases(project_id=1)
+        
+        mock_get.assert_called_once_with(
+            'get_cases/1',
+            params={}
+        )
+        assert len(result) == 2
+        assert result[0]["id"] == 1
+```
+
+### Testing POST Methods
+
+```python
+def test_add_case_minimal(self, cases_api: CasesAPI) -> None:
+    """Test add_case with minimal required parameters."""
+    with patch.object(cases_api, '_post') as mock_post:
+        mock_post.return_value = {"id": 1, "title": "Test Case"}
+        
+        result = cases_api.add_case(
+            section_id=1,
+            title="Test Case"
+        )
+        
+        expected_data = {"title": "Test Case"}
+        mock_post.assert_called_once_with(
+            'add_case/1',
+            data=expected_data
+        )
+        assert result == {"id": 1, "title": "Test Case"}
+```
+
+### Testing Custom Fields
+
+```python
+def test_add_case_with_custom_fields(self, cases_api: CasesAPI) -> None:
+    """Test add_case with custom fields."""
+    with patch.object(cases_api, '_post') as mock_post:
+        mock_post.return_value = {"id": 1, "title": "Test Case"}
+        
+        custom_fields = {"custom1": "value1", "custom2": "value2"}
+        result = cases_api.add_case(
+            section_id=1,
+            title="Test Case",
+            custom_fields=custom_fields
+        )
+        
+        expected_data = {
+            "title": "Test Case",
+            "custom1": "value1",
+            "custom2": "value2"
+        }
+        mock_post.assert_called_once_with(
+            'add_case/1',
+            data=expected_data
+        )
+```
+
+## Best Practices
+
+1. **Isolation**: Each test should be independent and not rely on other tests
+2. **Clarity**: Test names and docstrings should clearly describe what is being tested
+3. **Completeness**: Test both success and failure paths
+4. **Maintainability**: Use fixtures to avoid code duplication
+5. **Readability**: Structure tests logically and consistently
+6. **Assertions**: Always verify both the mock call AND the return value
+7. **Edge Cases**: Don't forget to test boundary conditions and error cases
+
+## Anti-Patterns to Avoid
+
+❌ **DON'T**:
+- Skip type annotations on test methods
+- Omit docstrings from test methods or fixtures
+- Use `unittest.mock` directly instead of `patch.object`
+- Forget to assert mock calls
+- Test multiple unrelated scenarios in one test method
+- Use real API calls (always mock)
+- Hard-code test data in multiple places (use fixtures)
+
+✅ **DO**:
+- Use type annotations everywhere
+- Write descriptive docstrings
+- Use `patch.object` for mocking
+- Assert both mock calls and return values
+- Keep tests focused and single-purpose
+- Mock all external dependencies
+- Reuse fixtures for common test data

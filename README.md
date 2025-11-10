@@ -6,12 +6,26 @@
 A comprehensive Python wrapper for the TestRail API that provides easy access to all
 TestRail functionalities.
 
+## 🚨 Breaking Changes in v0.4.x
+
+**This is a major version update with breaking changes.** Please read the [Migration Guide](MIGRATION_GUIDE.md) before upgrading from v0.3.x.
+
+### Key Changes:
+- **Enhanced Error Handling**: Methods now raise specific exceptions instead of returning `None`
+- **Consistent Return Types**: No more `Optional` wrappers - methods return data directly
+- **Better Type Safety**: Comprehensive type annotations throughout
+- **Performance Improvements**: Connection pooling, retry logic, and efficient requests
+- **Official Compliance**: Follows TestRail API best practices
+
 ## Features
 
 - Full coverage of TestRail API endpoints
+- **NEW**: Comprehensive exception handling with specific error types
+- **NEW**: Connection pooling and automatic retry logic
+- **NEW**: Rate limiting awareness and handling
+- **NEW**: Configurable request timeouts
 - Type hints for better IDE support
 - Easy-to-use interface
-- Comprehensive error handling
 - Support for both API key and password authentication
 
 ## Installation
@@ -30,49 +44,65 @@ pip install testrail-api-module
 git clone https://github.com/trtmn/testrail-api-module.git
 cd testrail-api-module
 
-# Create virtual environment
-python -m venv .venv
+# Create virtual environment and install dependencies using uv
+uv venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install development dependencies using pip-tools
-pip-compile --extra dev | pip-sync
+# Install development dependencies (includes all dev tools like pytest, mypy, etc.)
+uv sync --extra dev
 
+# Or install all optional dependencies
+uv sync --all-extras
 ```
 
 ## Quick Start
 
 ```python
-from testrail_api_module import TestRailAPI
+from testrail_api_module import TestRailAPI, TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
 # Initialize the API client
 api = TestRailAPI(
     base_url='https://your-instance.testrail.io',
     username='your-username',
-    api_key='your-api-key'  # or use password='your-password'
+    api_key='your-api-key',  # or use password='your-password'
+    timeout=30  # Optional: request timeout in seconds
 )
 
-# Get a list of projects
-projects = api.projects.get_projects()
-
-# Create a new test case
-new_case = api.cases.add_case(
-    section_id=123,
-    title='Test Login Functionality',
-    type_id=1,  # Functional test
-    priority_id=3,  # Medium priority
-    estimate='30m',  # 30 minutes
-    refs='JIRA-123'
-)
-
-# Add a test result
-api.results.add_result(
-    run_id=456,
-    case_id=789,
-    status_id=1,  # Passed
-    comment='Test executed successfully',
-    elapsed='15m',  # Actual time taken
-    version='1.0.0'
-)
+try:
+    # Get a list of projects
+    projects = api.projects.get_projects()
+    print(f"Found {len(projects)} projects")
+    
+    # Create a new test case
+    new_case = api.cases.add_case(
+        section_id=123,
+        title='Test Login Functionality',
+        type_id=1,  # Functional test
+        priority_id=3,  # Medium priority
+        estimate='30m',  # 30 minutes
+        refs='JIRA-123'
+    )
+    print(f"Created case: {new_case['title']}")
+    
+    # Add a test result
+    result = api.results.add_result(
+        run_id=456,
+        case_id=789,
+        status_id=1,  # Passed
+        comment='Test executed successfully',
+        elapsed='15m',  # Actual time taken
+        version='1.0.0'
+    )
+    print(f"Added result: {result['id']}")
+    
+except TestRailAuthenticationError as e:
+    print(f"Authentication failed: {e}")
+except TestRailRateLimitError as e:
+    print(f"Rate limit exceeded: {e}")
+except TestRailAPIError as e:
+    print(f"API error: {e}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
 ```
 
 ## Common Use Cases
@@ -80,19 +110,26 @@ api.results.add_result(
 ### Managing Test Cases
 
 ```python
-# Get all test cases in a project
-cases = api.cases.get_cases(project_id=1)
-
-# Update a test case
-api.cases.update_case(
-    case_id=123,
-    title='Updated Test Case Title',
-    type_id=2,  # Performance test
-    priority_id=1  # Critical priority
-)
-
-# Delete a test case
-api.cases.delete_case(case_id=123)
+try:
+    # Get all test cases in a project
+    cases = api.cases.get_cases(project_id=1)
+    print(f"Found {len(cases)} cases")
+    
+    # Update a test case
+    updated_case = api.cases.update_case(
+        case_id=123,
+        title='Updated Test Case Title',
+        type_id=2,  # Performance test
+        priority_id=1  # Critical priority
+    )
+    print(f"Updated case: {updated_case['title']}")
+    
+    # Delete a test case
+    result = api.cases.delete_case(case_id=123)
+    print("Case deleted successfully")
+    
+except TestRailAPIError as e:
+    print(f"Error managing test cases: {e}")
 ```
 
 ### Working with Test Runs
@@ -149,14 +186,41 @@ scenario = api.bdd.get_bdd(case_id=456)
 
 ## Error Handling
 
-The module includes comprehensive error handling. Here's an example:
+The module includes comprehensive error handling with specific exception types:
 
 ```python
+from testrail_api_module import TestRailAPI, TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
+
 try:
     result = api.cases.get_case(case_id=999999)
+    print(f"Case: {result['title']}")
+except TestRailAuthenticationError as e:
+    print(f"Authentication failed: {e}")
+except TestRailRateLimitError as e:
+    print(f"Rate limit exceeded: {e}")
+except TestRailAPIError as e:
+    print(f"API error: {e}")
 except Exception as e:
-    print(f"Error accessing test case: {e}")
+    print(f"Unexpected error: {e}")
 ```
+
+### Exception Types
+
+- **`TestRailAPIError`**: Base exception for all API-related errors
+- **`TestRailAuthenticationError`**: Authentication failures (401 errors)
+- **`TestRailRateLimitError`**: Rate limit exceeded (429 errors)
+- **`TestRailAPIException`**: General API errors with status codes and response details
+
+## Migration Guide
+
+**Upgrading from v0.3.x?** Please read our comprehensive [Migration Guide](MIGRATION_GUIDE.md) for detailed instructions on updating your code to work with v0.4.0.
+
+### Quick Migration Summary
+
+1. **Update error handling**: Wrap API calls in try/except blocks
+2. **Remove None checks**: Methods now return data directly or raise exceptions
+3. **Import exception classes**: Add `TestRailAPIError`, `TestRailAuthenticationError`, `TestRailRateLimitError` to your imports
+4. **Update method calls**: Use explicit parameters instead of `**kwargs` where applicable
 
 ## Documentation
 
