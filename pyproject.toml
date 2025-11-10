@@ -24,14 +24,8 @@ dev = [
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "mypy>=1.0.0",
-    "bump-my-version>=1.0.0",
-    "rich>=13.0.0",
-    "click>=8.0.0",
-    "wheel>=0.40.0",
-    "build>=1.0.0",
     "toml>=0.10.0",
     "python-dotenv>=1.0.0",
-    "twine>=6.0.0",
 ]
 
 # Optional docs extra so consumers can install only what's needed to build docs
@@ -66,7 +60,7 @@ markers = [
 
 
 [tool.mypy]
-python_version = "0.4.0"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
