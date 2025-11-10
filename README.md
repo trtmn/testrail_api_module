@@ -6,7 +6,7 @@
 A comprehensive Python wrapper for the TestRail API that provides easy access to all
 TestRail functionalities.
 
-## 🚨 Breaking Changes in v0.5.0
+## 🚨 Breaking Changes in v0.4.x
 
 **This is a major version update with breaking changes.** Please read the [Migration Guide](MIGRATION_GUIDE.md) before upgrading from v0.3.x.
 
@@ -44,13 +44,15 @@ pip install testrail-api-module
 git clone https://github.com/trtmn/testrail-api-module.git
 cd testrail-api-module
 
-# Create virtual environment
-python -m venv .venv
+# Create virtual environment and install dependencies using uv
+uv venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install development dependencies using pip-tools
-pip-compile --extra dev | pip-sync
+# Install development dependencies (includes all dev tools like pytest, mypy, etc.)
+uv sync --extra dev
 
+# Or install all optional dependencies
+uv sync --all-extras
 ```
 
 ## Quick Start
