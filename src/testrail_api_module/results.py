@@ -100,7 +100,7 @@ class ResultsAPI(BaseAPI):
             ... ]
             >>> result = api.results.add_results_for_cases(run_id=1, results=results_data)
         """
-        return self._post(f'add_results_for_cases/{run_id}', {"results": results})
+        return self._post(f'add_results_for_cases/{run_id}', data={"results": results})
 
     def add_result_for_run(self, run_id: int, status_id: int,
                           comment: Optional[str] = None, version: Optional[str] = None,
@@ -319,4 +319,4 @@ class ResultsAPI(BaseAPI):
             ... ]
             >>> result = api.results.add_results(run_id=1, results=results_data)
         """
-        return self._post(f'add_results_for_cases/{run_id}', {"results": results})
+        return self._post(f'add_results_for_cases/{run_id}', data={"results": results})

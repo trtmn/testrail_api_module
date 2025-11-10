@@ -83,3 +83,26 @@ strict_equality = true
 # Include stubs in the package
 [tool.setuptools.package-data]
 testrail_api_module = ["*.pyi", "py.typed"]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["src/testrail_api_module"]
+omit = [
+    "*/utilities/*",
+    "*/tests/*",
+    "*/build/*",
+    "*/dist/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
