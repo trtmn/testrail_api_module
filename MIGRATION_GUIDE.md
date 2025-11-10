@@ -1,4 +1,4 @@
-# Migration Guide: TestRail API Module v0.3.x → v0.5.0
+# Migration Guide: TestRail API Module v0.3.x → v0.4.0
 
 ## 🚨 Breaking Changes
 
@@ -42,7 +42,7 @@ else:
     print(f"Case: {result['title']}")
 ```
 
-**After (v0.5.0):**
+**After (v0.4.0):**
 ```python
 from testrail_api_module import TestRailAPI, TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
@@ -78,7 +78,7 @@ else:
         print(case['title'])
 ```
 
-**After (v0.5.0):**
+**After (v0.4.0):**
 ```python
 # Methods now return Dict or List directly
 try:
@@ -100,7 +100,7 @@ api.cases.update_case(123, title="New Title", priority_id=1)
 runs = api.runs.get_runs(project_id=1, suite_id=2)
 ```
 
-**After (v0.5.0):**
+**After (v0.4.0):**
 ```python
 # New explicit parameter handling
 try:
@@ -138,7 +138,7 @@ if result is None:
     print("Error adding results")
 ```
 
-**After (v0.5.0):**
+**After (v0.4.0):**
 ```python
 # New bulk operations with error handling
 try:
@@ -240,7 +240,7 @@ def test_case_workflow():
     print("Success!")
 ```
 
-**After (v0.5.0):**
+**After (v0.4.0):**
 ```python
 from testrail_api_module import TestRailAPI, TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
@@ -290,10 +290,10 @@ if __name__ == "__main__":
 pip uninstall testrail-api-module
 
 # Install new version
-pip install testrail-api-module==0.5.0
+pip install testrail-api-module==0.4.0
 
 # Or using uv
-uv add testrail-api-module==0.5.0
+uv add testrail-api-module==0.4.0
 ```
 
 ## 📚 **Additional Resources**

@@ -213,7 +213,7 @@ except Exception as e:
 
 ## Migration Guide
 
-**Upgrading from v0.3.x?** Please read our comprehensive [Migration Guide](MIGRATION_GUIDE.md) for detailed instructions on updating your code to work with v0.5.0.
+**Upgrading from v0.3.x?** Please read our comprehensive [Migration Guide](MIGRATION_GUIDE.md) for detailed instructions on updating your code to work with v0.4.0.
 
 ### Quick Migration Summary
 
