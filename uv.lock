@@ -467,6 +467,7 @@ name = "testrail-api-module"
 version = "0.4.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pytest" },
     { name = "requests" },
 ]
 
@@ -489,6 +490,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "pdoc", marker = "extra == 'dev'", specifier = ">=14.0.0" },
     { name = "pdoc", marker = "extra == 'docs'", specifier = ">=14.0.0" },
+    { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.10.0" },
