@@ -37,7 +37,7 @@ This package includes a built-in MCP server that enables AI assistants (like Cur
 
 **One-click install link for Cursor:**
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IHRlc3RyYWlsLWFwaS1tb2R1bGUiLCJlbnYiOnsiVEVTVFJBSUxfQkFTRV9VUkwiOiJodHRwczovL3lvdXJpbnN0YW5jZS50ZXN0cmFpbC5pbyIsIlRFU1RSQUlMX1VTRVJOQU1FIjoiWW91cnRlc3RyYWlsdXNlckB5b3VyY29tcGFueS5jb20iLCJURVNUUkFJTF9BUElfS0VZIjoiWW91ciBBUEkgS2V5IGdvZXMgaGVyZSJ9fQ%3D%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLXBhY2thZ2UiLCJ0ZXN0cmFpbC1hcGktbW9kdWxlIiwiLS0iLCJweXRob24iLCItbSIsInRlc3RyYWlsX2FwaV9tb2R1bGUiXSwiZW52Ijp7IlRFU1RSQUlMX0JBU0VfVVJMIjoiaHR0cHM6Ly95b3VyaW5zdGFuY2UudGVzdHJhaWwuaW8iLCJURVNUUkFJTF9VU0VSTkFNRSI6IllvdXJ0ZXN0cmFpbHVzZXJAeW91cmNvbXBhbnkuY29tIiwiVEVTVFJBSUxfQVBJX0tFWSI6IllvdXIgQVBJIEtleSBnb2VzIGhlcmUifX0%3D)
 
 **After clicking the link:**
 1. Cursor will prompt you to install the MCP server
@@ -49,7 +49,7 @@ This package includes a built-in MCP server that enables AI assistants (like Cur
 
 **Text link (if button doesn't work):**
 ```
-cursor://anysphere.cursor-deeplink/mcp/install?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IHRlc3RyYWlsLWFwaS1tb2R1bGUiLCJlbnYiOnsiVEVTVFJBSUxfQkFTRV9VUkwiOiJodHRwczovL3lvdXJpbnN0YW5jZS50ZXN0cmFpbC5pbyIsIlRFU1RSQUlMX1VTRVJOQU1FIjoiWW91cnRlc3RyYWlsdXNlckB5b3VyY29tcGFueS5jb20iLCJURVNUUkFJTF9BUElfS0VZIjoiWW91ciBBUEkgS2V5IGdvZXMgaGVyZSJ9fQ%3D%3D
+cursor://anysphere.cursor-deeplink/mcp/install?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLXBhY2thZ2UiLCJ0ZXN0cmFpbC1hcGktbW9kdWxlIiwiLS0iLCJweXRob24iLCItbSIsInRlc3RyYWlsX2FwaV9tb2R1bGUiXSwiZW52Ijp7IlRFU1RSQUlMX0JBU0VfVVJMIjoiaHR0cHM6Ly95b3VyaW5zdGFuY2UudGVzdHJhaWwuaW8iLCJURVNUUkFJTF9VU0VSTkFNRSI6IllvdXJ0ZXN0cmFpbHVzZXJAeW91cmNvbXBhbnkuY29tIiwiVEVTVFJBSUxfQVBJX0tFWSI6IllvdXIgQVBJIEtleSBnb2VzIGhlcmUifX0%3D
 ```
 
 
