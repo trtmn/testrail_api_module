@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-01-14
+
+### ✨ Added
+
+- **MCP Server Integration**: Built-in Model Context Protocol server for AI
+  assistant integration (Cursor, Claude Desktop, etc.)
+  - Automatic tool discovery for all TestRail API methods
+  - Module-based organization with 22 API modules
+  - Environment-based configuration via environment variables or `.env` files
+  - One-click install support for Cursor IDE
+- **FastMCP Integration**: Complete FastMCP integration as a core dependency
+- **CLI Functionality**: Command-line interface for running the MCP server
+  - Support for `.env` file loading
+  - Configurable logging control
+- **Dynamic Version Retrieval**: Version now dynamically retrieved from
+  `pyproject.toml` for improved maintainability
+
+### 🔧 Changed
+
+- **Tool Architecture**: Transitioned from ~132 individual tools to 22
+  module-based tools for better discoverability and maintainability
+- **Project Name**: Changed package name from `testrail_api_module` to
+  `testrail-api-module` for PyPI consistency
+- **Dependency Organization**: Reorganized dependencies with clearer separation
+  between runtime and development dependencies
+
+### 📚 Documentation
+
+- **MCP Usage Guide**: New comprehensive guide for using the MCP server
+- **README Updates**: Enhanced documentation with MCP installation
+  instructions, quick-start guide, and configuration examples
+- **Installation Links**: Added one-click install buttons for Cursor IDE
+
+### 🔄 Maintenance
+
+- Updated license year to 2026
+- Removed legacy `requirements.txt` in favor of `pyproject.toml`
+- Cleaned up outdated test scripts
+- Enhanced error handling and logging capabilities
+
 ## [0.4.0] - 2024-12-19
 
 ### 🚨 Breaking Changes
