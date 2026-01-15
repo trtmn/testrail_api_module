@@ -82,7 +82,7 @@ Open or create `~/.cursor/mcp.json` (or `~/.config/cursor/mcp.json` on Linux) an
         "--",
         "python",
         "-m",
-        "testrail_api_module.cli"
+        "testrail_api_module"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -103,6 +103,8 @@ Open or create `~/.cursor/mcp.json` (or `~/.config/cursor/mcp.json` on Linux) an
 
 Restart Cursor to load the MCP server. The TestRail tools will be available in your AI assistant.
 
+> **Note**: The configuration uses `python -m testrail_api_module` (not `testrail_api_module.cli`). This is because the package uses `__main__.py` as the entry point when run as a module. Using `testrail_api_module.cli` would fail since `cli.py` doesn't have a `if __name__ == '__main__':` block.
+
 ### Alternative Installation Methods
 
 **Using a Virtual Environment** (if you prefer local installation):
@@ -114,7 +116,7 @@ Restart Cursor to load the MCP server. The TestRail tools will be available in y
       "command": "/path/to/your/.venv/bin/python",
       "args": [
         "-m",
-        "testrail_api_module.cli"
+        "testrail_api_module"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
