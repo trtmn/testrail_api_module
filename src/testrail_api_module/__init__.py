@@ -18,7 +18,32 @@ Attributes:
 import os
 from typing import Optional
 
-__version__ = '0.4.0'
+def _get_version() -> str:
+    """
+    Return the package version from pyproject.toml.
+
+    Returns:
+        str: The version of the module as specified in pyproject.toml.
+
+    Raises:
+        FileNotFoundError: If pyproject.toml does not exist.
+        ValueError: If the version cannot be found.
+    """
+    import os
+    import re
+
+    pyproject_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "pyproject.toml")
+    try:
+        with open(pyproject_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            match = re.search(r'^version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            if match:
+                return match.group(1)
+        raise ValueError("Version string not found in pyproject.toml.")
+    except FileNotFoundError as e:
+        raise FileNotFoundError("pyproject.toml not found for version extraction.") from e
+
+__version__ = _get_version()
 """The version of the module, used for compatibility checks and logging."""
 __author__ = 'Matt Troutman, Christian Thompson, Andrew Tipper'
 
