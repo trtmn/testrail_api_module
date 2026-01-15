@@ -4,7 +4,19 @@
 
 
 A comprehensive Python wrapper for the TestRail API that provides easy access to all
-TestRail functionalities.
+TestRail functionalities. Now featuring a built-in MCP (Model Context Protocol) server for seamless AI assistant integration.
+
+## Features
+
+- **NEW**: MCP (Model Context Protocol) server support for AI assistants
+- **NEW**: Comprehensive exception handling with specific error types
+- **NEW**: Connection pooling and automatic retry logic
+- **NEW**: Rate limiting awareness and handling
+- **NEW**: Configurable request timeouts
+- Full coverage of TestRail API endpoints
+- Type hints for better IDE support
+- Easy-to-use interface
+- Support for both API key and password authentication
 
 ## 🚨 Breaking Changes in v0.4.x
 
@@ -17,16 +29,145 @@ TestRail functionalities.
 - **Performance Improvements**: Connection pooling, retry logic, and efficient requests
 - **Official Compliance**: Follows TestRail API best practices
 
-## Features
+## MCP (Model Context Protocol) Server
 
-- Full coverage of TestRail API endpoints
-- **NEW**: Comprehensive exception handling with specific error types
-- **NEW**: Connection pooling and automatic retry logic
-- **NEW**: Rate limiting awareness and handling
-- **NEW**: Configurable request timeouts
-- Type hints for better IDE support
-- Easy-to-use interface
-- Support for both API key and password authentication
+This package includes a built-in MCP server that enables AI assistants (like Cursor, Claude Desktop, etc.) to interact with TestRail through a standardized interface. All TestRail API methods are automatically exposed as MCP tools.
+
+### ⚡ Quick Install for Cursor
+
+**One-click install link for Cursor:**
+
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IHRlc3RyYWlsLWFwaS1tb2R1bGUiLCJlbnYiOnsiVEVTVFJBSUxfQkFTRV9VUkwiOiJodHRwczovL3lvdXJpbnN0YW5jZS50ZXN0cmFpbC5pbyIsIlRFU1RSQUlMX1VTRVJOQU1FIjoiWW91cnRlc3RyYWlsdXNlckB5b3VyY29tcGFueS5jb20iLCJURVNUUkFJTF9BUElfS0VZIjoiWW91ciBBUEkgS2V5IGdvZXMgaGVyZSJ9fQ%3D%3D)
+
+**After clicking the link:**
+1. Cursor will prompt you to install the MCP server
+2. You'll need to update the environment variables in your `mcp.json` file:
+   - Replace `https://your-instance.testrail.io` with your TestRail instance URL
+   - Replace `your-username` with your TestRail username/email
+   - Replace `your-api-key` with your TestRail API key (found in your TestRail profile settings)
+3. Restart Cursor to activate the MCP server
+
+**Text link (if button doesn't work):**
+```
+cursor://anysphere.cursor-deeplink/mcp/install?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IHRlc3RyYWlsLWFwaS1tb2R1bGUiLCJlbnYiOnsiVEVTVFJBSUxfQkFTRV9VUkwiOiJodHRwczovL3lvdXJpbnN0YW5jZS50ZXN0cmFpbC5pbyIsIlRFU1RSQUlMX1VTRVJOQU1FIjoiWW91cnRlc3RyYWlsdXNlckB5b3VyY29tcGFueS5jb20iLCJURVNUUkFJTF9BUElfS0VZIjoiWW91ciBBUEkgS2V5IGdvZXMgaGVyZSJ9fQ%3D%3D
+```
+
+
+> **⚠️ Important**: You must have [`uv`](https://github.com/astral-sh/uv) installed before running the MCP server. The MCP server uses `uvx` to run without requiring a global package installation.
+
+#### Step 1: Install `uv` (if not already installed)
+
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+#### Step 2: Install MCP Server in Cursor
+
+**📋 Click to Copy Configuration**
+
+Open or create `~/.cursor/mcp.json` (or `~/.config/cursor/mcp.json` on Linux) and add this configuration:
+
+```json
+{
+  "mcpServers": {
+    "testrail": {
+      "command": "uvx",
+      "args": [
+        "--package",
+        "testrail-api-module",
+        "--",
+        "python",
+        "-m",
+        "testrail_api_module.cli"
+      ],
+      "env": {
+        "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
+        "TESTRAIL_USERNAME": "your-username",
+        "TESTRAIL_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+**After copying:**
+1. Replace `https://your-instance.testrail.io` with your TestRail instance URL
+2. Replace `your-username` with your TestRail username/email
+3. Replace `your-api-key` with your TestRail API key (found in your TestRail profile settings)
+
+#### Step 3: Restart Cursor
+
+Restart Cursor to load the MCP server. The TestRail tools will be available in your AI assistant.
+
+### Alternative Installation Methods
+
+**Using a Virtual Environment** (if you prefer local installation):
+
+```json
+{
+  "mcpServers": {
+    "testrail": {
+      "command": "/path/to/your/.venv/bin/python",
+      "args": [
+        "-m",
+        "testrail_api_module.cli"
+      ],
+      "env": {
+        "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
+        "TESTRAIL_USERNAME": "your-username",
+        "TESTRAIL_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+**Using the CLI Script** (after installing the package):
+
+```json
+{
+  "mcpServers": {
+    "testrail": {
+      "command": "testrail-mcp-server",
+      "env": {
+        "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
+        "TESTRAIL_USERNAME": "your-username",
+        "TESTRAIL_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+### MCP Features
+
+- **Automatic Tool Discovery**: All TestRail API methods are automatically exposed as MCP tools
+- **Module-Based Organization**: Tools are organized by TestRail module (cases, runs, results, etc.)
+- **Full API Coverage**: Access to all 22 TestRail API modules
+- **Environment-Based Configuration**: Configure via environment variables or `.env` files
+- **No Installation Required**: Use `uvx` to run without installing the package globally
+
+### Available Tools
+
+The MCP server exposes tools for all TestRail API modules:
+- `attachments` - Managing attachments
+- `cases` - Test cases
+- `configurations` - Test configurations
+- `milestones` - Milestones
+- `plans` - Test plans
+- `projects` - Projects
+- `results` - Test results
+- `runs` - Test runs
+- `suites` - Test suites
+- And many more...
+
+### Documentation
+
+For detailed MCP usage instructions, see the [MCP Usage Guide](docs/MCP_USAGE.md).
 
 ## Installation
 

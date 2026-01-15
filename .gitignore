@@ -118,3 +118,6 @@ cython_debug/
 test_it.py
 
 __private__/
+
+# Security reports
+.security_reports/
