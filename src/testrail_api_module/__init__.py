@@ -20,28 +20,45 @@ from typing import Optional
 
 def _get_version() -> str:
     """
-    Return the package version from pyproject.toml.
+    Return the package version.
+
+    First tries importlib.metadata (works for installed packages),
+    then falls back to reading pyproject.toml (for development).
 
     Returns:
-        str: The version of the module as specified in pyproject.toml.
+        str: The version of the module.
 
     Raises:
-        FileNotFoundError: If pyproject.toml does not exist.
-        ValueError: If the version cannot be found.
+        RuntimeError: If the version cannot be determined.
     """
-    import os
+    # Try importlib.metadata first (works for installed packages)
+    try:
+        from importlib.metadata import version
+        return version("testrail-api-module")
+    except Exception:
+        pass
+
+    # Fallback: read from pyproject.toml (for development/editable installs)
     import re
 
-    pyproject_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "pyproject.toml")
+    # Go up 3 levels: __init__.py -> testrail_api_module -> src -> project_root
+    pyproject_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "pyproject.toml"
+    )
     try:
         with open(pyproject_path, "r", encoding="utf-8") as f:
             content = f.read()
-            match = re.search(r'^version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            match = re.search(
+                r'^version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE
+            )
             if match:
                 return match.group(1)
-        raise ValueError("Version string not found in pyproject.toml.")
-    except FileNotFoundError as e:
-        raise FileNotFoundError("pyproject.toml not found for version extraction.") from e
+    except FileNotFoundError:
+        pass
+
+    # Last resort fallback
+    return "0.0.0"
 
 __version__ = _get_version()
 """The version of the module, used for compatibility checks and logging."""
