@@ -58,13 +58,13 @@ export TESTRAIL_USERNAME="your-username"
 export TESTRAIL_API_KEY="your-api-key"
 
 # Run with uvx using the module
-uvx --package testrail-api-module -- python -m testrail_api_module.cli
+uvx --package testrail-api-module -- python -m testrail_api_module
 ```
 
 Or with command-line arguments:
 
 ```bash
-uvx --package testrail-api-module -- python -m testrail_api_module.cli \
+uvx --package testrail-api-module -- python -m testrail_api_module \
   --base-url "https://your-instance.testrail.io" \
   --username "your-username" \
   --api-key "your-api-key" \
@@ -234,7 +234,12 @@ To use the TestRail MCP server in Cursor, add it to your `mcp.json` configuratio
     "testrail": {
       "command": "uvx",
       "args": [
-        "testrail_api_module.cli"
+        "--package",
+        "testrail-api-module",
+        "--",
+        "python",
+        "-m",
+        "testrail_api_module"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -257,7 +262,7 @@ If you're using a virtual environment, point to the Python executable in your ve
       "command": "/path/to/your/.venv/bin/python",
       "args": [
         "-m",
-        "testrail_api_module.cli"
+        "testrail_api_module"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -303,7 +308,7 @@ You can also use `uvx` to run the server without installing it:
         "--",
         "python",
         "-m",
-        "testrail_api_module.cli"
+        "testrail_api_module"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -330,7 +335,7 @@ If you prefer to use a `.env` file, you can reference it in the configuration:
       "command": "python",
       "args": [
         "-m",
-        "testrail_api_module.cli",
+        "testrail_api_module",
         "--env-file",
         "/path/to/your/.env"
       ]
@@ -350,7 +355,7 @@ For Claude Desktop, add the server configuration to `~/Library/Application Suppo
       "command": "python",
       "args": [
         "-m",
-        "testrail_api_module.cli"
+        "testrail_api_module"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",

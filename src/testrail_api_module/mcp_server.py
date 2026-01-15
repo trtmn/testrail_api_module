@@ -51,6 +51,41 @@ from .mcp_utils import (
 logger = logging.getLogger(__name__)
 
 
+def _create_literal_type(values: tuple[str, ...]) -> Any:
+    """
+    Create a Literal type dynamically from a tuple of string values.
+    
+    This helper function constructs a Literal type annotation that can be used
+    for type hints, which helps FastMCP/Pydantic generate proper JSON schemas
+    with enum constraints.
+    
+    Args:
+        values: Tuple of string values to create Literal type from.
+        
+    Returns:
+        Literal type annotation that can be used in __annotations__.
+    """
+    if not values:
+        return str
+    
+    if len(values) == 1:
+        return Literal[values[0]]  # type: ignore
+    
+    # For multiple values, Literal needs each value as a separate argument
+    # We construct it by building the type annotation string and evaluating it
+    # This is safe because we control the input (method names from our API)
+    try:
+        # Build the Literal type annotation: Literal['val1', 'val2', ...]
+        literal_args = ', '.join(repr(v) for v in values)
+        # Use eval in a controlled context - only Literal is available
+        # This is safe because values come from our own API method names
+        namespace = {'Literal': Literal}
+        return eval(f'Literal[{literal_args}]', namespace)  # type: ignore
+    except (TypeError, AttributeError, SyntaxError):
+        # Fallback: use str type - FastMCP will still work, just without enum constraint
+        return str
+
+
 def create_mcp_server(
     api_instance: Optional['TestRailAPI'] = None,
     server_name: str = "TestRail API Server"
@@ -274,8 +309,82 @@ def _create_module_tool(
     )
     
     # Create tool function with type hints - FastMCP will infer schema from types and docstring
-    # Create a simple docstring that will be read by FastMCP
-    simple_docstring = f"Execute a TestRail API action for the {module_name} module"
+    # Build a comprehensive docstring with available actions and parameter info
+    actions_list = ', '.join(method_names)
+    
+    # Build parameter hints for common action patterns
+    param_hints = []
+    for name in method_names:
+        method = method_map.get(name)
+        if method:
+            try:
+                sig = inspect.signature(method)
+                required_params = [
+                    pname for pname, param in sig.parameters.items()
+                    if param.default == inspect.Parameter.empty and pname != 'self'
+                ]
+                if required_params:
+                    # Create a hint for this action
+                    hint = f"{name}: requires {', '.join(required_params)}"
+                    param_hints.append(hint)
+            except:
+                pass
+    
+    docstring_parts = [
+        f"Execute a TestRail API action for the {module_name} module.",
+        "",
+        "Args:",
+        f"    action: The method name to call. Available actions: {actions_list}",
+        "    params: Dictionary of parameters to pass to the method.",
+        "           Required and optional parameters depend on the action.",
+        "",
+    ]
+    
+    # Add parameter hints if we have any
+    if param_hints:
+        docstring_parts.extend([
+            "Common parameter requirements:",
+        ])
+        # Show first 5 to keep it concise
+        for hint in param_hints[:5]:
+            docstring_parts.append(f"    - {hint}")
+        if len(param_hints) > 5:
+            docstring_parts.append(f"    - ... and {len(param_hints) - 5} more")
+        docstring_parts.append("")
+    
+    docstring_parts.extend([
+        "Returns:",
+        "    The result from the called method, typically a dict or list of dicts.",
+    ])
+    
+    # Add example for a common get_* action
+    example_action = None
+    for name in method_names:
+        if name.startswith('get_') and name not in ['get_case_fields', 'get_result_fields']:
+            example_action = name
+            break
+    
+    if example_action:
+        example_method = method_map.get(example_action)
+        if example_method:
+            try:
+                sig = inspect.signature(example_method)
+                required_params = [
+                    name for name, param in sig.parameters.items()
+                    if param.default == inspect.Parameter.empty and name != 'self'
+                ]
+                if required_params:
+                    example_value = 1 if 'id' in required_params[0] else 'example'
+                    example_params = {required_params[0]: example_value}
+                    docstring_parts.extend([
+                        "",
+                        "Example:",
+                        f'    action="{example_action}", params={example_params}',
+                    ])
+            except:
+                pass
+    
+    enhanced_docstring = '\n'.join(docstring_parts)
     
     def module_tool(
         action: str,
@@ -341,11 +450,30 @@ def _create_module_tool(
     # Set function metadata and docstring BEFORE FastMCP reads it
     # FastMCP reads the docstring when the decorator is applied, so set it now
     module_tool.__name__ = f"testrail_{module_name}"
-    module_tool.__doc__ = simple_docstring
+    module_tool.__doc__ = enhanced_docstring
     
-    # Ensure return annotation is set
+    # Set up annotations properly for FastMCP
+    # Create Literal type for action parameter to help FastMCP generate proper schema
     if not hasattr(module_tool, '__annotations__'):
         module_tool.__annotations__ = {}
+    
+    # Set action parameter annotation with Literal type if we have method names
+    # FastMCP uses Pydantic which understands Literal types for enum generation
+    if method_names and len(method_names) > 0:
+        try:
+            # Create Literal type using helper function
+            action_literal_type = _create_literal_type(tuple(method_names))
+            module_tool.__annotations__['action'] = action_literal_type
+        except Exception:
+            # Fallback to str if Literal creation fails
+            module_tool.__annotations__['action'] = str
+    else:
+        module_tool.__annotations__['action'] = str
+    
+    # Set params annotation
+    module_tool.__annotations__['params'] = Optional[Dict[str, Any]]
+    
+    # Ensure return annotation is set
     if 'return' not in module_tool.__annotations__:
         module_tool.__annotations__['return'] = Any
     

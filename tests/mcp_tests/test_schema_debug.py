@@ -7,8 +7,8 @@ from testrail_api_module.mcp_server import create_mcp_server
 
 api = TestRailAPI(
     base_url='https://your-instance.testrail.io',
-    username='your-username@example.com',
-    api_key='your-api-key-here'
+    username='your-username',
+    api_key='your-api-key'
 )
 
 mcp = create_mcp_server(api_instance=api)

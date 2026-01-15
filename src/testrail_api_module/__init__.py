@@ -18,7 +18,49 @@ Attributes:
 import os
 from typing import Optional
 
-__version__ = '0.4.0'
+def _get_version() -> str:
+    """
+    Return the package version.
+
+    First tries importlib.metadata (works for installed packages),
+    then falls back to reading pyproject.toml (for development).
+
+    Returns:
+        str: The version of the module.
+
+    Raises:
+        RuntimeError: If the version cannot be determined.
+    """
+    # Try importlib.metadata first (works for installed packages)
+    try:
+        from importlib.metadata import version
+        return version("testrail-api-module")
+    except Exception:
+        pass
+
+    # Fallback: read from pyproject.toml (for development/editable installs)
+    import re
+
+    # Go up 3 levels: __init__.py -> testrail_api_module -> src -> project_root
+    pyproject_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "pyproject.toml"
+    )
+    try:
+        with open(pyproject_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            match = re.search(
+                r'^version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE
+            )
+            if match:
+                return match.group(1)
+    except FileNotFoundError:
+        pass
+
+    # Last resort fallback
+    return "0.0.0"
+
+__version__ = _get_version()
 """The version of the module, used for compatibility checks and logging."""
 __author__ = 'Matt Troutman, Christian Thompson, Andrew Tipper'
 
