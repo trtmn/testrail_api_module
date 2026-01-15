@@ -2145,8 +2145,6 @@ version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
-    { name = "pip-audit", extra = ["dev"] },
-    { name = "pytest" },
     { name = "requests" },
 ]
 
@@ -2154,6 +2152,7 @@ dependencies = [
 dev = [
     { name = "mypy" },
     { name = "pdoc" },
+    { name = "pip-audit", extra = ["dev"] },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
@@ -2173,9 +2172,8 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "pdoc", marker = "extra == 'dev'", specifier = ">=14.0.0" },
     { name = "pdoc", marker = "extra == 'docs'", specifier = ">=14.0.0" },
-    { name = "pip-audit", extras = ["dev"], specifier = ">=2.10.0" },
-    { name = "pytest", specifier = ">=8.4.2" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
+    { name = "pip-audit", extras = ["dev"], marker = "extra == 'dev'", specifier = ">=2.10.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.10.0" },
     { name = "python-dotenv", marker = "extra == 'dev'", specifier = ">=1.0.0" },
