@@ -57,14 +57,17 @@ export TESTRAIL_BASE_URL="https://your-instance.testrail.io"
 export TESTRAIL_USERNAME="your-username"
 export TESTRAIL_API_KEY="your-api-key"
 
-# Run with uvx using the module
-uvx --package testrail-api-module -- python -m testrail_api_module
+# Run with uvx from PyPI
+uvx --from testrail-api-module testrail-mcp-server
+
+# Or run directly from GitHub (no PyPI required)
+uvx --from git+https://github.com/trtmn/testrail_api_module testrail-mcp-server
 ```
 
 Or with command-line arguments:
 
 ```bash
-uvx --package testrail-api-module -- python -m testrail_api_module \
+uvx --from testrail-api-module testrail-mcp-server \
   --base-url "https://your-instance.testrail.io" \
   --username "your-username" \
   --api-key "your-api-key" \
@@ -226,7 +229,9 @@ The MCP server can be used with any MCP-compatible client. The server exposes al
 
 ### Configuring for Cursor
 
-To use the TestRail MCP server in Cursor, add it to your `mcp.json` configuration file (typically located at `~/.cursor/mcp.json` or `~/.config/cursor/mcp.json`):
+To use the TestRail MCP server in Cursor, add it to your `mcp.json` configuration file (typically located at `~/.cursor/mcp.json` or `~/.config/cursor/mcp.json`).
+
+**Using uvx from PyPI (recommended):**
 
 ```json
 {
@@ -234,12 +239,9 @@ To use the TestRail MCP server in Cursor, add it to your `mcp.json` configuratio
     "testrail": {
       "command": "uvx",
       "args": [
-        "--package",
+        "--from",
         "testrail-api-module",
-        "--",
-        "python",
-        "-m",
-        "testrail_api_module"
+        "testrail-mcp-server"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -251,51 +253,7 @@ To use the TestRail MCP server in Cursor, add it to your `mcp.json` configuratio
 }
 ```
 
-**Using a Virtual Environment:**
-
-If you're using a virtual environment, point to the Python executable in your venv:
-
-```json
-{
-  "mcpServers": {
-    "testrail": {
-      "command": "/path/to/your/.venv/bin/python",
-      "args": [
-        "-m",
-        "testrail_api_module"
-      ],
-      "env": {
-        "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
-        "TESTRAIL_USERNAME": "your-username",
-        "TESTRAIL_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-**Using the CLI Script Directly:**
-
-Alternatively, you can use the installed CLI script directly:
-
-```json
-{
-  "mcpServers": {
-    "testrail": {
-      "command": "testrail-mcp-server",
-      "env": {
-        "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
-        "TESTRAIL_USERNAME": "your-username",
-        "TESTRAIL_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-**Using uvx (No Installation Required):**
-
-You can also use `uvx` to run the server without installing it:
+**Installing directly from GitHub (without PyPI):**
 
 ```json
 {
@@ -303,12 +261,9 @@ You can also use `uvx` to run the server without installing it:
     "testrail": {
       "command": "uvx",
       "args": [
-        "--package",
-        "testrail-api-module",
-        "--",
-        "python",
-        "-m",
-        "testrail_api_module"
+        "--from",
+        "git+https://github.com/trtmn/testrail_api_module",
+        "testrail-mcp-server"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -320,9 +275,7 @@ You can also use `uvx` to run the server without installing it:
 }
 ```
 
-This is useful if you don't want to install the package globally or prefer to use `uvx` for package management. `uvx` will automatically download and cache the package on first use.
-
-**Note**: The `--` separator is required to separate `uvx` arguments from the Python command arguments. The `--package` flag tells `uvx` which package to install, and everything after `--` is passed to Python.
+`uvx` will automatically download and cache the package on first use. The `--from` flag specifies the package source, and `testrail-mcp-server` is the entry point script to run.
 
 **Using a .env File:**
 
@@ -332,10 +285,11 @@ If you prefer to use a `.env` file, you can reference it in the configuration:
 {
   "mcpServers": {
     "testrail": {
-      "command": "python",
+      "command": "uvx",
       "args": [
-        "-m",
-        "testrail_api_module",
+        "--from",
+        "testrail-api-module",
+        "testrail-mcp-server",
         "--env-file",
         "/path/to/your/.env"
       ]
@@ -352,10 +306,11 @@ For Claude Desktop, add the server configuration to `~/Library/Application Suppo
 {
   "mcpServers": {
     "testrail": {
-      "command": "python",
+      "command": "uvx",
       "args": [
-        "-m",
-        "testrail_api_module"
+        "--from",
+        "testrail-api-module",
+        "testrail-mcp-server"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -367,20 +322,26 @@ For Claude Desktop, add the server configuration to `~/Library/Application Suppo
 }
 ```
 
-### Finding Your Python Executable
+Or install directly from GitHub:
 
-To find the correct Python path for your configuration:
-
-```bash
-# For system Python
-which python
-# or
-which python3
-
-# For virtual environment
-which python  # when venv is activated
-# or check the venv path directly
-echo $VIRTUAL_ENV/bin/python
+```json
+{
+  "mcpServers": {
+    "testrail": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/trtmn/testrail_api_module",
+        "testrail-mcp-server"
+      ],
+      "env": {
+        "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
+        "TESTRAIL_USERNAME": "your-username",
+        "TESTRAIL_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
 ```
 
 ### Security Note

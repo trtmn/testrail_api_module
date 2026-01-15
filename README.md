@@ -2,9 +2,11 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/testrail-api-module?label=Latest%20Version)](https://pypi.org/project/testrail-api-module/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/testrail-api-module?color=purple)](https://pypi.org/project/testrail-api-module/) [![GitHub Source](https://img.shields.io/badge/github-source-blue?logo=github)](https://github.com/trtmn/testrail-api-module/) [![PyPI Stats](https://img.shields.io/badge/%20%F0%9F%94%97-blue?label="📈%20Stats")](https://pypistats.org/packages/testrail-api-module/) [![Docs](https://img.shields.io/pypi/v/testrail-api-module?label=📖%20Docs&color=blue)](https://trtmn.github.io/testrail_api_module/)
 
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLWZyb20iLCJ0ZXN0cmFpbC1hcGktbW9kdWxlIiwidGVzdHJhaWwtbWNwLXNlcnZlciJdLCJlbnYiOnsiVEVTVFJBSUxfQkFTRV9VUkwiOiJodHRwczovL3lvdXJpbnN0YW5jZS50ZXN0cmFpbC5pbyIsIlRFU1RSQUlMX1VTRVJOQU1FIjoiWW91cnRlc3RyYWlsdXNlckB5b3VyY29tcGFueS5jb20iLCJURVNUUkFJTF9BUElfS0VZIjoiWW91ciBBUEkgS2V5IGdvZXMgaGVyZSJ9fQ%3D%3D)
 
-A comprehensive Python wrapper for the TestRail API that provides easy access to all
-TestRail functionalities. Now featuring a built-in MCP (Model Context Protocol) server for seamless AI assistant integration.
+
+
+A comprehensive Python wrapper for the TestRail API that provides easy access to all TestRail functionalities. Now featuring a built-in MCP (Model Context Protocol) server for seamless AI assistant integration.
 
 ## Features
 
@@ -37,19 +39,19 @@ This package includes a built-in MCP server that enables AI assistants (like Cur
 
 **One-click install link for Cursor:**
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLXBhY2thZ2UiLCJ0ZXN0cmFpbC1hcGktbW9kdWxlIiwiLS0iLCJweXRob24iLCItbSIsInRlc3RyYWlsX2FwaV9tb2R1bGUiXSwiZW52Ijp7IlRFU1RSQUlMX0JBU0VfVVJMIjoiaHR0cHM6Ly95b3VyaW5zdGFuY2UudGVzdHJhaWwuaW8iLCJURVNUUkFJTF9VU0VSTkFNRSI6IllvdXJ0ZXN0cmFpbHVzZXJAeW91cmNvbXBhbnkuY29tIiwiVEVTVFJBSUxfQVBJX0tFWSI6IllvdXIgQVBJIEtleSBnb2VzIGhlcmUifX0%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLWZyb20iLCJ0ZXN0cmFpbC1hcGktbW9kdWxlIiwidGVzdHJhaWwtbWNwLXNlcnZlciJdLCJlbnYiOnsiVEVTVFJBSUxfQkFTRV9VUkwiOiJodHRwczovL3lvdXJpbnN0YW5jZS50ZXN0cmFpbC5pbyIsIlRFU1RSQUlMX1VTRVJOQU1FIjoiWW91cnRlc3RyYWlsdXNlckB5b3VyY29tcGFueS5jb20iLCJURVNUUkFJTF9BUElfS0VZIjoiWW91ciBBUEkgS2V5IGdvZXMgaGVyZSJ9fQ%3D%3D)
 
 **After clicking the link:**
 1. Cursor will prompt you to install the MCP server
-2. You'll need to update the environment variables in your `mcp.json` file:
-   - Replace `https://your-instance.testrail.io` with your TestRail instance URL
-   - Replace `your-username` with your TestRail username/email
-   - Replace `your-api-key` with your TestRail API key (found in your TestRail profile settings)
+2. You'll need to update the environment variables in the prompt / your `mcp.json` file:
+   - Replace `https://yourinstance.testrail.io` with your TestRail instance URL
+   - Replace `Yourtestrailuser@yourcompany.com` with your TestRail username/email
+   - Replace `Your API Key goes here` with your TestRail API key (found in your TestRail profile settings)
 3. Restart Cursor to activate the MCP server
 
 **Text link (if button doesn't work):**
 ```
-cursor://anysphere.cursor-deeplink/mcp/install?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLXBhY2thZ2UiLCJ0ZXN0cmFpbC1hcGktbW9kdWxlIiwiLS0iLCJweXRob24iLCItbSIsInRlc3RyYWlsX2FwaV9tb2R1bGUiXSwiZW52Ijp7IlRFU1RSQUlMX0JBU0VfVVJMIjoiaHR0cHM6Ly95b3VyaW5zdGFuY2UudGVzdHJhaWwuaW8iLCJURVNUUkFJTF9VU0VSTkFNRSI6IllvdXJ0ZXN0cmFpbHVzZXJAeW91cmNvbXBhbnkuY29tIiwiVEVTVFJBSUxfQVBJX0tFWSI6IllvdXIgQVBJIEtleSBnb2VzIGhlcmUifX0%3D
+cursor://anysphere.cursor-deeplink/mcp/install?name=testrail-mcp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyItLWZyb20iLCJ0ZXN0cmFpbC1hcGktbW9kdWxlIiwidGVzdHJhaWwtbWNwLXNlcnZlciJdLCJlbnYiOnsiVEVTVFJBSUxfQkFTRV9VUkwiOiJodHRwczovL3lvdXJpbnN0YW5jZS50ZXN0cmFpbC5pbyIsIlRFU1RSQUlMX1VTRVJOQU1FIjoiWW91cnRlc3RyYWlsdXNlckB5b3VyY29tcGFueS5jb20iLCJURVNUUkFJTF9BUElfS0VZIjoiWW91ciBBUEkgS2V5IGdvZXMgaGVyZSJ9fQ==
 ```
 
 
@@ -77,12 +79,9 @@ Open or create `~/.cursor/mcp.json` (or `~/.config/cursor/mcp.json` on Linux) an
     "testrail": {
       "command": "uvx",
       "args": [
-        "--package",
+        "--from",
         "testrail-api-module",
-        "--",
-        "python",
-        "-m",
-        "testrail_api_module"
+        "testrail-mcp-server"
       ],
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
@@ -103,38 +102,25 @@ Open or create `~/.cursor/mcp.json` (or `~/.config/cursor/mcp.json` on Linux) an
 
 Restart Cursor to load the MCP server. The TestRail tools will be available in your AI assistant.
 
-> **Note**: The configuration uses `python -m testrail_api_module` (not `testrail_api_module.cli`). This is because the package uses `__main__.py` as the entry point when run as a module. Using `testrail_api_module.cli` would fail since `cli.py` doesn't have a `if __name__ == '__main__':` block.
+> **Note**: This configuration runs the `testrail-mcp-server` CLI using
+> `uvx --from testrail-api-module`. `uvx` will automatically download and
+> cache the package from PyPI if needed, so you don't need a global install
+> or a pre-created virtual environment.
 
 ### Alternative Installation Methods
 
-**Using a Virtual Environment** (if you prefer local installation):
+**Using uvx directly from GitHub** (no PyPI install required):
 
 ```json
 {
   "mcpServers": {
     "testrail": {
-      "command": "/path/to/your/.venv/bin/python",
+      "command": "uvx",
       "args": [
-        "-m",
-        "testrail_api_module"
+        "--from",
+        "git+https://github.com/trtmn/testrail_api_module",
+        "testrail-mcp-server"
       ],
-      "env": {
-        "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
-        "TESTRAIL_USERNAME": "your-username",
-        "TESTRAIL_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-**Using the CLI Script** (after installing the package):
-
-```json
-{
-  "mcpServers": {
-    "testrail": {
-      "command": "testrail-mcp-server",
       "env": {
         "TESTRAIL_BASE_URL": "https://your-instance.testrail.io",
         "TESTRAIL_USERNAME": "your-username",
