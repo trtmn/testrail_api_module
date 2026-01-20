@@ -85,6 +85,67 @@ class TestMCPServer:
             assert 'testrail_results' in tool_dict
         
         asyncio.run(check_tools())
+    
+    def test_custom_fields_automatic_separation(self):
+        """Test that custom fields passed as top-level params are automatically separated."""
+        try:
+            from testrail_api_module.mcp_server import _create_module_tool, _separate_custom_fields_for_case_action
+        except ImportError:
+            pytest.skip("fastmcp not installed")
+        
+        api = TestRailAPI(
+            base_url='https://test.testrail.io',
+            username='test',
+            api_key='test-key'
+        )
+        
+        # Test the separation function directly
+        params = {
+            'section_id': 123,
+            'title': 'Test Case',
+            'custom_steps': 'Step 1\nStep 2',  # Top-level custom field
+            'custom_expected': 'Expected result'  # Top-level custom field
+        }
+        
+        separated = _separate_custom_fields_for_case_action('add_case', params)
+        
+        # Verify custom fields are now nested
+        assert 'custom_fields' in separated
+        assert separated['custom_fields']['custom_steps'] == 'Step 1\nStep 2'
+        assert separated['custom_fields']['custom_expected'] == 'Expected result'
+        # Verify standard fields remain at top level
+        assert separated['section_id'] == 123
+        assert separated['title'] == 'Test Case'
+        # Verify top-level custom fields are removed
+        assert 'custom_steps' not in separated or separated.get('custom_steps') is None
+        assert 'custom_expected' not in separated or separated.get('custom_expected') is None
+        
+        # Test with already nested custom_fields
+        params_nested = {
+            'section_id': 123,
+            'title': 'Test Case',
+            'custom_fields': {
+                'custom_automation_type': '7'
+            },
+            'custom_steps': 'Step 1'  # Top-level that should be merged
+        }
+        
+        separated_nested = _separate_custom_fields_for_case_action('add_case', params_nested)
+        assert 'custom_fields' in separated_nested
+        assert separated_nested['custom_fields']['custom_automation_type'] == '7'
+        assert separated_nested['custom_fields']['custom_steps'] == 'Step 1'
+        
+        # Test update_case action
+        params_update = {
+            'case_id': 456,
+            'title': 'Updated Case',
+            'custom_module': ['3', '5']
+        }
+        
+        separated_update = _separate_custom_fields_for_case_action('update_case', params_update)
+        assert 'custom_fields' in separated_update
+        assert separated_update['custom_fields']['custom_module'] == ['3', '5']
+        assert separated_update['case_id'] == 456
 
 
 class TestMCPServerWithoutFastMCP:

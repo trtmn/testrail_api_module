@@ -107,6 +107,7 @@ The MCP server can be configured using environment variables:
 - `TESTRAIL_API_KEY` - Your TestRail API key (required if password not set)
 - `TESTRAIL_PASSWORD` - Your TestRail password (required if API key not set)
 - `TESTRAIL_TIMEOUT` - Request timeout in seconds (default: 30)
+- `TESTRAIL_MCP_DEBUG` - Enable debug logging (set to `1`, `true`, `yes`, or `on`)
 
 ### Command-Line Options
 
@@ -186,13 +187,221 @@ The MCP server automatically discovers and registers all public methods from all
 
 The MCP server handles errors from the TestRail API and converts them to appropriate MCP error responses. All TestRail API exceptions are preserved with their original error messages and status codes.
 
+### Common Errors
+
+#### Custom Fields Must Be Nested
+
+When adding or updating test cases, custom fields must be passed in a `custom_fields` dictionary, not as top-level parameters.
+
+**Incorrect:**
+```json
+{
+  "action": "add_case",
+  "params": {
+    "section_id": 123,
+    "title": "Test Case Title",
+    "custom_steps": "1. Do this\n2. Do that",
+    "custom_expected": "Expected result"
+  }
+}
+```
+
+**Correct:**
+```json
+{
+  "action": "add_case",
+  "params": {
+    "section_id": 123,
+    "title": "Test Case Title",
+    "custom_fields": {
+      "custom_steps": "1. Do this\n2. Do that",
+      "custom_expected": "Expected result"
+    }
+  }
+}
+```
+
+The error message will detect this mistake and provide a helpful correction with the correct format.
+
+#### Understanding Custom Field Data Types
+
+Different custom fields require different data types. The validation will show all missing fields with their types:
+
+**Text fields** - String values:
+```json
+{
+  "custom_automation_type": "Automated"
+}
+```
+
+**Dropdown/Multi-select fields** - Arrays of STRING IDs (not integers):
+```json
+{
+  "custom_interface_type": ["3", "5"],  // Strings, not integers!
+  "custom_module": ["7"]
+}
+```
+
+**Checkbox fields** - Boolean values:
+```json
+{
+  "custom_case_test_data_required": true
+}
+```
+
+**Separated steps** - Array of objects with `content` and `expected` keys:
+```json
+{
+  "custom_steps_separated": [
+    {
+      "content": "Navigate to login page",
+      "expected": "Login form is displayed"
+    },
+    {
+      "content": "Enter credentials and submit",
+      "expected": "User is logged in successfully"
+    }
+  ]
+}
+```
+
+#### Comprehensive Validation
+
+The improved validation shows ALL missing required fields at once, not one at a time:
+
+**Error message example:**
+```
+Missing required field(s): 
+  'custom_automation_type' (string), 
+  'custom_steps_separated' (array of step objects: [{'content': '...', 'expected': '...'}]),
+  'custom_case_test_data_required' (boolean),
+  'custom_interface_type' (array of string IDs: ['3', '5']),
+  'custom_module' (array of string IDs: ['3', '5'])
+
+Field type guide:
+  - Text fields: String values
+  - Dropdown/Multi-select: Arrays of string IDs (e.g., ['3', '5'])
+  - Checkboxes: Boolean values (True/False)
+  - Separated steps: Array of step objects with 'content' and 'expected' keys
+    Example: [{'content': 'Step 1', 'expected': 'Result 1'}]
+
+Use get_case_fields() to see complete field requirements and types for your project.
+```
+
+#### Checking Required Fields
+
+Before creating test cases, you can query which fields are required:
+
+**Option 1: Get only required fields (recommended)**
+
+Use the `get_required_case_fields` action to get a filtered list of only required fields with formatted type hints:
+
+```json
+{
+  "action": "get_required_case_fields",
+  "params": {
+    "project_id": 1,  // Optional: filter by project
+    "use_cache": true  // Optional: use cached data (default: true)
+  }
+}
+```
+
+This returns detailed information about each required field:
+
+```json
+{
+  "required_fields": [
+    {
+      "system_name": "custom_automation_type",
+      "label": "Automation Type",
+      "type_id": 1,
+      "type_name": "String",
+      "type_hint": "string",
+      "is_global": true,
+      "project_ids": null,
+      "description": "The automation type for the test case"
+    },
+    {
+      "system_name": "custom_steps_separated",
+      "label": "Steps",
+      "type_id": 12,
+      "type_name": "Stepped",
+      "type_hint": "array of step objects: [{'content': '...', 'expected': '...'}]",
+      "is_global": false,
+      "project_ids": [1, 2, 3],
+      "description": "Test steps"
+    }
+  ],
+  "field_count": 2,
+  "project_filtered": true,
+  "cache_used": true
+}
+```
+
+Benefits:
+- System name (to use as key in `custom_fields`)
+- Display label and description
+- Field type with helpful hints
+- Project context (global vs project-specific)
+- Pre-filtered to only required fields
+
+**Option 2: Get all fields**
+
+Use the `get_case_fields` action to see ALL fields (required and optional):
+
+```json
+{
+  "action": "get_case_fields",
+  "params": {}
+}
+```
+
+This will return all field definitions including:
+- `system_name`: The field name to use in API calls
+- `label`: The display name shown in TestRail UI
+- `type_id`: The field type (1=String, 5=Checkbox, 6=Dropdown, 11=Multi-select, 12=Steps)
+- `is_required`: Whether the field is required
+- `configs`: Project-specific configurations
+
 ## Logging
 
-Enable verbose logging to see detailed information about tool registration and API calls:
+### Debug Logging
+
+Enable debug logging to see detailed information about MCP server operations, including:
+- API method discovery
+- Tool registration details
+- Method calls with parameters
+- API response types and sizes
+- Error stack traces
+
+You can enable debug logging in two ways:
+
+**Option 1: Using the `--verbose` flag:**
 
 ```bash
 testrail-mcp-server --verbose
 ```
+
+**Option 2: Using the `TESTRAIL_MCP_DEBUG` environment variable:**
+
+```bash
+export TESTRAIL_MCP_DEBUG=1
+testrail-mcp-server
+```
+
+Or in your `.env` file:
+
+```bash
+# .env
+TESTRAIL_BASE_URL=https://your-instance.testrail.io
+TESTRAIL_USERNAME=your-username
+TESTRAIL_API_KEY=your-api-key
+TESTRAIL_MCP_DEBUG=1
+```
+
+**Note**: Debug logs are written to `stderr` to avoid interfering with the MCP protocol's `stdio` communication. This is important for MCP clients like Cursor and Claude Desktop that communicate via standard input/output.
+
+Debug logging is configured to show only TestRail API module messages, not FastMCP's internal debug logs, keeping the output clean and relevant.
 
 ## Examples
 

@@ -26,6 +26,15 @@ class TestCasesAPI:
         client.base_url = "https://testrail.example.com"
         client.username = "testuser"
         client.api_key = "test_api_key"
+        # Minimal module mocks used by CasesAPI validation.
+        client.sections = Mock()
+        client.sections.get_section.return_value = {
+            "id": 1,
+            "project_id": 1,
+            "suite_id": None,
+        }
+        client.templates = Mock()
+        client.templates.get_templates.return_value = [{"id": 1, "is_default": True}]
         return client
 
     @pytest.fixture
@@ -154,8 +163,13 @@ class TestCasesAPI:
 
     def test_add_case_minimal(self, cases_api: CasesAPI) -> None:
         """Test add_case with minimal required parameters."""
-        with patch.object(cases_api, '_post') as mock_post:
+        with patch.object(cases_api, '_post') as mock_post, \
+             patch.object(cases_api, 'get_case_fields') as mock_get_fields:
             mock_post.return_value = {"id": 1, "title": "Test Case"}
+            # Mock get_case_fields to return minimal field info (title is always required)
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1}
+            ]
             
             result = cases_api.add_case(
                 section_id=1,
@@ -172,8 +186,12 @@ class TestCasesAPI:
     def test_add_case_with_all_parameters(self, cases_api: CasesAPI,
                                          sample_case_data: dict) -> None:
         """Test add_case with all optional parameters."""
-        with patch.object(cases_api, '_post') as mock_post:
+        with patch.object(cases_api, '_post') as mock_post, \
+             patch.object(cases_api, 'get_case_fields') as mock_get_fields:
             mock_post.return_value = sample_case_data
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1}
+            ]
             
             result = cases_api.add_case(
                 section_id=1,
@@ -209,8 +227,12 @@ class TestCasesAPI:
 
     def test_add_case_with_none_values(self, cases_api: CasesAPI) -> None:
         """Test add_case with None values for optional parameters."""
-        with patch.object(cases_api, '_post') as mock_post:
+        with patch.object(cases_api, '_post') as mock_post, \
+             patch.object(cases_api, 'get_case_fields') as mock_get_fields:
             mock_post.return_value = {"id": 1, "title": "Test Case"}
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1}
+            ]
             
             result = cases_api.add_case(
                 section_id=1,
@@ -236,8 +258,14 @@ class TestCasesAPI:
 
     def test_add_case_with_custom_fields(self, cases_api: CasesAPI) -> None:
         """Test add_case with custom fields."""
-        with patch.object(cases_api, '_post') as mock_post:
+        with patch.object(cases_api, '_post') as mock_post, \
+             patch.object(cases_api, 'get_case_fields') as mock_get_fields:
             mock_post.return_value = {"id": 1, "title": "Test Case"}
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1},
+                {"system_name": "custom_field1", "is_required": False, "type_id": 1},
+                {"system_name": "custom_field2", "is_required": False, "type_id": 2}
+            ]
             
             custom_fields = {"custom1": "value1", "custom2": "value2"}
             result = cases_api.add_case(
@@ -484,7 +512,8 @@ class TestCasesAPI:
             result = cases_api.add_case(
                 section_id=1,
                 title="Original Title",
-                custom_fields=custom_fields
+                custom_fields=custom_fields,
+                validate_required=False
             )
             
             expected_data = {
@@ -505,7 +534,8 @@ class TestCasesAPI:
             result = cases_api.add_case(
                 section_id=1,
                 title="Test Case",
-                type_id=type_id
+                type_id=type_id,
+                validate_required=False
             )
             
             expected_data = {"title": "Test Case", "type_id": type_id}
@@ -524,7 +554,8 @@ class TestCasesAPI:
             result = cases_api.add_case(
                 section_id=1,
                 title="Test Case",
-                priority_id=priority_id
+                priority_id=priority_id,
+                validate_required=False
             )
             
             expected_data = {"title": "Test Case", "priority_id": priority_id}
@@ -541,7 +572,8 @@ class TestCasesAPI:
             
             result = cases_api.add_case(
                 section_id=999999,
-                title="Test Case"
+                title="Test Case",
+                validate_required=False
             )
             
             mock_post.assert_called_once_with(
@@ -583,7 +615,8 @@ class TestCasesAPI:
             result = cases_api.add_case(
                 section_id=1,
                 title="Test Case",
-                custom_fields=complex_custom_fields
+                custom_fields=complex_custom_fields,
+                validate_required=False
             )
             
             expected_data = {
@@ -638,8 +671,481 @@ class TestCasesAPI:
                 'get_cases/1',
                 params=expected_params
             )
+    
+    def test_add_case_validate_only_success(self, cases_api: CasesAPI) -> None:
+        """Test add_case with validate_only=True when all fields are valid."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            # Mock get_case_fields to return required fields
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1},
+                {"system_name": "custom_field1", "is_required": True, "type_id": 1}
+            ]
+            
+            result = cases_api.add_case(
+                section_id=1,
+                title="Test Case",
+                custom_fields={"custom_field1": "value1"},
+                validate_only=True
+            )
+            
+            # Should return validation result, not make API call
+            assert result["valid"] is True
+            assert "All" in result["message"]
+            assert len(result["missing_fields"]) == 0
+            assert len(result["provided_fields"]) == 1  # custom_field1
+    
+    def test_add_case_validate_only_missing_fields(self, cases_api: CasesAPI) -> None:
+        """Test add_case with validate_only=True when required fields are missing."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            # Mock get_case_fields to return required fields
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1},
+                {"system_name": "custom_field1", "is_required": True, "type_id": 1},
+                {"system_name": "custom_steps_separated", "is_required": True, "type_id": 12}
+            ]
+            
+            result = cases_api.add_case(
+                section_id=1,
+                title="Test Case",
+                validate_only=True
+            )
+            
+            # Should return validation result showing missing fields
+            assert result["valid"] is False
+            assert "Missing" in result["message"]
+            assert len(result["missing_fields"]) == 2  # custom_field1 and custom_steps_separated
+            assert len(result["provided_fields"]) == 0
+            assert "'custom_field1'" in result["missing_fields"][0]
+            assert "'custom_steps_separated'" in result["missing_fields"][1]
+    
+    def test_case_fields_caching(self, cases_api: CasesAPI) -> None:
+        """Test that case fields are cached after first fetch."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1}
+            ]
+            
+            # First call should fetch from API
+            fields1 = cases_api._get_required_case_fields()
+            assert mock_get_fields.call_count == 1
+            
+            # Second call should use cache
+            fields2 = cases_api._get_required_case_fields()
+            assert mock_get_fields.call_count == 1  # Still 1, not 2
+            
+            # Should return same data
+            assert fields1 == fields2
+    
+    def test_clear_case_fields_cache(self, cases_api: CasesAPI) -> None:
+        """Test clearing the case fields cache."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1}
+            ]
+            
+            # First call caches data
+            cases_api._get_required_case_fields()
+            assert mock_get_fields.call_count == 1
+            
+            # Clear cache
+            cases_api.clear_case_fields_cache()
+            
+            # Next call should fetch again
+            cases_api._get_required_case_fields()
+            assert mock_get_fields.call_count == 2  # Called again after cache clear
+    
+    def test_case_fields_cache_bypass(self, cases_api: CasesAPI) -> None:
+        """Test bypassing the cache with use_cache=False."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {"system_name": "title", "is_required": True, "type_id": 1}
+            ]
+            
+            # First call caches data
+            cases_api._get_required_case_fields()
+            assert mock_get_fields.call_count == 1
+            
+            # Call with use_cache=False should fetch fresh data
+            cases_api._get_required_case_fields(use_cache=False)
+            assert mock_get_fields.call_count == 2  # Called again
+    
+    def test_required_fields_from_configs_array(self, cases_api: CasesAPI) -> None:
+        """Test that required fields are detected from configs array (project-specific)."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            # Simulate TestRail API response with configs array
+            mock_get_fields.return_value = [
+                {
+                    "system_name": "title",
+                    "is_required": True,  # Top-level flag
+                    "type_id": 1
+                },
+                {
+                    "system_name": "custom_automation_type",
+                    "is_required": False,  # Top-level is False
+                    "type_id": 1,
+                    "configs": [  # But required in config!
+                        {
+                            "context": {
+                                "is_global": False,
+                                "project_ids": [123]
+                            },
+                            "options": {
+                                "is_required": True  # Required for project 123
+                            }
+                        }
+                    ]
+                },
+                {
+                    "system_name": "custom_steps_separated",
+                    "is_required": False,
+                    "type_id": 12,
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": True
+                            },
+                            "options": {
+                                "is_required": True  # Required globally
+                            }
+                        }
+                    ]
+                },
+                {
+                    "system_name": "custom_optional_field",
+                    "is_required": False,
+                    "type_id": 1,
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": False,
+                                "project_ids": [456]
+                            },
+                            "options": {
+                                "is_required": False  # Not required
+                            }
+                        }
+                    ]
+                }
+            ]
+            
+            # Get required fields
+            required = cases_api._get_required_case_fields()
+            
+            # Should find 3 required fields:
+            # 1. title (top-level is_required=True)
+            # 2. custom_automation_type (required in config for project 123)
+            # 3. custom_steps_separated (required in global config)
+            # Should NOT include custom_optional_field (not required)
+            assert len(required) == 3
+            
+            field_names = [f.get('system_name') for f in required]
+            assert 'title' in field_names
+            assert 'custom_automation_type' in field_names
+            assert 'custom_steps_separated' in field_names
+            assert 'custom_optional_field' not in field_names
 
 
+class TestGetRequiredCaseFields:
+    """Test suite for get_required_case_fields() method."""
+
+    @pytest.fixture
+    def mock_client(self):
+        """Create a mock TestRail client."""
+        client = Mock()
+        client.base_url = "https://testrail.example.com"
+        client.username = "testuser"
+        client.api_key = "test_api_key"
+        client.sections = Mock()
+        client.sections.get_section.return_value = {
+            "id": 1,
+            "project_id": 1,
+            "suite_id": None,
+        }
+        client.templates = Mock()
+        client.templates.get_templates.return_value = [{"id": 1, "is_default": True}]
+        return client
+
+    @pytest.fixture
+    def cases_api(self, mock_client):
+        """Create a CasesAPI instance with mocked client."""
+        return CasesAPI(mock_client)
+
+    def test_get_required_case_fields_all_projects(self, cases_api: CasesAPI) -> None:
+        """Test get_required_case_fields without project filter returns all required fields."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {
+                    "system_name": "custom_automation_type",
+                    "label": "Automation Type",
+                    "type_id": 1,
+                    "is_required": False,
+                    "description": "Type of automation",
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": True,
+                                "project_ids": None
+                            },
+                            "options": {
+                                "is_required": True
+                            }
+                        }
+                    ]
+                },
+                {
+                    "system_name": "custom_steps_separated",
+                    "label": "Steps",
+                    "type_id": 12,
+                    "is_required": False,
+                    "description": "Test steps",
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": False,
+                                "project_ids": [1, 2, 3]
+                            },
+                            "options": {
+                                "is_required": True
+                            }
+                        }
+                    ]
+                },
+                {
+                    "system_name": "custom_optional",
+                    "label": "Optional Field",
+                    "type_id": 1,
+                    "is_required": False,
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": True,
+                                "project_ids": None
+                            },
+                            "options": {
+                                "is_required": False
+                            }
+                        }
+                    ]
+                }
+            ]
+            
+            result = cases_api.get_required_case_fields()
+            
+            # Verify response structure
+            assert 'required_fields' in result
+            assert 'field_count' in result
+            assert 'project_filtered' in result
+            assert 'cache_used' in result
+            
+            # Should have 2 required fields
+            assert result['field_count'] == 2
+            assert result['project_filtered'] is False
+            
+            # Verify fields are properly formatted
+            fields = result['required_fields']
+            assert len(fields) == 2
+            
+            # Check first field (global)
+            field1 = next(f for f in fields if f['system_name'] == 'custom_automation_type')
+            assert field1['label'] == 'Automation Type'
+            assert field1['type_id'] == 1
+            assert field1['type_name'] == 'String'
+            assert field1['type_hint'] == 'string'
+            assert field1['is_global'] is True
+            assert field1['project_ids'] is None
+            assert field1['description'] == 'Type of automation'
+            
+            # Check second field (project-specific)
+            field2 = next(f for f in fields if f['system_name'] == 'custom_steps_separated')
+            assert field2['label'] == 'Steps'
+            assert field2['type_id'] == 12
+            assert field2['type_name'] == 'Stepped'
+            assert "array of step objects" in field2['type_hint']
+            assert field2['is_global'] is False
+            assert field2['project_ids'] == [1, 2, 3]
+
+    def test_get_required_case_fields_with_project_filter(self, cases_api: CasesAPI) -> None:
+        """Test get_required_case_fields with project_id filters correctly."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {
+                    "system_name": "custom_global",
+                    "label": "Global Field",
+                    "type_id": 1,
+                    "is_required": False,
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": True,
+                                "project_ids": None
+                            },
+                            "options": {
+                                "is_required": True
+                            }
+                        }
+                    ]
+                },
+                {
+                    "system_name": "custom_project_1",
+                    "label": "Project 1 Field",
+                    "type_id": 5,
+                    "is_required": False,
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": False,
+                                "project_ids": [1, 2]
+                            },
+                            "options": {
+                                "is_required": True
+                            }
+                        }
+                    ]
+                },
+                {
+                    "system_name": "custom_project_3",
+                    "label": "Project 3 Field",
+                    "type_id": 6,
+                    "is_required": False,
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": False,
+                                "project_ids": [3, 4]
+                            },
+                            "options": {
+                                "is_required": True
+                            }
+                        }
+                    ]
+                }
+            ]
+            
+            # Filter for project 1
+            result = cases_api.get_required_case_fields(project_id=1)
+            
+            # Should have 2 fields: global + project 1 specific
+            assert result['field_count'] == 2
+            assert result['project_filtered'] is True
+            
+            field_names = [f['system_name'] for f in result['required_fields']]
+            assert 'custom_global' in field_names  # Global field included
+            assert 'custom_project_1' in field_names  # Project 1 field included
+            assert 'custom_project_3' not in field_names  # Project 3 field excluded
+
+    def test_get_required_case_fields_no_cache(self, cases_api: CasesAPI) -> None:
+        """Test get_required_case_fields with use_cache=False."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {
+                    "system_name": "custom_field",
+                    "label": "Field",
+                    "type_id": 1,
+                    "is_required": True,
+                    "configs": []
+                }
+            ]
+            
+            # First call with cache
+            result1 = cases_api.get_required_case_fields(use_cache=True)
+            assert result1['cache_used'] is False  # First call, no cache yet
+            
+            # Second call with cache
+            result2 = cases_api.get_required_case_fields(use_cache=True)
+            assert result2['cache_used'] is True  # Should use cache
+            
+            # Third call without cache
+            result3 = cases_api.get_required_case_fields(use_cache=False)
+            assert result3['cache_used'] is False  # Bypassed cache
+            
+            # get_case_fields should be called twice (first and third)
+            assert mock_get_fields.call_count == 2
+
+    def test_get_required_case_fields_empty_result(self, cases_api: CasesAPI) -> None:
+        """Test get_required_case_fields when no required fields exist."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {
+                    "system_name": "custom_optional",
+                    "label": "Optional",
+                    "type_id": 1,
+                    "is_required": False,
+                    "configs": [
+                        {
+                            "context": {
+                                "is_global": True,
+                                "project_ids": None
+                            },
+                            "options": {
+                                "is_required": False
+                            }
+                        }
+                    ]
+                }
+            ]
+            
+            result = cases_api.get_required_case_fields()
+            
+            assert result['field_count'] == 0
+            assert result['required_fields'] == []
+
+    def test_get_required_case_fields_top_level_required(self, cases_api: CasesAPI) -> None:
+        """Test get_required_case_fields with top-level is_required flag."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {
+                    "system_name": "title",
+                    "label": "Title",
+                    "type_id": 1,
+                    "is_required": True,  # Top-level flag
+                    "configs": []  # No configs
+                }
+            ]
+            
+            result = cases_api.get_required_case_fields()
+            
+            assert result['field_count'] == 1
+            field = result['required_fields'][0]
+            assert field['system_name'] == 'title'
+            assert field['is_global'] is None  # No config context
+            assert field['project_ids'] is None
+
+    def test_get_required_case_fields_type_mapping(self, cases_api: CasesAPI) -> None:
+        """Test that type IDs are correctly mapped to type names."""
+        with patch.object(cases_api, 'get_case_fields') as mock_get_fields:
+            mock_get_fields.return_value = [
+                {
+                    "system_name": "field_checkbox",
+                    "type_id": 5,
+                    "is_required": True,
+                    "configs": []
+                },
+                {
+                    "system_name": "field_multiselect",
+                    "type_id": 11,
+                    "is_required": True,
+                    "configs": []
+                },
+                {
+                    "system_name": "field_stepped",
+                    "type_id": 12,
+                    "is_required": True,
+                    "configs": []
+                }
+            ]
+            
+            result = cases_api.get_required_case_fields()
+            
+            fields_by_name = {f['system_name']: f for f in result['required_fields']}
+            
+            assert fields_by_name['field_checkbox']['type_name'] == 'Checkbox'
+            assert fields_by_name['field_checkbox']['type_hint'] == 'boolean'
+            
+            assert fields_by_name['field_multiselect']['type_name'] == 'Multi-select'
+            assert fields_by_name['field_multiselect']['type_hint'] == 'array of string IDs'
+            
+            assert fields_by_name['field_stepped']['type_name'] == 'Stepped'
+            assert 'array of step objects' in fields_by_name['field_stepped']['type_hint']
 
 
 
