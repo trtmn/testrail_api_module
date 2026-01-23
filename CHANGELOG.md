@@ -7,7 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+### ✨ Added
+
+- **Enhanced MCP Tool Descriptions**: Added prominent guidance in `testrail_cases` tool description to proactively guide LLMs to discover required fields before creating test cases
+  - Added recommended workflow section at the top of tool description with warning emoji for visibility
+  - Includes step-by-step instructions to call `get_required_case_fields` first
+  - Added explicit field type examples with correct formats (arrays of string IDs, step objects, etc.)
+  - Emphasizes using string IDs for arrays (not integers) with clear examples
+  - Helps reduce trial-and-error when creating test cases by guiding LLMs to discover requirements first
+
+- **Improved Error Handling for TestRail API Validation Errors**: Enhanced error messages when TestRail API returns validation errors
+  - Detects validation errors about missing required fields from TestRail API responses
+  - Provides actionable guidance including recommended workflow to discover fields
+  - Suggests calling `get_required_case_fields` and `get_field_options` to understand requirements
+  - Includes format examples for common field types (arrays, strings, booleans, step objects)
+  - Helps LLMs understand what went wrong and how to fix it without multiple iterations
+
+- **Custom Field Normalization and Pre-Validation**: Added automatic normalization and validation of custom fields before sending to TestRail API
+  - Automatically converts single values to arrays for multi-select/dropdown fields
+  - Converts integer IDs to string IDs for dropdown/multi-select fields (e.g., `3` → `["3"]`)
+  - Validates array fields are properly formatted as arrays of strings
+  - Validates step objects have correct structure (content and expected keys)
+  - Provides clear error messages with format examples when validation fails
+  - Prevents common formatting mistakes before they reach TestRail API
+  - Reduces trial-and-error by catching format issues early
+
+- **Enhanced Field Discovery Tools**: Improved `get_required_case_fields` method with format examples and better context
+  - Added `format_example` field to each required field showing correct usage
+  - Includes concrete examples for each field type (arrays, strings, booleans, step objects)
+  - Added `format_guide` summary with quick reference for common field types
+  - Added `context` information showing resolved project/suite/template IDs
+  - Format examples include warnings about common mistakes (e.g., using integers instead of string IDs)
+  - Makes it easier for LLMs to understand correct field formats without trial-and-error
+
+- **Enhanced MCP Documentation**: Updated MCP usage documentation with best practices and complete examples
+  - Added "Best Practices" section emphasizing field discovery workflow
+  - Added complete workflow example showing discover → review → create process
+  - Documented common pitfalls and how to avoid them with examples
+  - Updated field discovery examples to show new `format_example` and `format_guide` fields
+  - Provides clear guidance on correct field formats with before/after examples
+
+### 🔧 Changed
+
+- **add_case Validation Disabled by Default**: Changed default value of `validate_required` parameter from `True` to `False` in `add_case` method
+  - Validation is now disabled by default to allow TestRail API to handle validation
+  - Users can still enable validation by setting `validate_required=True` if they want pre-validation
+  - The `validate_only` parameter remains available for pre-submission validation checks without creating the case
+  - Custom field normalization still runs automatically to fix common format issues (single values → arrays, integer IDs → string IDs)
+  - This change works better with the enhanced error handling and field discovery improvements
+
 ### 🔧 Fixed
+
+- **Stub Generation Script**: Fixed `generate_stubs.py` to handle cases where `stubgen` executable is not in PATH
+  - Now falls back to using `python -m mypy.stubgen` when `stubgen` executable is not found
+  - Automatically detects and uses virtual environment Python if available
+  - Improved error messages to show more details when stub generation fails
+  - Fixes error: "'stubgen' executable not found" when mypy is installed but stubgen is not in PATH
 
 - **MCP Delete Operations JSON Error**: Fixed "Invalid JSON response" error when deleting test cases (and other delete operations) via MCP server
   - TestRail's delete API returns empty response body with 200 status code

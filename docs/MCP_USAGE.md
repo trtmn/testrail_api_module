@@ -288,25 +288,209 @@ Field type guide:
 Use get_case_fields() to see complete field requirements and types for your project.
 ```
 
-#### Checking Required Fields
+## Best Practices for Creating Test Cases
 
-Before creating test cases, you can query which fields are required:
+### ⚠️ Recommended Workflow: Always Discover Required Fields First!
 
-**Option 1: Get only required fields (recommended)**
+To avoid trial-and-error when creating test cases, **always** follow this workflow:
 
-Use the `get_required_case_fields` action to get a filtered list of only required fields with formatted type hints:
+1. **Discover required fields** using `get_required_case_fields`
+2. **Review field types and formats** from the response
+3. **Get field options** for dropdown/multi-select fields using `get_field_options`
+4. **Create the case** with all required fields in the correct format
+
+This prevents multiple error iterations and ensures correct field formats from the start.
+
+### Example: Complete Workflow
+
+**Step 1: Discover Required Fields**
 
 ```json
 {
   "action": "get_required_case_fields",
   "params": {
-    "project_id": 1,  // Optional: filter by project
-    "use_cache": true  // Optional: use cached data (default: true)
+    "section_id": 123  // Use section_id for automatic context resolution
   }
 }
 ```
 
-This returns detailed information about each required field:
+**Step 2: Review the Response**
+
+The response now includes `format_example` for each field showing correct usage:
+
+```json
+{
+  "required_fields": [
+    {
+      "system_name": "custom_interface_type",
+      "label": "Interface Type",
+      "type_id": 11,
+      "type_name": "Multi-select",
+      "type_hint": "array of IDs from: {1=RecTrac, 2=WebTrac, 3=Mobile RecTrac, ...}",
+      "format_example": {
+        "description": "Array of STRING IDs",
+        "example": "[\"3\", \"5\"]",
+        "note": "⚠️ IMPORTANT: Must be array of STRING IDs, not integers! Use [\"3\", \"5\"], not [3, 5]"
+      },
+      "is_global": true,
+      "description": "The interface type for the test case"
+    },
+    {
+      "system_name": "custom_steps_separated",
+      "label": "Steps",
+      "type_id": 12,
+      "type_name": "Stepped",
+      "type_hint": "array of step objects: [{'content': '...', 'expected': '...'}]",
+      "format_example": {
+        "description": "Array of step objects with content and expected",
+        "example": "[{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]",
+        "full_example": [
+          {"content": "Navigate to login page", "expected": "Login form is displayed"},
+          {"content": "Enter credentials and submit", "expected": "User is logged in"}
+        ],
+        "note": "Each step must have both \"content\" and \"expected\" keys with non-empty string values."
+      }
+    }
+  ],
+  "field_count": 2,
+  "format_guide": {
+    "text_fields": "String values (e.g., \"Automated\")",
+    "dropdown_single": "Single string ID (e.g., \"3\") - will be auto-converted to array [\"3\"]",
+    "dropdown_multi": "Array of STRING IDs (e.g., [\"3\", \"5\"]) - NOT integers!",
+    "checkbox": "Boolean values (True/False)",
+    "steps_separated": "Array of step objects: [{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]"
+  },
+  "context": {
+    "project_id": 3,
+    "suite_id": 42,
+    "template_id": 2,
+    "section_id": 123
+  }
+}
+```
+
+**Step 3: Get Field Options (for dropdowns/multi-select)**
+
+```json
+{
+  "action": "get_field_options",
+  "params": {
+    "field_name": "custom_interface_type"
+  }
+}
+```
+
+**Step 4: Create the Case with Correct Formats**
+
+```json
+{
+  "action": "add_case",
+  "params": {
+    "section_id": 123,
+    "title": "My Test Case",
+    "custom_fields": {
+      "custom_interface_type": ["3", "5"],  // Array of STRING IDs
+      "custom_module": ["1"],  // Array of STRING IDs
+      "custom_steps_separated": [
+        {"content": "Step 1", "expected": "Result 1"},
+        {"content": "Step 2", "expected": "Result 2"}
+      ],
+      "custom_case_test_data_required": true  // Boolean
+    }
+  }
+}
+```
+
+### Common Pitfalls and How to Avoid Them
+
+#### ❌ Pitfall 1: Using Integer IDs Instead of String IDs
+
+**Wrong:**
+```json
+{
+  "custom_interface_type": [3, 5]  // Integers - will cause errors!
+}
+```
+
+**Correct:**
+```json
+{
+  "custom_interface_type": ["3", "5"]  // String IDs
+}
+```
+
+**Solution**: Always use string IDs in arrays for dropdown/multi-select fields.
+
+#### ❌ Pitfall 2: Passing Single Values Instead of Arrays
+
+**Wrong:**
+```json
+{
+  "custom_interface_type": "3"  // Single value - may work but inconsistent
+}
+```
+
+**Correct:**
+```json
+{
+  "custom_interface_type": ["3"]  // Array format (preferred)
+}
+```
+
+**Solution**: The normalization will auto-convert single values to arrays, but it's better to use arrays consistently.
+
+#### ❌ Pitfall 3: Incorrect Step Object Format
+
+**Wrong:**
+```json
+{
+  "custom_steps_separated": [
+    "Step 1",  // Missing expected
+    {"step": "Step 2", "result": "Result 2"}  // Wrong keys
+  ]
+}
+```
+
+**Correct:**
+```json
+{
+  "custom_steps_separated": [
+    {"content": "Step 1", "expected": "Result 1"},
+    {"content": "Step 2", "expected": "Result 2"}
+  ]
+}
+```
+
+**Solution**: Each step must be an object with exactly `content` and `expected` keys, both non-empty strings.
+
+#### ❌ Pitfall 4: Not Discovering Fields First
+
+**Wrong Approach**: Trying to create a case without knowing required fields, then fixing errors one-by-one.
+
+**Correct Approach**: Always call `get_required_case_fields` first to see all requirements at once.
+
+### Checking Required Fields
+
+Before creating test cases, you can query which fields are required:
+
+**Option 1: Get only required fields (recommended)**
+
+Use the `get_required_case_fields` action to get a filtered list of only required fields with formatted type hints and format examples:
+
+```json
+{
+  "action": "get_required_case_fields",
+  "params": {
+    "section_id": 123  // Recommended: auto-resolves project/suite/template context
+    // OR specify explicitly:
+    // "project_id": 1,
+    // "suite_id": 2,
+    // "template_id": 3
+  }
+}
+```
+
+This returns detailed information about each required field including format examples:
 
 ```json
 {
@@ -317,6 +501,11 @@ This returns detailed information about each required field:
       "type_id": 1,
       "type_name": "String",
       "type_hint": "string",
+      "format_example": {
+        "description": "String value",
+        "example": "\"Example text value\"",
+        "note": "Plain string value."
+      },
       "is_global": true,
       "project_ids": null,
       "description": "The automation type for the test case"
@@ -327,12 +516,34 @@ This returns detailed information about each required field:
       "type_id": 12,
       "type_name": "Stepped",
       "type_hint": "array of step objects: [{'content': '...', 'expected': '...'}]",
+      "format_example": {
+        "description": "Array of step objects with content and expected",
+        "example": "[{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]",
+        "full_example": [
+          {"content": "Navigate to login page", "expected": "Login form is displayed"},
+          {"content": "Enter credentials and submit", "expected": "User is logged in"}
+        ],
+        "note": "Each step must have both \"content\" and \"expected\" keys with non-empty string values."
+      },
       "is_global": false,
       "project_ids": [1, 2, 3],
       "description": "Test steps"
     }
   ],
   "field_count": 2,
+  "format_guide": {
+    "text_fields": "String values (e.g., \"Automated\")",
+    "dropdown_single": "Single string ID (e.g., \"3\") - will be auto-converted to array [\"3\"]",
+    "dropdown_multi": "Array of STRING IDs (e.g., [\"3\", \"5\"]) - NOT integers!",
+    "checkbox": "Boolean values (True/False)",
+    "steps_separated": "Array of step objects: [{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]"
+  },
+  "context": {
+    "project_id": 3,
+    "suite_id": 42,
+    "template_id": 2,
+    "section_id": 123
+  },
   "project_filtered": true,
   "cache_used": true
 }
@@ -342,8 +553,10 @@ Benefits:
 - System name (to use as key in `custom_fields`)
 - Display label and description
 - Field type with helpful hints
+- **Format examples** showing correct usage
 - Project context (global vs project-specific)
 - Pre-filtered to only required fields
+- Format guide for quick reference
 
 **Option 2: Get all fields**
 

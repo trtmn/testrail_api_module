@@ -468,8 +468,22 @@ def _create_module_tool(
     
     # Add special documentation for cases module about custom fields
     if module_name == 'cases' and ('add_case' in method_names or 'update_case' in method_names):
+        docstring_parts.insert(0, "⚠️  IMPORTANT: Discover Required Fields First!")
+        docstring_parts.insert(1, "")
+        docstring_parts.insert(2, "Before creating test cases, ALWAYS discover required fields to avoid errors:")
+        docstring_parts.insert(3, "")
+        docstring_parts.insert(4, "RECOMMENDED WORKFLOW:")
+        docstring_parts.insert(5, "  1. Call get_required_case_fields to see what's required:")
+        docstring_parts.insert(6, '     action="get_required_case_fields", params={"section_id": 123}')
+        docstring_parts.insert(7, "  2. Review field types and formats (arrays, strings, booleans, etc.)")
+        docstring_parts.insert(8, "  3. Get field options for dropdowns/multi-select fields:")
+        docstring_parts.insert(9, '     action="get_field_options", params={"field_name": "custom_interface_type"}')
+        docstring_parts.insert(10, "  4. Then create the case with all required fields in correct format")
+        docstring_parts.insert(11, "")
+        docstring_parts.insert(12, "This prevents trial-and-error and ensures correct field formats from the start.")
+        docstring_parts.insert(13, "")
         docstring_parts.extend([
-            "IMPORTANT - Custom Fields Usage:",
+            "Custom Fields Usage:",
             "    For add_case and update_case actions, custom fields can be provided in two ways:",
             "",
             "    1. Nested format (RECOMMENDED):",
@@ -478,7 +492,12 @@ def _create_module_tool(
             '           "title": "My Test",',
             '           "custom_fields": {',
             '               "custom_automation_type": "7",',
-            '               "custom_steps": "Step 1..."',
+            '               "custom_interface_type": ["3", "5"],  # Array of STRING IDs',
+            '               "custom_module": ["1"],  # Array of STRING IDs',
+            '               "custom_steps_separated": [  # Array of step objects',
+            '                   {"content": "Step 1", "expected": "Result 1"}',
+            '               ],',
+            '               "custom_case_test_data_required": true  # Boolean',
             "           }",
             "       }",
             "",
@@ -487,11 +506,21 @@ def _create_module_tool(
             '           "section_id": 123,',
             '           "title": "My Test",',
             '           "custom_automation_type": "7",',
+            '           "custom_interface_type": ["3", "5"],',
             '           "custom_steps": "Step 1..."',
             "       }",
             "",
-            "    Both formats are automatically converted to the nested format. Use",
-            "    get_case_fields() action to see required fields and their data types.",
+            "    Both formats are automatically converted to the nested format.",
+            "",
+            "Field Type Guide:",
+            "  - Text fields: String values (e.g., 'custom_automation_type': 'Automated')",
+            "  - Dropdown/Multi-select: Arrays of STRING IDs (e.g., 'custom_interface_type': ['3', '5'])",
+            "    ⚠️  Important: Use STRING IDs, not integers! ['3'] not [3]",
+            "  - Checkboxes: Boolean values (e.g., 'custom_case_test_data_required': true)",
+            "  - Separated steps: Array of objects with 'content' and 'expected' keys:",
+            "    [{'content': 'Step 1', 'expected': 'Result 1'}]",
+            "",
+            "Use get_required_case_fields() to see complete field requirements and types for your project.",
             "",
         ])
     
@@ -703,11 +732,59 @@ def _create_module_tool(
             )
             raise ValueError(error_msg) from e
         except Exception as e:
+            # Import here to avoid circular imports
+            from .base import TestRailAPIException
+            
+            # Enhanced error handling for TestRail API validation errors
+            if isinstance(e, TestRailAPIException):
+                error_message = str(e)
+                
+                # Detect if this is a validation error about missing fields
+                is_validation_error = (
+                    'missing required field' in error_message.lower() or
+                    'missing required' in error_message.lower() or
+                    'required field' in error_message.lower()
+                )
+                
+                # For cases module add_case/update_case actions, provide enhanced guidance
+                if module_name == 'cases' and action in ('add_case', 'update_case') and is_validation_error:
+                    enhanced_error_parts = [
+                        f"TestRail validation error: {error_message}",
+                        "",
+                        "💡 RECOMMENDED: Discover required fields before creating cases:",
+                        '  1. Call: action="get_required_case_fields", params={"section_id": <your_section_id>}',
+                        "  2. Review the returned field types and formats",
+                        "  3. Get field options for dropdowns: action=\"get_field_options\", params={\"field_name\": \"<field_name>\"}",
+                        "  4. Then create the case with all required fields",
+                        "",
+                        "Common field format requirements:",
+                        "  - Dropdown/Multi-select: Arrays of STRING IDs (e.g., ['3', '5']) - NOT integers!",
+                        "  - Text fields: String values",
+                        "  - Checkboxes: Boolean values (true/false)",
+                        "  - Separated steps: Array of objects: [{'content': '...', 'expected': '...'}]",
+                        "",
+                        "Note: Custom fields must be nested in 'custom_fields' parameter.",
+                        "      Use system names (e.g., 'custom_field_name') as keys, not display names.",
+                    ]
+                    enhanced_error = '\n'.join(enhanced_error_parts)
+                    logger.error(
+                        f"TestRail validation error for {module_name}.{action}: {error_message}",
+                        exc_info=True
+                    )
+                    raise ValueError(enhanced_error) from e
+                else:
+                    # For other errors, log and re-raise with original message
+                    logger.error(
+                        f"TestRail API error calling {module_name}.{action}: {error_message}",
+                        exc_info=True
+                    )
+                    raise
+            
+            # For all other exceptions, log and re-raise
             logger.error(
                 f"Error calling {module_name}.{action} with params {params}: {e}",
                 exc_info=True
             )
-            # Re-raise to let FastMCP handle error reporting
             raise
     
     # Set function metadata and docstring BEFORE FastMCP reads it

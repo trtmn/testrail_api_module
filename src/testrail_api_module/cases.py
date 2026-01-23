@@ -160,6 +160,8 @@ class CasesAPI(BaseAPI):
                 
             validate_required: If True, validate that all required fields
                 are provided before sending the request. Default is False (validation disabled).
+                Set to True to enable validation and catch missing fields before API call.
+                When False, TestRail API will handle validation and return errors.
             validate_only: If True, only validate the fields without creating the case.
                 Returns validation results instead of making the API call.
                 Useful for checking requirements before submission.
@@ -249,8 +251,23 @@ class CasesAPI(BaseAPI):
         # Add custom fields - these should use system names as keys
         if custom_fields:
             self.logger.debug(f"Adding {len(custom_fields)} custom fields to data: {list(custom_fields.keys())}")
-            data.update(custom_fields)
-            self.logger.debug(f"Custom fields added. Sample values: {[(k, type(v).__name__, v) for k, v in list(custom_fields.items())[:3]]}")
+            # Normalize and validate custom fields before adding to data
+            try:
+                normalized_custom_fields = self._normalize_and_validate_custom_fields(
+                    custom_fields=custom_fields,
+                    section_id=section_id,
+                    template_id=template_id
+                )
+                data.update(normalized_custom_fields)
+                self.logger.debug(f"Custom fields normalized and added. Sample values: {[(k, type(v).__name__, v) for k, v in list(normalized_custom_fields.items())[:3]]}")
+            except ValueError:
+                # Re-raise validation errors
+                raise
+            except Exception as e:
+                # For other errors during normalization, log but continue
+                # (field validation will catch issues later)
+                self.logger.warning(f"Error during custom field normalization: {e}. Continuing with original values.")
+                data.update(custom_fields)
         else:
             self.logger.debug("No custom fields provided")
         
@@ -515,6 +532,186 @@ class CasesAPI(BaseAPI):
             if not isinstance(expected, str) or not expected.strip():
                 return False
         return True
+
+    def _normalize_and_validate_custom_fields(
+        self,
+        custom_fields: Dict[str, Any],
+        section_id: int,
+        template_id: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Normalize and validate custom field values before sending to TestRail API.
+        
+        This method:
+        - Converts single values to arrays for multi-select fields
+        - Converts integer IDs to string IDs for dropdown/multi-select fields
+        - Validates array fields are properly formatted
+        - Provides clear error messages for format issues
+        
+        Args:
+            custom_fields: Dictionary of custom field values to normalize.
+            section_id: Section ID for context resolution.
+            template_id: Optional template ID for context resolution.
+            
+        Returns:
+            Dictionary with normalized custom field values.
+            
+        Raises:
+            ValueError: If field formats are invalid and cannot be auto-corrected.
+        """
+        try:
+            # Resolve context to get field definitions
+            project_id, suite_id = self._resolve_project_and_suite_from_section(
+                section_id=section_id
+            )
+            effective_template_id = self._resolve_effective_template_id(
+                project_id=project_id,
+                template_id=template_id,
+            )
+            
+            # Get all case fields to understand field types
+            all_fields = self.get_case_fields()
+            field_info_map = {
+                (f.get('system_name') or f.get('name')): f
+                for f in all_fields
+                if (f.get('system_name') or f.get('name'))
+            }
+            
+        except Exception as e:
+            # If we can't get field info, log and return fields as-is
+            # (validation will catch issues later)
+            self.logger.debug(f"Could not fetch field info for normalization: {e}")
+            return custom_fields
+        
+        normalized = {}
+        format_errors = []
+        
+        for field_name, field_value in custom_fields.items():
+            if field_value is None:
+                normalized[field_name] = None
+                continue
+            
+            field_info = field_info_map.get(field_name)
+            if not field_info:
+                # Unknown field - pass through as-is
+                normalized[field_name] = field_value
+                continue
+            
+            type_id = field_info.get('type_id')
+            
+            # Handle dropdown (6) and multi-select (11) fields
+            if type_id in (6, 11):
+                # These fields require arrays of string IDs
+                if isinstance(field_value, (int, str)):
+                    # Single value - convert to array of string
+                    normalized[field_name] = [str(field_value)]
+                    self.logger.debug(
+                        f"Normalized {field_name}: single value {field_value!r} -> array ['{field_value}']"
+                    )
+                elif isinstance(field_value, list):
+                    # Array - ensure all elements are strings
+                    normalized_array = []
+                    for item in field_value:
+                        if isinstance(item, (int, str)):
+                            normalized_array.append(str(item))
+                        else:
+                            format_errors.append(
+                                f"Field '{field_name}' (multi-select/dropdown) contains invalid item: {item!r}. "
+                                f"Expected array of string IDs (e.g., ['3', '5']), not {type(item).__name__}."
+                            )
+                            normalized_array.append(str(item))  # Try to convert anyway
+                    normalized[field_name] = normalized_array
+                    if normalized_array != field_value:
+                        self.logger.debug(
+                            f"Normalized {field_name}: converted integer IDs to strings"
+                        )
+                else:
+                    format_errors.append(
+                        f"Field '{field_name}' (multi-select/dropdown) has invalid type: {type(field_value).__name__}. "
+                        f"Expected array of string IDs (e.g., ['3', '5']) or single string/integer ID."
+                    )
+                    # Try to convert to array anyway
+                    normalized[field_name] = [str(field_value)]
+            
+            # Handle stepped fields (12) - these also use arrays of IDs
+            elif type_id == 12:
+                # Stepped fields can be either step objects OR arrays of IDs depending on config
+                # Check if it's a steps_separated field (step objects) or ID array
+                if 'steps_separated' in field_name.lower():
+                    # This is a steps field - should be array of step objects
+                    if isinstance(field_value, list):
+                        # Validate step objects
+                        if not self._validate_steps_separated(field_value):
+                            format_errors.append(
+                                f"Field '{field_name}' (steps) has invalid format. "
+                                f"Expected array of step objects: [{{'content': '...', 'expected': '...'}}]"
+                            )
+                        normalized[field_name] = field_value
+                    else:
+                        format_errors.append(
+                            f"Field '{field_name}' (steps) has invalid type: {type(field_value).__name__}. "
+                            f"Expected array of step objects."
+                        )
+                        normalized[field_name] = field_value
+                else:
+                    # Regular stepped field - treat as array of IDs
+                    if isinstance(field_value, (int, str)):
+                        normalized[field_name] = [str(field_value)]
+                    elif isinstance(field_value, list):
+                        normalized[field_name] = [str(item) for item in field_value]
+                    else:
+                        format_errors.append(
+                            f"Field '{field_name}' (stepped) has invalid type: {type(field_value).__name__}. "
+                            f"Expected array of string IDs."
+                        )
+                        normalized[field_name] = [str(field_value)]
+            
+            # Handle checkbox fields (5) - ensure boolean
+            elif type_id == 5:
+                if isinstance(field_value, bool):
+                    normalized[field_name] = field_value
+                elif isinstance(field_value, str):
+                    # Convert string to boolean
+                    if field_value.lower() in ('true', '1', 'yes'):
+                        normalized[field_name] = True
+                    elif field_value.lower() in ('false', '0', 'no'):
+                        normalized[field_name] = False
+                    else:
+                        format_errors.append(
+                            f"Field '{field_name}' (checkbox) has invalid value: {field_value!r}. "
+                            f"Expected boolean (True/False) or string ('true'/'false', '1'/'0')."
+                        )
+                        normalized[field_name] = bool(field_value)
+                elif isinstance(field_value, int):
+                    normalized[field_name] = bool(field_value)
+                else:
+                    format_errors.append(
+                        f"Field '{field_name}' (checkbox) has invalid type: {type(field_value).__name__}. "
+                        f"Expected boolean."
+                    )
+                    normalized[field_name] = bool(field_value)
+            
+            # For all other field types, pass through as-is
+            else:
+                normalized[field_name] = field_value
+        
+        # If there are format errors, raise an informative error
+        if format_errors:
+            error_msg = (
+                "Custom field format errors detected:\n" +
+                "\n".join(f"  - {error}" for error in format_errors) +
+                "\n\n" +
+                "Field type guide:\n" +
+                "  - Dropdown/Multi-select: Arrays of STRING IDs (e.g., ['3', '5']) - NOT integers!\n" +
+                "  - Single values will be auto-converted to arrays: '3' -> ['3']\n" +
+                "  - Checkboxes: Boolean values (True/False)\n" +
+                "  - Separated steps: Array of objects: [{'content': '...', 'expected': '...'}]\n" +
+                "\n" +
+                "Use get_required_case_fields() to see complete field requirements and types."
+            )
+            raise ValueError(error_msg)
+        
+        return normalized
 
     def _resolve_project_and_suite_from_section(
         self,
@@ -1118,23 +1315,43 @@ class CasesAPI(BaseAPI):
                 is_global = context.get('is_global', False)
                 project_ids = context.get('project_ids')
             
+            # Get format example based on field type
+            format_example = self._get_field_format_example(type_id, field_name, field)
+            
             formatted_field = {
                 'system_name': field_name,
                 'label': field.get('label') or field.get('name') or field_name,
                 'type_id': type_id,
                 'type_name': self._get_field_type_name(type_id),
                 'type_hint': self._get_field_type_hint(type_id, field_name, field),
+                'format_example': format_example,
                 'is_global': is_global,
                 'project_ids': project_ids,
                 'description': field.get('description', '')
             }
             formatted_fields.append(formatted_field)
         
+        # Add summary with common format guide
+        format_guide = {
+            'text_fields': 'String values (e.g., "Automated")',
+            'dropdown_single': 'Single string ID (e.g., "3") - will be auto-converted to array ["3"]',
+            'dropdown_multi': 'Array of STRING IDs (e.g., ["3", "5"]) - NOT integers!',
+            'checkbox': 'Boolean values (True/False)',
+            'steps_separated': 'Array of step objects: [{"content": "Step 1", "expected": "Result 1"}]',
+        }
+        
         return {
             'required_fields': formatted_fields,
             'field_count': len(formatted_fields),
             'project_filtered': resolved_project_id is not None,
-            'cache_used': cache_was_used
+            'cache_used': cache_was_used,
+            'format_guide': format_guide,
+            'context': {
+                'project_id': resolved_project_id,
+                'suite_id': resolved_suite_id,
+                'template_id': resolved_template_id,
+                'section_id': section_id
+            }
         }
     
     def get_field_options(
@@ -1453,6 +1670,111 @@ class CasesAPI(BaseAPI):
             12: "Stepped"
         }
         return type_names.get(type_id, "Unknown")
+    
+    def _get_field_format_example(
+        self,
+        type_id: Optional[int],
+        field_name: str,
+        field_info: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Get a format example for a field showing correct usage.
+        
+        Args:
+            type_id: The TestRail field type ID.
+            field_name: The field name for context.
+            field_info: Optional full field dictionary with configs.
+            
+        Returns:
+            Dictionary with format example information.
+        """
+        # Extract options if available
+        options = None
+        if field_info:
+            options = self._extract_field_options(field_info)
+        
+        # Build example based on type
+        if type_id == 6:  # Dropdown
+            if options:
+                # Use first option ID as example
+                example_id = options.split(',')[0].split('=')[0].strip() if '=' in options else "3"
+                return {
+                    'description': 'Single string ID (will be auto-converted to array)',
+                    'example': f'"{example_id}"',
+                    'example_array': f'["{example_id}"]',
+                    'note': 'Can provide single value or array. Single values are auto-converted.'
+                }
+            return {
+                'description': 'Single string ID',
+                'example': '"3"',
+                'example_array': '["3"]',
+                'note': 'Use string ID, not integer. Will be auto-converted to array.'
+            }
+        
+        elif type_id == 11:  # Multi-select
+            if options:
+                # Use first two option IDs as example
+                option_ids = [opt.split('=')[0].strip() for opt in options.split(',')[:2] if '=' in opt]
+                if option_ids:
+                    example_ids = option_ids[:2] if len(option_ids) >= 2 else [option_ids[0], option_ids[0]]
+                    return {
+                        'description': 'Array of STRING IDs',
+                        'example': f'["{example_ids[0]}", "{example_ids[1]}"]',
+                        'note': '⚠️ IMPORTANT: Must be array of STRING IDs, not integers! Use ["3", "5"], not [3, 5]'
+                    }
+            return {
+                'description': 'Array of STRING IDs',
+                'example': '["3", "5"]',
+                'note': '⚠️ IMPORTANT: Must be array of STRING IDs, not integers!'
+            }
+        
+        elif type_id == 12:  # Stepped
+            if 'steps_separated' in field_name.lower():
+                return {
+                    'description': 'Array of step objects with content and expected',
+                    'example': '[{"content": "Step 1", "expected": "Result 1"}]',
+                    'full_example': [
+                        {'content': 'Navigate to login page', 'expected': 'Login form is displayed'},
+                        {'content': 'Enter credentials and submit', 'expected': 'User is logged in'}
+                    ],
+                    'note': 'Each step must have both "content" and "expected" keys with non-empty string values.'
+                }
+            else:
+                # Regular stepped field - array of IDs
+                return {
+                    'description': 'Array of STRING IDs',
+                    'example': '["3", "5"]',
+                    'note': 'Array of string IDs for stepped field options.'
+                }
+        
+        elif type_id == 5:  # Checkbox
+            return {
+                'description': 'Boolean value',
+                'example': 'true',
+                'example_false': 'false',
+                'note': 'Use boolean True/False, not strings "true"/"false" or integers 1/0.'
+            }
+        
+        elif type_id in (1, 3, 4):  # String, Text, URL
+            return {
+                'description': 'String value',
+                'example': '"Example text value"',
+                'note': 'Plain string value.'
+            }
+        
+        elif type_id == 2:  # Integer
+            return {
+                'description': 'Integer value',
+                'example': '42',
+                'note': 'Numeric integer value.'
+            }
+        
+        else:
+            return {
+                'description': 'See type_hint for format',
+                'example': 'Varies by field type',
+                'note': 'Check field type_hint for specific format requirements.'
+            }
     
     def update_case(self, case_id: int, title: Optional[str] = None,
                    template_id: Optional[int] = None, type_id: Optional[int] = None,

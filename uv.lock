@@ -2145,6 +2145,7 @@ version = "0.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
+    { name = "mypy" },
     { name = "requests" },
 ]
 
@@ -2170,6 +2171,7 @@ mcp = [
 requires-dist = [
     { name = "fastmcp", specifier = ">=0.9.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
+    { name = "mypy", extras = ["dev"], specifier = ">=1.19.1" },
     { name = "pdoc", marker = "extra == 'dev'", specifier = ">=14.0.0" },
     { name = "pdoc", marker = "extra == 'docs'", specifier = ">=14.0.0" },
     { name = "pip-audit", extras = ["dev"], marker = "extra == 'dev'", specifier = ">=2.10.0" },
