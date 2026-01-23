@@ -5,6 +5,264 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+
+### ✨ Added
+
+- **Enhanced MCP Tool Descriptions**: Added prominent guidance in `testrail_cases` tool description to proactively guide LLMs to discover required fields before creating test cases
+  - Added recommended workflow section at the top of tool description with warning emoji for visibility
+  - Includes step-by-step instructions to call `get_required_case_fields` first
+  - Added explicit field type examples with correct formats (arrays of string IDs, step objects, etc.)
+  - Emphasizes using string IDs for arrays (not integers) with clear examples
+  - Helps reduce trial-and-error when creating test cases by guiding LLMs to discover requirements first
+
+- **Improved Error Handling for TestRail API Validation Errors**: Enhanced error messages when TestRail API returns validation errors
+  - Detects validation errors about missing required fields from TestRail API responses
+  - Provides actionable guidance including recommended workflow to discover fields
+  - Suggests calling `get_required_case_fields` and `get_field_options` to understand requirements
+  - Includes format examples for common field types (arrays, strings, booleans, step objects)
+  - Helps LLMs understand what went wrong and how to fix it without multiple iterations
+
+- **Custom Field Normalization and Pre-Validation**: Added automatic normalization and validation of custom fields before sending to TestRail API
+  - Automatically converts single values to arrays for multi-select/dropdown fields
+  - Converts integer IDs to string IDs for dropdown/multi-select fields (e.g., `3` → `["3"]`)
+  - Validates array fields are properly formatted as arrays of strings
+  - Validates step objects have correct structure (content and expected keys)
+  - Provides clear error messages with format examples when validation fails
+  - Prevents common formatting mistakes before they reach TestRail API
+  - Reduces trial-and-error by catching format issues early
+
+- **Enhanced Field Discovery Tools**: Improved `get_required_case_fields` method with format examples and better context
+  - Added `format_example` field to each required field showing correct usage
+  - Includes concrete examples for each field type (arrays, strings, booleans, step objects)
+  - Added `format_guide` summary with quick reference for common field types
+  - Added `context` information showing resolved project/suite/template IDs
+  - Format examples include warnings about common mistakes (e.g., using integers instead of string IDs)
+  - Makes it easier for LLMs to understand correct field formats without trial-and-error
+
+- **Enhanced MCP Documentation**: Updated MCP usage documentation with best practices and complete examples
+  - Added "Best Practices" section emphasizing field discovery workflow
+  - Added complete workflow example showing discover → review → create process
+  - Documented common pitfalls and how to avoid them with examples
+  - Updated field discovery examples to show new `format_example` and `format_guide` fields
+  - Provides clear guidance on correct field formats with before/after examples
+
+### 🔧 Changed
+
+- **add_case Validation Disabled by Default**: Changed default value of `validate_required` parameter from `True` to `False` in `add_case` method
+  - Validation is now disabled by default to allow TestRail API to handle validation
+  - Users can still enable validation by setting `validate_required=True` if they want pre-validation
+  - The `validate_only` parameter remains available for pre-submission validation checks without creating the case
+  - Custom field normalization still runs automatically to fix common format issues (single values → arrays, integer IDs → string IDs)
+  - This change works better with the enhanced error handling and field discovery improvements
+
+### 🔧 Fixed
+
+- **Stub Generation Script**: Fixed `generate_stubs.py` to handle cases where `stubgen` executable is not in PATH
+  - Now falls back to using `python -m mypy.stubgen` when `stubgen` executable is not found
+  - Automatically detects and uses virtual environment Python if available
+  - Improved error messages to show more details when stub generation fails
+  - Fixes error: "'stubgen' executable not found" when mypy is installed but stubgen is not in PATH
+
+- **MCP Delete Operations JSON Error**: Fixed "Invalid JSON response" error when deleting test cases (and other delete operations) via MCP server
+  - TestRail's delete API returns empty response body with 200 status code
+  - Updated `_handle_response` method to gracefully handle empty responses
+  - Empty responses now return `{}` (empty dict) instead of raising JSON decode error
+  - Fixes error: "Invalid JSON response: Expecting value: line 1 column 1 (char 0)"
+  - Affects all delete operations: `delete_case`, `delete_run`, `delete_section`, etc.
+
+### 🔧 Changed
+
+- **add_case Validation Disabled by Default**: Changed default value of `validate_required` parameter from `True` to `False` in `add_case` method
+  - Validation is now disabled by default to prevent false positives and allow TestRail API to handle validation
+  - Users can still enable validation by setting `validate_required=True` if needed
+  - The `validate_only` parameter remains available for pre-submission validation checks
+  - This change prevents validation errors when custom fields are properly provided but validation logic incorrectly reports them as missing
+
+### ✨ Added
+
+- **Example Script for iPhone Test Cases**: Created `examples/create_10_iphone_cases_mcp.py` script
+  - Demonstrates creating 10 test cases for iPhone mobile application testing
+  - Uses MCP server tools directly to create test cases with all required custom fields
+  - Includes proper handling of custom fields: `custom_automation_type`, `custom_interface_type`, `custom_module`, `custom_steps_separated`, and `custom_case_test_data_required`
+  - Loads credentials from `.env` file using `python-dotenv`
+  - Successfully creates test cases in Section ID 3699 (iPhone Testing section)
+
+### 🔧 Fixed
+
+- **Field Validation Bug in add_case**: Fixed critical bug where required custom fields were incorrectly reported as missing
+  - Fixed validation logic to properly detect custom fields in the data dictionary
+  - Fixed error message construction to only append step validation text (`must include at least one step...`) to actual step fields (type_id == 12), not to other field types like `custom_module` or `custom_interface_type`
+  - Added fallback check to look for fields in `custom_fields` parameter if not found in data dict
+  - Added comprehensive debug logging to trace field detection issues
+  - Validation now correctly identifies provided array fields (e.g., `custom_module: ["17"]`, `custom_interface_type: ["3"]`) as present
+  - Error messages now accurately reflect which fields are actually missing without incorrect validation text
+
+- **MCP Custom Fields Handling**: Fixed issue where custom fields passed as top-level parameters for `add_case` and `update_case` actions were not properly nested
+  - Added automatic separation of custom fields from standard fields in MCP server
+  - Custom fields starting with `custom_` are now automatically moved to nested `custom_fields` dictionary
+  - Supports both input styles: top-level custom fields (e.g., `custom_automation_type="7"`) and nested format (e.g., `custom_fields={"custom_automation_type": "7"}`)
+  - Top-level custom fields are automatically merged into nested `custom_fields` if both formats are provided
+  - Updated tool documentation to clarify both supported input formats
+  - Improved user experience by eliminating the need to manually nest custom fields
+  - Affects `testrail_cases` MCP tool for `add_case` and `update_case` actions
+
+- **MCP Parameter Serialization**: Fixed issue where MCP tool parameters were being serialized as Python dict strings instead of proper dictionaries
+  - Updated `params` parameter type annotation to `Union[Dict[str, Any], str, None]` to accept multiple formats
+  - Added support for parsing both JSON strings and Python dict literal strings using `ast.literal_eval`
+  - Added automatic repair for malformed strings (missing commas, extra braces) as a workaround for MCP client serialization bugs
+  - Improved error messages to guide users on correct parameter formats and indicate when the MCP client is sending malformed data
+  - Note: MCP server must be restarted for schema changes to take effect
+  - **Known Issue**: Some MCP clients may still serialize Dict parameters as malformed strings. The server attempts to repair these, but the root cause is in the client's serialization logic.
+
+### ✨ Added
+
+- **Field Requirements Caching**: Automatic caching of TestRail field requirements to reduce API calls
+  - Field requirements are fetched once and cached per `CasesAPI` instance
+  - Dramatically improves performance when creating multiple test cases
+  - Use `clear_case_fields_cache()` to refresh if project configuration changes
+  - Reduces API calls from ~20+ to ~10 when creating multiple test cases
+  - Cache can be bypassed with `use_cache=False` parameter when needed
+
+- **Validate-Only Mode**: New `validate_only` parameter for `add_case()` method
+  - Check field requirements without creating the test case
+  - Returns detailed validation report with missing/provided fields
+  - Includes field type hints and comprehensive guidance
+  - Perfect for pre-submission validation in forms and UIs
+  - Example: `result = api.cases.add_case(..., validate_only=True)`
+  - Returns: `{"valid": bool, "missing_fields": [...], "provided_fields": [...], "message": str}`
+
+- **MCP Debug Logging**: Added comprehensive debug logging for MCP server components
+  - New `TESTRAIL_MCP_DEBUG` environment variable to enable debug logging
+  - Detailed logging for API method discovery, tool registration, and execution
+  - Debug logs include method parameters, results, and error context
+  - Debug logging added to field validation process showing:
+    - Number of required fields found
+    - Individual field checks (present/missing)
+    - Validation pass/fail status
+  - All debug output is sent to stderr to avoid interfering with stdio communication
+  - Filters out FastMCP internal debug logs for clean, relevant output
+  - Compatible with existing `--verbose` CLI flag for backward compatibility
+
+- **Required Fields Query Method**: New `get_required_case_fields()` method for querying required fields
+  - Query required fields BEFORE attempting to create test cases
+  - Supports optional `project_id` parameter for project-specific field filtering
+  - Returns formatted field information with type hints and context:
+    - `system_name`: The key to use in `custom_fields` parameter
+    - `label`: Human-readable field name
+    - `type_name` and `type_hint`: Clear guidance on expected data format
+    - `is_global` and `project_ids`: Project context information
+    - `description`: Field description from TestRail
+  - Automatically exposed as MCP action `testrail_cases` with action `get_required_case_fields`
+  - Includes caching support via `use_cache` parameter (default: True)
+  - Example: `result = api.cases.get_required_case_fields(project_id=1)`
+  - Returns structured dict: `{"required_fields": [...], "field_count": int, "project_filtered": bool, "cache_used": bool}`
+
+- **Dynamic Field Options Query**: New `get_field_options()` method for discovering valid field values
+  - Query complete list of valid options for dropdown, multi-select, and other fields
+  - Returns full option details: ID, label, default value, and format hints
+  - Reduces trial-and-error when creating test cases with custom fields
+  - Automatically exposed as MCP action `testrail_cases` with action `get_field_options`
+  - Example: `options = api.cases.get_field_options('custom_automation_type')`
+  - Returns structured dict with options array: `{"field_name": "...", "options": [{"id": "1", "label": "..."}], ...}`
+
+- **Dynamic Type Hints**: Field type hints now derive from TestRail config dynamically
+  - Dropdown/multi-select hints show actual valid option IDs and labels
+  - Step fields show the exact structure expected (content, expected, additional_info, refs)
+  - Hints are context-aware, using the selected config for the target project/suite/template
+
+### 🔧 Changed
+
+- **Reduced MCP Server Log Verbosity**: Consolidated tool registration logs for cleaner output
+  - Individual tool registrations now logged at DEBUG level only
+  - Single INFO-level summary shows all registered tools with action counts
+  - Reduces log clutter while preserving useful debugging information
+
+- **Improved Error Messages**: Enhanced error handling for common MCP and API usage errors
+  - Custom field parameters passed incorrectly now show helpful correction message
+  - Error messages detect when `custom_*` fields are passed as top-level parameters
+  - Provides correct usage example showing how to nest fields in `custom_fields` dict
+  - MCP error messages now reference `get_case_fields()` for field requirements
+  
+- **Enhanced add_case Validation**: Comprehensive validation and error reporting
+  - Validates all required fields at once (not one-at-a-time)
+  - Shows field data types in error messages (string, array, boolean, etc.)
+  - Provides specific format examples for complex fields (steps_separated, multi-select)
+  - Enhanced docstring with complete custom field examples and type information
+  - Improved guidance for array fields (interface_type, module) requiring string IDs
+  - **BREAKING**: Validation now fails explicitly if unable to fetch field requirements
+    - Previously, validation failures were silently bypassed
+    - Now raises clear `ValueError` when field definitions cannot be retrieved
+    - Prevents cryptic TestRail API errors by catching issues early
+    - Use `validate_required=False` to disable validation if needed (e.g., for testing)
+
+### 🐛 Fixed
+
+- **MCP Tool Params Parsing**: Fixed issue where `params` parameter was being received
+  as a JSON string instead of a dictionary in MCP tool calls
+  - Added automatic JSON parsing for `params` when received as a string
+  - Ensures compatibility with MCP protocol parameter handling
+  - Provides clear error messages if JSON parsing fails
+  - Fixes direct MCP calls that were previously failing due to type mismatch
+
+- **Section Context Resolution**: Added suite fallback when section data lacks
+  `project_id`, ensuring `add_case` resolves project context for MCP case
+  creation.
+
+- **Case Creation Validation**: Fixed `add_case` method to properly validate required
+  fields before sending requests to TestRail API
+  - Added automatic validation of required fields from project configuration
+  - Improved error messages to clearly indicate which required fields are missing
+  - Added `validate_required` parameter (default: True) to allow skipping validation
+    for performance when needed
+  - Enhanced documentation to clarify that custom fields should use system names
+    (e.g., 'custom_field_name') as keys, not display names
+
+- **Field Cache Empty State Bug**: Fixed critical bug where empty field cache caused validation bypass
+  - Empty API responses are no longer cached, preventing false validation passes
+  - Added warning logs when cache is empty to help diagnose configuration issues
+  - Cache now distinguishes between "not yet fetched" (None) vs "fetched and empty" ([])
+  - If validation reports 0 required fields unexpectedly, restart MCP server or call `clear_case_fields_cache()`
+
+- **Project-Specific Required Fields**: Fixed validation to correctly detect required fields from TestRail API
+  - Now checks both top-level `is_required` flag AND `configs[].options.is_required` 
+  - TestRail returns project-specific requirements in the `configs` array with context information
+  - Validation now correctly identifies all required custom fields (e.g., `custom_automation_type`)
+  - Added detailed debug logging showing which config triggered the requirement (global vs project-specific)
+
+- **Template-Aware Required Field Validation**: `add_case` now resolves section context and validates required fields
+  against the effective template used to create the case
+  - Resolves `project_id`/`suite_id` via `get_section` and selects the default template when `template_id` is omitted
+  - Evaluates required-ness per matching `configs[].context` (project/suite/template when present)
+  - Applies `options.default_value` automatically for required fields when provided by TestRail, reducing avoidable API failures
+
+- **CLI Logging Side Effects**: `setup_logging()` no longer globally disables Python logging
+  - Keeps stdio mode quiet by setting log levels to `ERROR` instead of calling `logging.disable()`
+  - Allows downstream apps/tests to re-enable logging as needed
+
+- **Setuptools Deprecation Warning**: Updated `pyproject.toml` license format to use SPDX expression
+  - Changed from deprecated TOML table format `license = { file = "LICENSE" }` to modern format
+  - Now using `license = "MIT"` with `license-files = ["LICENSE"]`
+  - Eliminates SetuptoolsDeprecationWarning about deprecated license format
+  - Ensures compatibility with setuptools>=77.0.0 and future versions
+
+- **Development dependency resolution**: Removed invalid `stubgen` dev dependency
+  - `stubgen` is provided by `mypy` (via the `stubgen` console script)
+  - Fixes `uv` dependency resolution failures for `testrail-api-module[dev]`
+
+- **MCP noisy INFO logs**: Suppressed `mcp.server.*` INFO output in debug/verbose mode
+  - Prevents internal “Processing request of type …” lines from cluttering stderr
+  - Helps avoid Cursor surfacing routine MCP logs as “errors”
+
+### 📚 Documentation
+
+- **Installation Instructions**: Streamlined and improved MCP server installation
+  instructions in README and MCP_USAGE guide
+  - Simplified installation steps for better clarity
+  - Enhanced quick-start guide for new users
+  - Improved formatting and organization
+
 ## [0.5.0] - 2026-01-14
 
 ### ✨ Added

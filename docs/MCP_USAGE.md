@@ -107,6 +107,7 @@ The MCP server can be configured using environment variables:
 - `TESTRAIL_API_KEY` - Your TestRail API key (required if password not set)
 - `TESTRAIL_PASSWORD` - Your TestRail password (required if API key not set)
 - `TESTRAIL_TIMEOUT` - Request timeout in seconds (default: 30)
+- `TESTRAIL_MCP_DEBUG` - Enable debug logging (set to `1`, `true`, `yes`, or `on`)
 
 ### Command-Line Options
 
@@ -186,13 +187,434 @@ The MCP server automatically discovers and registers all public methods from all
 
 The MCP server handles errors from the TestRail API and converts them to appropriate MCP error responses. All TestRail API exceptions are preserved with their original error messages and status codes.
 
+### Common Errors
+
+#### Custom Fields Must Be Nested
+
+When adding or updating test cases, custom fields must be passed in a `custom_fields` dictionary, not as top-level parameters.
+
+**Incorrect:**
+```json
+{
+  "action": "add_case",
+  "params": {
+    "section_id": 123,
+    "title": "Test Case Title",
+    "custom_steps": "1. Do this\n2. Do that",
+    "custom_expected": "Expected result"
+  }
+}
+```
+
+**Correct:**
+```json
+{
+  "action": "add_case",
+  "params": {
+    "section_id": 123,
+    "title": "Test Case Title",
+    "custom_fields": {
+      "custom_steps": "1. Do this\n2. Do that",
+      "custom_expected": "Expected result"
+    }
+  }
+}
+```
+
+The error message will detect this mistake and provide a helpful correction with the correct format.
+
+#### Understanding Custom Field Data Types
+
+Different custom fields require different data types. The validation will show all missing fields with their types:
+
+**Text fields** - String values:
+```json
+{
+  "custom_automation_type": "Automated"
+}
+```
+
+**Dropdown/Multi-select fields** - Arrays of STRING IDs (not integers):
+```json
+{
+  "custom_interface_type": ["3", "5"],  // Strings, not integers!
+  "custom_module": ["7"]
+}
+```
+
+**Checkbox fields** - Boolean values:
+```json
+{
+  "custom_case_test_data_required": true
+}
+```
+
+**Separated steps** - Array of objects with `content` and `expected` keys:
+```json
+{
+  "custom_steps_separated": [
+    {
+      "content": "Navigate to login page",
+      "expected": "Login form is displayed"
+    },
+    {
+      "content": "Enter credentials and submit",
+      "expected": "User is logged in successfully"
+    }
+  ]
+}
+```
+
+#### Comprehensive Validation
+
+The improved validation shows ALL missing required fields at once, not one at a time:
+
+**Error message example:**
+```
+Missing required field(s): 
+  'custom_automation_type' (string), 
+  'custom_steps_separated' (array of step objects: [{'content': '...', 'expected': '...'}]),
+  'custom_case_test_data_required' (boolean),
+  'custom_interface_type' (array of string IDs: ['3', '5']),
+  'custom_module' (array of string IDs: ['3', '5'])
+
+Field type guide:
+  - Text fields: String values
+  - Dropdown/Multi-select: Arrays of string IDs (e.g., ['3', '5'])
+  - Checkboxes: Boolean values (True/False)
+  - Separated steps: Array of step objects with 'content' and 'expected' keys
+    Example: [{'content': 'Step 1', 'expected': 'Result 1'}]
+
+Use get_case_fields() to see complete field requirements and types for your project.
+```
+
+## Best Practices for Creating Test Cases
+
+### ⚠️ Recommended Workflow: Always Discover Required Fields First!
+
+To avoid trial-and-error when creating test cases, **always** follow this workflow:
+
+1. **Discover required fields** using `get_required_case_fields`
+2. **Review field types and formats** from the response
+3. **Get field options** for dropdown/multi-select fields using `get_field_options`
+4. **Create the case** with all required fields in the correct format
+
+This prevents multiple error iterations and ensures correct field formats from the start.
+
+### Example: Complete Workflow
+
+**Step 1: Discover Required Fields**
+
+```json
+{
+  "action": "get_required_case_fields",
+  "params": {
+    "section_id": 123  // Use section_id for automatic context resolution
+  }
+}
+```
+
+**Step 2: Review the Response**
+
+The response now includes `format_example` for each field showing correct usage:
+
+```json
+{
+  "required_fields": [
+    {
+      "system_name": "custom_interface_type",
+      "label": "Interface Type",
+      "type_id": 11,
+      "type_name": "Multi-select",
+      "type_hint": "array of IDs from: {1=RecTrac, 2=WebTrac, 3=Mobile RecTrac, ...}",
+      "format_example": {
+        "description": "Array of STRING IDs",
+        "example": "[\"3\", \"5\"]",
+        "note": "⚠️ IMPORTANT: Must be array of STRING IDs, not integers! Use [\"3\", \"5\"], not [3, 5]"
+      },
+      "is_global": true,
+      "description": "The interface type for the test case"
+    },
+    {
+      "system_name": "custom_steps_separated",
+      "label": "Steps",
+      "type_id": 12,
+      "type_name": "Stepped",
+      "type_hint": "array of step objects: [{'content': '...', 'expected': '...'}]",
+      "format_example": {
+        "description": "Array of step objects with content and expected",
+        "example": "[{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]",
+        "full_example": [
+          {"content": "Navigate to login page", "expected": "Login form is displayed"},
+          {"content": "Enter credentials and submit", "expected": "User is logged in"}
+        ],
+        "note": "Each step must have both \"content\" and \"expected\" keys with non-empty string values."
+      }
+    }
+  ],
+  "field_count": 2,
+  "format_guide": {
+    "text_fields": "String values (e.g., \"Automated\")",
+    "dropdown_single": "Single string ID (e.g., \"3\") - will be auto-converted to array [\"3\"]",
+    "dropdown_multi": "Array of STRING IDs (e.g., [\"3\", \"5\"]) - NOT integers!",
+    "checkbox": "Boolean values (True/False)",
+    "steps_separated": "Array of step objects: [{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]"
+  },
+  "context": {
+    "project_id": 3,
+    "suite_id": 42,
+    "template_id": 2,
+    "section_id": 123
+  }
+}
+```
+
+**Step 3: Get Field Options (for dropdowns/multi-select)**
+
+```json
+{
+  "action": "get_field_options",
+  "params": {
+    "field_name": "custom_interface_type"
+  }
+}
+```
+
+**Step 4: Create the Case with Correct Formats**
+
+```json
+{
+  "action": "add_case",
+  "params": {
+    "section_id": 123,
+    "title": "My Test Case",
+    "custom_fields": {
+      "custom_interface_type": ["3", "5"],  // Array of STRING IDs
+      "custom_module": ["1"],  // Array of STRING IDs
+      "custom_steps_separated": [
+        {"content": "Step 1", "expected": "Result 1"},
+        {"content": "Step 2", "expected": "Result 2"}
+      ],
+      "custom_case_test_data_required": true  // Boolean
+    }
+  }
+}
+```
+
+### Common Pitfalls and How to Avoid Them
+
+#### ❌ Pitfall 1: Using Integer IDs Instead of String IDs
+
+**Wrong:**
+```json
+{
+  "custom_interface_type": [3, 5]  // Integers - will cause errors!
+}
+```
+
+**Correct:**
+```json
+{
+  "custom_interface_type": ["3", "5"]  // String IDs
+}
+```
+
+**Solution**: Always use string IDs in arrays for dropdown/multi-select fields.
+
+#### ❌ Pitfall 2: Passing Single Values Instead of Arrays
+
+**Wrong:**
+```json
+{
+  "custom_interface_type": "3"  // Single value - may work but inconsistent
+}
+```
+
+**Correct:**
+```json
+{
+  "custom_interface_type": ["3"]  // Array format (preferred)
+}
+```
+
+**Solution**: The normalization will auto-convert single values to arrays, but it's better to use arrays consistently.
+
+#### ❌ Pitfall 3: Incorrect Step Object Format
+
+**Wrong:**
+```json
+{
+  "custom_steps_separated": [
+    "Step 1",  // Missing expected
+    {"step": "Step 2", "result": "Result 2"}  // Wrong keys
+  ]
+}
+```
+
+**Correct:**
+```json
+{
+  "custom_steps_separated": [
+    {"content": "Step 1", "expected": "Result 1"},
+    {"content": "Step 2", "expected": "Result 2"}
+  ]
+}
+```
+
+**Solution**: Each step must be an object with exactly `content` and `expected` keys, both non-empty strings.
+
+#### ❌ Pitfall 4: Not Discovering Fields First
+
+**Wrong Approach**: Trying to create a case without knowing required fields, then fixing errors one-by-one.
+
+**Correct Approach**: Always call `get_required_case_fields` first to see all requirements at once.
+
+### Checking Required Fields
+
+Before creating test cases, you can query which fields are required:
+
+**Option 1: Get only required fields (recommended)**
+
+Use the `get_required_case_fields` action to get a filtered list of only required fields with formatted type hints and format examples:
+
+```json
+{
+  "action": "get_required_case_fields",
+  "params": {
+    "section_id": 123  // Recommended: auto-resolves project/suite/template context
+    // OR specify explicitly:
+    // "project_id": 1,
+    // "suite_id": 2,
+    // "template_id": 3
+  }
+}
+```
+
+This returns detailed information about each required field including format examples:
+
+```json
+{
+  "required_fields": [
+    {
+      "system_name": "custom_automation_type",
+      "label": "Automation Type",
+      "type_id": 1,
+      "type_name": "String",
+      "type_hint": "string",
+      "format_example": {
+        "description": "String value",
+        "example": "\"Example text value\"",
+        "note": "Plain string value."
+      },
+      "is_global": true,
+      "project_ids": null,
+      "description": "The automation type for the test case"
+    },
+    {
+      "system_name": "custom_steps_separated",
+      "label": "Steps",
+      "type_id": 12,
+      "type_name": "Stepped",
+      "type_hint": "array of step objects: [{'content': '...', 'expected': '...'}]",
+      "format_example": {
+        "description": "Array of step objects with content and expected",
+        "example": "[{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]",
+        "full_example": [
+          {"content": "Navigate to login page", "expected": "Login form is displayed"},
+          {"content": "Enter credentials and submit", "expected": "User is logged in"}
+        ],
+        "note": "Each step must have both \"content\" and \"expected\" keys with non-empty string values."
+      },
+      "is_global": false,
+      "project_ids": [1, 2, 3],
+      "description": "Test steps"
+    }
+  ],
+  "field_count": 2,
+  "format_guide": {
+    "text_fields": "String values (e.g., \"Automated\")",
+    "dropdown_single": "Single string ID (e.g., \"3\") - will be auto-converted to array [\"3\"]",
+    "dropdown_multi": "Array of STRING IDs (e.g., [\"3\", \"5\"]) - NOT integers!",
+    "checkbox": "Boolean values (True/False)",
+    "steps_separated": "Array of step objects: [{\"content\": \"Step 1\", \"expected\": \"Result 1\"}]"
+  },
+  "context": {
+    "project_id": 3,
+    "suite_id": 42,
+    "template_id": 2,
+    "section_id": 123
+  },
+  "project_filtered": true,
+  "cache_used": true
+}
+```
+
+Benefits:
+- System name (to use as key in `custom_fields`)
+- Display label and description
+- Field type with helpful hints
+- **Format examples** showing correct usage
+- Project context (global vs project-specific)
+- Pre-filtered to only required fields
+- Format guide for quick reference
+
+**Option 2: Get all fields**
+
+Use the `get_case_fields` action to see ALL fields (required and optional):
+
+```json
+{
+  "action": "get_case_fields",
+  "params": {}
+}
+```
+
+This will return all field definitions including:
+- `system_name`: The field name to use in API calls
+- `label`: The display name shown in TestRail UI
+- `type_id`: The field type (1=String, 5=Checkbox, 6=Dropdown, 11=Multi-select, 12=Steps)
+- `is_required`: Whether the field is required
+- `configs`: Project-specific configurations
+
 ## Logging
 
-Enable verbose logging to see detailed information about tool registration and API calls:
+### Debug Logging
+
+Enable debug logging to see detailed information about MCP server operations, including:
+- API method discovery
+- Tool registration details
+- Method calls with parameters
+- API response types and sizes
+- Error stack traces
+
+You can enable debug logging in two ways:
+
+**Option 1: Using the `--verbose` flag:**
 
 ```bash
 testrail-mcp-server --verbose
 ```
+
+**Option 2: Using the `TESTRAIL_MCP_DEBUG` environment variable:**
+
+```bash
+export TESTRAIL_MCP_DEBUG=1
+testrail-mcp-server
+```
+
+Or in your `.env` file:
+
+```bash
+# .env
+TESTRAIL_BASE_URL=https://your-instance.testrail.io
+TESTRAIL_USERNAME=your-username
+TESTRAIL_API_KEY=your-api-key
+TESTRAIL_MCP_DEBUG=1
+```
+
+**Note**: Debug logs are written to `stderr` to avoid interfering with the MCP protocol's `stdio` communication. This is important for MCP clients like Cursor and Claude Desktop that communicate via standard input/output.
+
+Debug logging is configured to show only TestRail API module messages, not FastMCP's internal debug logs, keeping the output clean and relevant.
 
 ## Examples
 

@@ -117,6 +117,13 @@ class BaseAPI:
             TestRailAPIException: For other API errors
         """
         if response.status_code == 200:
+            # Handle empty responses (common for delete operations)
+            response_text = response.text.strip()
+            if not response_text:
+                # Empty response is valid for delete operations - return empty dict
+                # This matches the expected behavior for delete operations in TestRail
+                return {}
+            
             try:
                 return response.json()
             except json.JSONDecodeError as e:

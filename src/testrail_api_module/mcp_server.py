@@ -21,16 +21,21 @@ Example:
     >>> mcp = create_mcp_server(api_instance=api)
     >>> mcp.run()  # Start the MCP server
 """
+import ast
 import inspect
+import json
 import logging
 import functools
-from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, TYPE_CHECKING
+from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Union, TYPE_CHECKING
 
 try:
-    from pydantic import Field
+    from pydantic import Field, field_validator, Json
+    from pydantic_core import core_schema
 except ImportError:
     # Pydantic should be available via fastmcp, but handle gracefully
     Field = None  # type: ignore
+    field_validator = None  # type: ignore
+    Json = None  # type: ignore
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -141,19 +146,30 @@ def create_mcp_server(
             "installation. Please reinstall: pip install testrail-api-module"
         )
     
+    logger.debug(f"Creating MCP server: {server_name}")
+    
     # Create or use provided API instance
     if api_instance is None:
+        logger.debug("No API instance provided, creating from environment")
         from .mcp_utils import create_api_from_env
         api_instance = create_api_from_env()
+    else:
+        logger.debug("Using provided API instance")
     
     # Create FastMCP server
+    logger.debug(f"Initializing FastMCP server: {server_name}")
     mcp = FastMCP(server_name)
     
     # Discover all API methods
+    logger.debug("Discovering API methods")
     methods_by_module = discover_api_methods(api_instance)
+    logger.debug(f"Found {len(methods_by_module)} modules to register")
     
     # Register one tool per module
     tool_count = 0
+    registered_tools = []
+    failed_tools = []
+    
     for module_name, methods in methods_by_module.items():
         try:
             tool_wrapper = _create_module_tool(
@@ -164,23 +180,35 @@ def create_mcp_server(
             # Register the module tool
             decorated_tool = mcp.tool(name=tool_name)(tool_wrapper)
             tool_count += 1
-            # Only log in debug mode to avoid interfering with stdio
-            if logger.isEnabledFor(logging.DEBUG):
-                method_names = [name for name, _ in methods]
-                logger.debug(
-                    f"Registered module tool: {tool_name} "
-                    f"with {len(methods)} actions: {', '.join(method_names)}"
-                )
+            
+            method_names = [name for name, _ in methods]
+            registered_tools.append(f"{tool_name} ({len(methods)} actions)")
+            
+            # Only log individual tool registration at DEBUG level
+            logger.debug(
+                f"Registered tool: {tool_name} with {len(methods)} actions: "
+                f"{', '.join(method_names)}"
+            )
         except Exception as e:
-            # Only log warnings in debug mode
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.warning(
-                    f"Failed to register module tool {module_name}: {e}"
-                )
+            failed_tools.append(module_name)
+            logger.warning(
+                f"Failed to register module tool {module_name}: {e}",
+                exc_info=True
+            )
     
-    # Only log info in debug mode
-    if logger.isEnabledFor(logging.DEBUG):
-        logger.info(f"Registered {tool_count} module-based MCP tools from TestRail API")
+    # Log summary at INFO level
+    if registered_tools:
+        logger.info(
+            f"Registered {tool_count} module-based MCP tools: "
+            f"{', '.join(registered_tools)}"
+        )
+    if failed_tools:
+        logger.warning(
+            f"Failed to register {len(failed_tools)} tools: "
+            f"{', '.join(failed_tools)}"
+        )
+    
+    logger.debug("MCP server creation complete")
     
     return mcp
 
@@ -263,6 +291,103 @@ def _create_tool_wrapper(
     return tool_wrapper
 
 
+def _separate_custom_fields_for_case_action(
+    action: str,
+    params: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Separate custom fields from standard fields for add_case and update_case actions.
+    
+    This function supports both input styles:
+    1. Custom fields as top-level: custom_automation_type="7"
+    2. Custom fields nested: custom_fields={"custom_automation_type": "7"}
+    
+    Args:
+        action: The action name ('add_case' or 'update_case').
+        params: Dictionary of parameters that may contain custom fields at top level.
+        
+    Returns:
+        Dictionary with custom fields properly nested under 'custom_fields' key.
+    """
+    # Define which parameters are standard (non-custom) fields
+    if action == 'add_case':
+        STANDARD_FIELDS = {
+            'section_id', 'title', 'template_id', 'type_id',
+            'priority_id', 'estimate', 'milestone_id', 'refs',
+            'description', 'preconditions', 'postconditions',
+            'validate_required', 'validate_only'
+        }
+    elif action == 'update_case':
+        STANDARD_FIELDS = {
+            'case_id', 'title', 'template_id', 'type_id',
+            'priority_id', 'estimate', 'milestone_id', 'refs',
+            'description', 'preconditions', 'postconditions'
+        }
+    else:
+        # Should not happen, but return params as-is
+        return params
+    
+    # Check if user already provided custom_fields as nested dict
+    if 'custom_fields' in params:
+        custom_fields_value = params.get('custom_fields')
+        if isinstance(custom_fields_value, dict):
+            # User already structured it correctly, but check for top-level custom fields too
+            # Merge any top-level custom fields into the nested dict
+            top_level_custom = {
+                k: v for k, v in params.items()
+                if k.startswith('custom_') and k != 'custom_fields' and k not in STANDARD_FIELDS
+            }
+            if top_level_custom:
+                # Merge top-level custom fields into nested custom_fields
+                params['custom_fields'].update(top_level_custom)
+                # Remove top-level custom fields
+                for key in top_level_custom:
+                    params.pop(key)
+                logger.debug(
+                    f"Merged top-level custom fields into nested custom_fields: {list(top_level_custom.keys())}"
+                )
+            return params
+        elif custom_fields_value is None:
+            # custom_fields is explicitly set to None - treat as if it doesn't exist
+            # and process top-level custom fields normally
+            pass
+        else:
+            # custom_fields has an unexpected type - log and process normally
+            logger.warning(
+                f"custom_fields parameter has unexpected type {type(custom_fields_value)}, "
+                f"processing as if it doesn't exist"
+            )
+    
+    # Otherwise, restructure top-level custom fields
+    standard_params = {}
+    custom_fields = {}
+    
+    for key, value in params.items():
+        if key in STANDARD_FIELDS:
+            standard_params[key] = value
+        elif key.startswith('custom_') and key != 'custom_fields':
+            # This is a top-level custom field - move it to custom_fields dict
+            custom_fields[key] = value
+        elif key == 'custom_fields':
+            # Should not happen here (checked above), but handle gracefully
+            if isinstance(value, dict):
+                custom_fields.update(value)
+        else:
+            # Unknown parameter - pass through (might be a new standard field)
+            standard_params[key] = value
+            logger.debug(f"Unknown parameter '{key}' passed through as standard field")
+    
+    # Add custom_fields to standard params if any exist
+    if custom_fields:
+        standard_params['custom_fields'] = custom_fields
+        logger.debug(
+            f"Separated {len(custom_fields)} custom field(s) into nested custom_fields: "
+            f"{list(custom_fields.keys())}"
+        )
+    
+    return standard_params
+
+
 def _create_module_tool(
     api_instance: 'TestRailAPI',
     module_name: str,
@@ -335,10 +460,69 @@ def _create_module_tool(
         "",
         "Args:",
         f"    action: The method name to call. Available actions: {actions_list}",
-        "    params: Dictionary of parameters to pass to the method.",
-        "           Required and optional parameters depend on the action.",
+        "    params: Dictionary of parameters to pass to the method. Can be a dict, "
+        "JSON string, or Python dict literal. Required and optional parameters "
+        "depend on the action.",
         "",
     ]
+    
+    # Add special documentation for cases module about custom fields
+    if module_name == 'cases' and ('add_case' in method_names or 'update_case' in method_names):
+        docstring_parts.insert(0, "⚠️  IMPORTANT: Discover Required Fields First!")
+        docstring_parts.insert(1, "")
+        docstring_parts.insert(2, "Before creating test cases, ALWAYS discover required fields to avoid errors:")
+        docstring_parts.insert(3, "")
+        docstring_parts.insert(4, "RECOMMENDED WORKFLOW:")
+        docstring_parts.insert(5, "  1. Call get_required_case_fields to see what's required:")
+        docstring_parts.insert(6, '     action="get_required_case_fields", params={"section_id": 123}')
+        docstring_parts.insert(7, "  2. Review field types and formats (arrays, strings, booleans, etc.)")
+        docstring_parts.insert(8, "  3. Get field options for dropdowns/multi-select fields:")
+        docstring_parts.insert(9, '     action="get_field_options", params={"field_name": "custom_interface_type"}')
+        docstring_parts.insert(10, "  4. Then create the case with all required fields in correct format")
+        docstring_parts.insert(11, "")
+        docstring_parts.insert(12, "This prevents trial-and-error and ensures correct field formats from the start.")
+        docstring_parts.insert(13, "")
+        docstring_parts.extend([
+            "Custom Fields Usage:",
+            "    For add_case and update_case actions, custom fields can be provided in two ways:",
+            "",
+            "    1. Nested format (RECOMMENDED):",
+            "       {",
+            '           "section_id": 123,',
+            '           "title": "My Test",',
+            '           "custom_fields": {',
+            '               "custom_automation_type": "7",',
+            '               "custom_interface_type": ["3", "5"],  # Array of STRING IDs',
+            '               "custom_module": ["1"],  # Array of STRING IDs',
+            '               "custom_steps_separated": [  # Array of step objects',
+            '                   {"content": "Step 1", "expected": "Result 1"}',
+            '               ],',
+            '               "custom_case_test_data_required": true  # Boolean',
+            "           }",
+            "       }",
+            "",
+            "    2. Top-level format (also supported):",
+            "       {",
+            '           "section_id": 123,',
+            '           "title": "My Test",',
+            '           "custom_automation_type": "7",',
+            '           "custom_interface_type": ["3", "5"],',
+            '           "custom_steps": "Step 1..."',
+            "       }",
+            "",
+            "    Both formats are automatically converted to the nested format.",
+            "",
+            "Field Type Guide:",
+            "  - Text fields: String values (e.g., 'custom_automation_type': 'Automated')",
+            "  - Dropdown/Multi-select: Arrays of STRING IDs (e.g., 'custom_interface_type': ['3', '5'])",
+            "    ⚠️  Important: Use STRING IDs, not integers! ['3'] not [3]",
+            "  - Checkboxes: Boolean values (e.g., 'custom_case_test_data_required': true)",
+            "  - Separated steps: Array of objects with 'content' and 'expected' keys:",
+            "    [{'content': 'Step 1', 'expected': 'Result 1'}]",
+            "",
+            "Use get_required_case_fields() to see complete field requirements and types for your project.",
+            "",
+        ])
     
     # Add parameter hints if we have any
     if param_hints:
@@ -388,27 +572,135 @@ def _create_module_tool(
     
     def module_tool(
         action: str,
-        params: Optional[Dict[str, Any]] = None
+        params: Union[Dict[str, Any], str, None] = None
     ) -> Any:
         if params is None:
             params = {}
         
+        # Handle case where params is received as a string (JSON or Python dict syntax)
+        # This can happen when FastMCP receives parameters from MCP protocol
+        # NOTE: The MCP client should send Dict parameters as JSON objects, not strings.
+        # If we receive a string, it's likely a serialization issue on the client side.
+        if isinstance(params, str):
+            # Log the raw string for debugging
+            logger.debug(f"Received params as string (first 200 chars): {params[:200]}")
+            
+            # Try to clean up common serialization issues
+            cleaned_params = params.strip()
+            
+            # Try to fix malformed Python dict strings (missing commas, etc.)
+            # This is a workaround for MCP client serialization bugs
+            if cleaned_params.startswith('{') and not cleaned_params.startswith('{'):
+                # Might have extra characters at the start
+                pass
+            
+            # Try to fix missing commas in Python dict syntax
+            # Pattern: 'key': value 'key2' should be 'key': value, 'key2'
+            import re
+            # Fix missing commas between dictionary items
+            # Match pattern like: 'key': value 'key2' (missing comma)
+            fixed_params = re.sub(r"('[\w_]+'):\s*([^,}]+)\s+('[\w_]+')", r"\1: \2, \3", cleaned_params)
+            if fixed_params != cleaned_params:
+                logger.debug(f"Fixed missing commas in params string")
+                cleaned_params = fixed_params
+            
+            try:
+                # First try JSON parsing (standard format)
+                params = json.loads(cleaned_params)
+                logger.debug(f"Parsed params from JSON string: {params}")
+            except (json.JSONDecodeError, TypeError):
+                # Fallback to Python literal evaluation (handles Python dict syntax)
+                try:
+                    params = ast.literal_eval(cleaned_params)
+                    logger.debug(f"Parsed params from Python literal: {params}")
+                except (ValueError, SyntaxError) as e:
+                    # Try to fix common issues: remove leading/trailing braces if malformed
+                    if cleaned_params.startswith('{}') and not cleaned_params.startswith('{}"'):
+                        # Remove the leading {}
+                        cleaned_params = cleaned_params[2:].strip()
+                        try:
+                            params = ast.literal_eval(cleaned_params)
+                            logger.debug(f"Parsed params after removing leading braces: {params}")
+                        except (ValueError, SyntaxError):
+                            pass
+                    
+                    if not isinstance(params, dict):
+                        error_msg = (
+                            f"Invalid params format for {module_name}.{action}. "
+                            f"Expected a dictionary object, not a string. "
+                            f"The MCP client should send Dict parameters as JSON objects, not strings. "
+                            f"Received malformed string (first 200 chars): {params[:200] if isinstance(params, str) else str(params)[:200]}. "
+                            f"Error: {e}"
+                        )
+                        logger.error(error_msg)
+                        raise ValueError(error_msg) from e
+        
+        # Ensure params is a dictionary after parsing
+        if not isinstance(params, dict):
+            error_msg = (
+                f"Invalid params type for {module_name}.{action}. "
+                f"Expected a dictionary, got: {type(params).__name__}"
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        logger.debug(f"MCP tool called: {module_name}.{action}")
+        logger.debug(f"Parameters: {params}")
+        
         # Validate action
         if action not in method_map:
             available = ', '.join(method_names)
-            raise ValueError(
+            error_msg = (
                 f"Invalid action '{action}' for {module_name} module. "
                 f"Available actions: {available}"
             )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         
         # Get the method function
         method_func = method_map[action]
+        logger.debug(f"Calling method: {module_name}.{action}")
+        
+        # Handle custom fields separation for cases module add_case and update_case actions
+        # Custom fields must be nested under 'custom_fields' parameter for TestRail API
+        if module_name == 'cases' and action in ('add_case', 'update_case'):
+            params = _separate_custom_fields_for_case_action(action, params)
         
         try:
             # Call the method with the provided parameters
             result = method_func(**params)
+            logger.debug(f"Method {module_name}.{action} completed successfully")
+            logger.debug(f"Result type: {type(result).__name__}")
+            if isinstance(result, (list, dict)):
+                logger.debug(f"Result size: {len(result)} items")
             return result
         except TypeError as e:
+            # Check if custom fields are being passed incorrectly as top-level parameters
+            custom_field_params = {
+                k: v for k, v in params.items() 
+                if k.startswith('custom_') and k != 'custom_fields'
+            }
+            
+            if custom_field_params and 'unexpected keyword argument' in str(e):
+                # User is passing custom fields as top-level parameters
+                error_msg = (
+                    f"Custom fields must be nested in 'custom_fields' parameter. "
+                    f"Found custom field(s) as top-level parameters: {', '.join(custom_field_params.keys())}. "
+                    f"\n\nCorrect usage: {module_name}.{action}("
+                    f"section_id=..., title=..., "
+                    f"custom_fields={{{', '.join(f'{k!r}: ...' for k in custom_field_params.keys())}}})"
+                    f"\n\nNote: Use get_case_fields() action to see required fields and their data types."
+                    f"\n      Common required fields may include: custom_automation_type, "
+                    f"custom_steps_separated (array of step objects), custom_case_test_data_required, "
+                    f"custom_interface_type (array), custom_module (array)."
+                    f"\n\nOriginal error: {e}"
+                )
+                logger.error(
+                    f"Custom fields passed incorrectly for {module_name}.{action}: {custom_field_params}",
+                    exc_info=True
+                )
+                raise ValueError(error_msg) from e
+            
             # If there's a type error, it might be due to missing required parameters
             # Try to extract required parameters from the method signature
             try:
@@ -435,16 +727,64 @@ def _create_module_tool(
                 )
             
             logger.error(
-                f"Error calling {module_name}.{action} with params {params}: {e}",
+                f"TypeError calling {module_name}.{action} with params {params}: {e}",
                 exc_info=True
             )
             raise ValueError(error_msg) from e
         except Exception as e:
+            # Import here to avoid circular imports
+            from .base import TestRailAPIException
+            
+            # Enhanced error handling for TestRail API validation errors
+            if isinstance(e, TestRailAPIException):
+                error_message = str(e)
+                
+                # Detect if this is a validation error about missing fields
+                is_validation_error = (
+                    'missing required field' in error_message.lower() or
+                    'missing required' in error_message.lower() or
+                    'required field' in error_message.lower()
+                )
+                
+                # For cases module add_case/update_case actions, provide enhanced guidance
+                if module_name == 'cases' and action in ('add_case', 'update_case') and is_validation_error:
+                    enhanced_error_parts = [
+                        f"TestRail validation error: {error_message}",
+                        "",
+                        "💡 RECOMMENDED: Discover required fields before creating cases:",
+                        '  1. Call: action="get_required_case_fields", params={"section_id": <your_section_id>}',
+                        "  2. Review the returned field types and formats",
+                        "  3. Get field options for dropdowns: action=\"get_field_options\", params={\"field_name\": \"<field_name>\"}",
+                        "  4. Then create the case with all required fields",
+                        "",
+                        "Common field format requirements:",
+                        "  - Dropdown/Multi-select: Arrays of STRING IDs (e.g., ['3', '5']) - NOT integers!",
+                        "  - Text fields: String values",
+                        "  - Checkboxes: Boolean values (true/false)",
+                        "  - Separated steps: Array of objects: [{'content': '...', 'expected': '...'}]",
+                        "",
+                        "Note: Custom fields must be nested in 'custom_fields' parameter.",
+                        "      Use system names (e.g., 'custom_field_name') as keys, not display names.",
+                    ]
+                    enhanced_error = '\n'.join(enhanced_error_parts)
+                    logger.error(
+                        f"TestRail validation error for {module_name}.{action}: {error_message}",
+                        exc_info=True
+                    )
+                    raise ValueError(enhanced_error) from e
+                else:
+                    # For other errors, log and re-raise with original message
+                    logger.error(
+                        f"TestRail API error calling {module_name}.{action}: {error_message}",
+                        exc_info=True
+                    )
+                    raise
+            
+            # For all other exceptions, log and re-raise
             logger.error(
-                f"Error calling {module_name}.{action}: {e}",
+                f"Error calling {module_name}.{action} with params {params}: {e}",
                 exc_info=True
             )
-            # Re-raise to let FastMCP handle error reporting
             raise
     
     # Set function metadata and docstring BEFORE FastMCP reads it
@@ -470,8 +810,15 @@ def _create_module_tool(
     else:
         module_tool.__annotations__['action'] = str
     
-    # Set params annotation
-    module_tool.__annotations__['params'] = Optional[Dict[str, Any]]
+    # Set params annotation to explicitly define it as a JSON object
+    # The key is to ensure FastMCP generates a schema with type: "object"
+    # Using Dict[str, Any] should already do this, but we'll be explicit
+    module_tool.__annotations__['params'] = Union[Dict[str, Any], str, None]
+    
+    # If Field is available, try to add schema metadata to ensure it's treated as JSON object
+    # Note: FastMCP should automatically infer "object" type from Dict[str, Any],
+    # but the MCP client might be serializing it incorrectly
+    # The real fix might need to be in how the MCP client handles Dict parameters
     
     # Ensure return annotation is set
     if 'return' not in module_tool.__annotations__:
