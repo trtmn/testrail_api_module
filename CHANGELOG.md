@@ -5,7 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.2] 2026-01-23
+
+### ✨ Added
+
+- **Automated PyPI Publishing Workflow**: Added GitHub Actions workflow for automated PyPI publishing on release tags
+  - Workflow triggers automatically when tags matching semantic version patterns are pushed
+  - Supports tags with or without 'v' prefix (e.g., `v0.5.2` or `0.5.2`)
+  - Builds package using `uv` and `setuptools`
+  - Publishes to PyPI using secure API token from repository secrets
+  - Includes comprehensive publishing guide in `docs/PYPI_PUBLISHING_GUIDE.md`
+  - Added Cursor command (`.cursor/commands/publish-to-pypi.md`) for easy reference
+  - Impact: Simplifies release process and ensures consistent PyPI deployments
+
+### 🔧 Changed
+
+- **Documentation Publishing Workflow**: Updated GitHub Pages workflow to align with release process
+  - Changed trigger from `main` branch pushes to release tags (same pattern as PyPI publish workflow)
+  - Updated workflow name and descriptions to clearly indicate it's for publishing documentation
+  - Documentation now publishes automatically when release tags are created
+  - Impact: Documentation stays in sync with releases and is only published for tagged versions
 
 ## [0.5.1] - 2026-01-23
 
