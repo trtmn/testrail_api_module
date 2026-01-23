@@ -6,6 +6,9 @@ on:
       # Matches tags like v0.1.0, v1.2.3, 0.1.0, 1.2.3, etc.
       - 'v[0-9]+.[0-9]+.[0-9]+*'
       - '[0-9]+.[0-9]+.[0-9]+*'
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 permissions:
   contents: read
