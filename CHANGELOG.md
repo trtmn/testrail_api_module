@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✨ Added
+
+- **MCP Prompts for Common TestRail Actions**: Added 10 reusable MCP prompts that provide guided workflows for common TestRail operations
+  - `testrail_add_test_cases` - Step-by-step guide for adding test cases with field discovery
+  - `testrail_retrieve_test_run_data` - Comprehensive guide for retrieving test run information
+  - `testrail_create_test_run` - Guide for creating test runs with proper configuration
+  - `testrail_create_test_plan` - Guide for creating test plans with optional entries
+  - `testrail_add_test_results` - Guide for recording test execution results
+  - `testrail_get_test_case_details` - Guide for retrieving comprehensive test case information
+  - `testrail_update_test_case` - Guide for updating existing test cases
+  - `testrail_get_test_plan_details` - Guide for retrieving test plan information
+  - `testrail_get_project_info` - Guide for exploring project structure
+  - `testrail_get_run_results` - Guide for retrieving all test run results
+  - Prompts provide step-by-step instructions, format examples, and tool call examples
+  - Each prompt includes related prompts and tools for navigation
+  - Prompts help users understand proper field formats and workflows
+  - All prompts are automatically registered with the MCP server
+  - Updated MCP usage documentation with prompt examples and usage guidance
+
 ## [0.5.1] - 2026-01-23
 
 ### ✨ Added

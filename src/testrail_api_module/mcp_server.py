@@ -54,6 +54,24 @@ from .mcp_utils import (
     extract_method_docstring
 )
 
+# Import prompts for registration
+try:
+    from .mcp_prompts import (
+        add_test_cases_prompt,
+        retrieve_test_run_data_prompt,
+        create_test_run_prompt,
+        create_test_plan_prompt,
+        add_test_results_prompt,
+        get_test_case_details_prompt,
+        update_test_case_prompt,
+        get_test_plan_details_prompt,
+        get_project_info_prompt,
+        get_run_results_prompt,
+    )
+    PROMPTS_AVAILABLE = True
+except ImportError:
+    PROMPTS_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -208,6 +226,54 @@ def create_mcp_server(
             f"Failed to register {len(failed_tools)} tools: "
             f"{', '.join(failed_tools)}"
         )
+    
+    # Register MCP prompts
+    if PROMPTS_AVAILABLE:
+        logger.debug("Registering MCP prompts")
+        prompt_count = 0
+        registered_prompts = []
+        failed_prompts = []
+        
+        # Define prompt mappings: (function, prompt_name)
+        prompt_mappings = [
+            (add_test_cases_prompt, "testrail_add_test_cases"),
+            (retrieve_test_run_data_prompt, "testrail_retrieve_test_run_data"),
+            (create_test_run_prompt, "testrail_create_test_run"),
+            (create_test_plan_prompt, "testrail_create_test_plan"),
+            (add_test_results_prompt, "testrail_add_test_results"),
+            (get_test_case_details_prompt, "testrail_get_test_case_details"),
+            (update_test_case_prompt, "testrail_update_test_case"),
+            (get_test_plan_details_prompt, "testrail_get_test_plan_details"),
+            (get_project_info_prompt, "testrail_get_project_info"),
+            (get_run_results_prompt, "testrail_get_run_results"),
+        ]
+        
+        for prompt_func, prompt_name in prompt_mappings:
+            try:
+                # Register prompt with FastMCP
+                mcp.prompt(name=prompt_name)(prompt_func)
+                prompt_count += 1
+                registered_prompts.append(prompt_name)
+                logger.debug(f"Registered prompt: {prompt_name}")
+            except Exception as e:
+                failed_prompts.append(prompt_name)
+                logger.warning(
+                    f"Failed to register prompt {prompt_name}: {e}",
+                    exc_info=True
+                )
+        
+        if registered_prompts:
+            logger.info(
+                f"Registered {prompt_count} MCP prompts: "
+                f"{', '.join(registered_prompts)}"
+            )
+        if failed_prompts:
+            logger.warning(
+                f"Failed to register {len(failed_prompts)} prompts: "
+                f"{', '.join(failed_prompts)}"
+            )
+    else:
+        logger.debug("MCP prompts not available (import failed)")
     
     logger.debug("MCP server creation complete")
     
