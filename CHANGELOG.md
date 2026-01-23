@@ -7,19 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### 🔧 Fixed
-
-- **MCP Server Entry Point**: Fixed MCP configuration to use correct entry point (`testrail_api_module` instead of `testrail_api_module.mcp_server`)
-  - Resolves "Connection closed" and "No server info found" errors when Cursor attempts to connect to the MCP server
-  - The configuration now correctly uses the package's `__main__.py` entry point which properly initializes the CLI
-  - Impact: MCP server now starts correctly and Cursor can successfully connect and retrieve server information
-
-- **MCP Tool Parameter Schema**: Fixed JSON parsing errors when calling MCP tools by simplifying parameter type annotation
-  - Changed `params` parameter type from `Union[Dict[str, Any], str, None]` to `Optional[Dict[str, Any]]`
-  - This generates a cleaner JSON schema that FastMCP can properly serialize/deserialize
-  - Resolves "Expected ',' or '}' after property value in JSON" errors when invoking MCP tools
-  - Impact: MCP tools can now be called successfully from Cursor and other MCP clients
-
 ## [0.5.1] - 2026-01-23
 
 ### ✨ Added
@@ -129,6 +116,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved error messages to guide users on correct parameter formats and indicate when the MCP client is sending malformed data
   - Note: MCP server must be restarted for schema changes to take effect
   - **Known Issue**: Some MCP clients may still serialize Dict parameters as malformed strings. The server attempts to repair these, but the root cause is in the client's serialization logic.
+
+- **MCP Server Entry Point**: Fixed MCP configuration to use correct entry point (`testrail_api_module` instead of `testrail_api_module.mcp_server`)
+  - Resolves "Connection closed" and "No server info found" errors when Cursor attempts to connect to the MCP server
+  - The configuration now correctly uses the package's `__main__.py` entry point which properly initializes the CLI
+  - Impact: MCP server now starts correctly and Cursor can successfully connect and retrieve server information
+
+- **MCP Tool Parameter Schema**: Fixed JSON parsing errors when calling MCP tools by simplifying parameter type annotation
+  - Changed `params` parameter type from `Union[Dict[str, Any], str, None]` to `Dict[str, Any]` with default empty dict
+  - This generates a cleaner JSON schema that FastMCP can properly serialize/deserialize
+  - Resolves "Expected ',' or '}' after property value in JSON" errors when invoking MCP tools
+  - Impact: MCP tools can now be called successfully from Cursor and other MCP clients
+
+- **MCP Parameter Handling Simplification**: Further refined parameter handling in MCP tools for improved reliability
+  - Removed complex Python dict literal parsing (`ast.literal_eval`) and regex-based string repair logic
+  - Simplified to handle only JSON string parsing when needed (edge case fallback)
+  - Added support for Pydantic model parameters (automatically converts to dict via `model_dump()`)
+  - Improved error messages to clearly indicate when unexpected parameter types are received
+  - Impact: More reliable parameter handling with cleaner code and better error reporting
 
 ### ✨ Added
 
@@ -268,6 +273,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MCP noisy INFO logs**: Suppressed `mcp.server.*` INFO output in debug/verbose mode
   - Prevents internal “Processing request of type …” lines from cluttering stderr
   - Helps avoid Cursor surfacing routine MCP logs as “errors”
+
+### 🔄 Maintenance
+
+- **Gitignore Updates**: Added `.cursor/mcp.json` to `.gitignore` to prevent tracking of MCP configuration files
+  - Prevents accidental commits of user-specific MCP server configuration
+  - Impact: Cleaner repository state and prevents configuration conflicts between users
 
 ### 📚 Documentation
 
