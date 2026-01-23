@@ -121,3 +121,4 @@ __private__/
 
 # Security reports
 .security_reports/
+.cursor/mcp.json

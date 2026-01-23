@@ -29,10 +29,11 @@ import functools
 from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Union, TYPE_CHECKING
 
 try:
-    from pydantic import Field, field_validator, Json
+    from pydantic import BaseModel, Field, field_validator, Json
     from pydantic_core import core_schema
 except ImportError:
     # Pydantic should be available via fastmcp, but handle gracefully
+    BaseModel = None  # type: ignore
     Field = None  # type: ignore
     field_validator = None  # type: ignore
     Json = None  # type: ignore
@@ -572,77 +573,41 @@ def _create_module_tool(
     
     def module_tool(
         action: str,
-        params: Union[Dict[str, Any], str, None] = None
+        params: Dict[str, Any] = {}
     ) -> Any:
+        # Ensure params is a dictionary (handle case where it might be None from MCP)
         if params is None:
             params = {}
         
-        # Handle case where params is received as a string (JSON or Python dict syntax)
-        # This can happen when FastMCP receives parameters from MCP protocol
-        # NOTE: The MCP client should send Dict parameters as JSON objects, not strings.
-        # If we receive a string, it's likely a serialization issue on the client side.
-        if isinstance(params, str):
-            # Log the raw string for debugging
-            logger.debug(f"Received params as string (first 200 chars): {params[:200]}")
-            
-            # Try to clean up common serialization issues
-            cleaned_params = params.strip()
-            
-            # Try to fix malformed Python dict strings (missing commas, etc.)
-            # This is a workaround for MCP client serialization bugs
-            if cleaned_params.startswith('{') and not cleaned_params.startswith('{'):
-                # Might have extra characters at the start
-                pass
-            
-            # Try to fix missing commas in Python dict syntax
-            # Pattern: 'key': value 'key2' should be 'key': value, 'key2'
-            import re
-            # Fix missing commas between dictionary items
-            # Match pattern like: 'key': value 'key2' (missing comma)
-            fixed_params = re.sub(r"('[\w_]+'):\s*([^,}]+)\s+('[\w_]+')", r"\1: \2, \3", cleaned_params)
-            if fixed_params != cleaned_params:
-                logger.debug(f"Fixed missing commas in params string")
-                cleaned_params = fixed_params
-            
-            try:
-                # First try JSON parsing (standard format)
-                params = json.loads(cleaned_params)
-                logger.debug(f"Parsed params from JSON string: {params}")
-            except (json.JSONDecodeError, TypeError):
-                # Fallback to Python literal evaluation (handles Python dict syntax)
-                try:
-                    params = ast.literal_eval(cleaned_params)
-                    logger.debug(f"Parsed params from Python literal: {params}")
-                except (ValueError, SyntaxError) as e:
-                    # Try to fix common issues: remove leading/trailing braces if malformed
-                    if cleaned_params.startswith('{}') and not cleaned_params.startswith('{}"'):
-                        # Remove the leading {}
-                        cleaned_params = cleaned_params[2:].strip()
-                        try:
-                            params = ast.literal_eval(cleaned_params)
-                            logger.debug(f"Parsed params after removing leading braces: {params}")
-                        except (ValueError, SyntaxError):
-                            pass
-                    
-                    if not isinstance(params, dict):
-                        error_msg = (
-                            f"Invalid params format for {module_name}.{action}. "
-                            f"Expected a dictionary object, not a string. "
-                            f"The MCP client should send Dict parameters as JSON objects, not strings. "
-                            f"Received malformed string (first 200 chars): {params[:200] if isinstance(params, str) else str(params)[:200]}. "
-                            f"Error: {e}"
-                        )
-                        logger.error(error_msg)
-                        raise ValueError(error_msg) from e
+        # Handle Pydantic model if that's what we received
+        if BaseModel is not None and isinstance(params, BaseModel):
+            params = params.model_dump(exclude_unset=True)
         
-        # Ensure params is a dictionary after parsing
+        # Ensure params is a dictionary
+        # FastMCP should send Dict parameters as proper JSON objects, but handle edge cases
         if not isinstance(params, dict):
-            error_msg = (
-                f"Invalid params type for {module_name}.{action}. "
-                f"Expected a dictionary, got: {type(params).__name__}"
-            )
-            logger.error(error_msg)
-            raise ValueError(error_msg)
+            # If we somehow receive a string (shouldn't happen with proper FastMCP schema),
+            # try to parse it as JSON
+            if isinstance(params, str):
+                logger.debug(f"Received params as string (unexpected), attempting to parse: {params[:200]}")
+                try:
+                    params = json.loads(params)
+                except json.JSONDecodeError as e:
+                    error_msg = (
+                        f"Invalid params format for {module_name}.{action}. "
+                        f"Expected a dictionary object, but received a string that couldn't be parsed as JSON. "
+                        f"Received (first 200 chars): {params[:200]}. Error: {e}"
+                    )
+                    logger.error(error_msg)
+                    raise ValueError(error_msg) from e
+            
+            if not isinstance(params, dict):
+                error_msg = (
+                    f"Invalid params type for {module_name}.{action}. "
+                    f"Expected a dictionary, got: {type(params).__name__}"
+                )
+                logger.error(error_msg)
+                raise ValueError(error_msg)
         
         logger.debug(f"MCP tool called: {module_name}.{action}")
         logger.debug(f"Parameters: {params}")
@@ -810,10 +775,9 @@ def _create_module_tool(
     else:
         module_tool.__annotations__['action'] = str
     
-    # Set params annotation to explicitly define it as a JSON object
-    # The key is to ensure FastMCP generates a schema with type: "object"
-    # Using Dict[str, Any] should already do this, but we'll be explicit
-    module_tool.__annotations__['params'] = Union[Dict[str, Any], str, None]
+    # Don't override the annotation - let FastMCP use the function signature
+    # The function signature already has params: Dict[str, Any] = None
+    # FastMCP should infer the type correctly from the signature
     
     # If Field is available, try to add schema metadata to ensure it's treated as JSON object
     # Note: FastMCP should automatically infer "object" type from Dict[str, Any],
