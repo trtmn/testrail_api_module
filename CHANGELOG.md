@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🐛 Fixed
+
+- **Test Case Type Mapping**: Fixed test expectations in `test_get_required_case_fields_type_mapping` to match actual implementation
+  - Updated checkbox field type_hint expectation from `'boolean'` to `'boolean (True/False)'`
+  - Updated multi-select field type_hint expectation from `'array of string IDs'` to `'array of IDs'`
+  - Fixed stepped field test to use field name containing `'steps_separated'` to properly test step objects hint
+  - Impact: All tests in `test_cases.py` now pass correctly
+
 ## [0.5.2] 2026-01-23
 
 ### ✨ Added
