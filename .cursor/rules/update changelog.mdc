@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+
+For every code change, add a corresponding entry to the `unreleased` section of the CHANGELOG.md file. 
+Clearly describe the change, its impact, and affected areas. 
+
+Once the change is officially released, move the changelog entry from the `unreleased` section to the appropriate 
+version section with the release date. This process ensures a transparent and accurate changelog history for all updates.
+
+Changelog format should always follow [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
+and all versioning must comply with [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

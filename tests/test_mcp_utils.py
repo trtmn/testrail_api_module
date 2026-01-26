@@ -1,9 +1,15 @@
 """
 Tests for MCP utility functions.
 """
+import logging
 import os
 import pytest
+from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
+
 from testrail_api_module import TestRailAPI
 from testrail_api_module.mcp_utils import (
     discover_api_methods,
@@ -220,4 +226,49 @@ class TestCreateAPIFromEnv:
         """Test that error is raised when neither API key nor password is provided."""
         with pytest.raises(ValueError, match="TESTRAIL_API_KEY.*TESTRAIL_PASSWORD"):
             create_api_from_env()
+    
+    @patch.dict(os.environ, {
+        'TESTRAIL_BASE_URL': 'https://test.testrail.io',
+        'TESTRAIL_USERNAME': 'test-user',
+        'TESTRAIL_API_KEY': 'test-key'
+    }, clear=True)
+    def test_debug_logging_enabled(self, caplog: 'LogCaptureFixture') -> None:
+        """Test that debug logging produces log messages."""
+        # Enable debug logging
+        logging.getLogger('testrail_api_module.mcp_utils').setLevel(logging.DEBUG)
+        
+        with caplog.at_level(logging.DEBUG, logger='testrail_api_module.mcp_utils'):
+            api = create_api_from_env()
+            
+            # Check that debug messages were logged
+            assert any('Creating TestRailAPI instance' in record.message 
+                      for record in caplog.records)
+            assert any('Base URL' in record.message 
+                      for record in caplog.records)
+
+
+class TestDebugLogging:
+    """Tests for debug logging functionality."""
+    
+    def test_discover_methods_debug_logging(self, caplog: 'LogCaptureFixture') -> None:
+        """Test that discover_api_methods produces debug logs."""
+        api = TestRailAPI(
+            base_url='https://test.testrail.io',
+            username='test',
+            api_key='test-key'
+        )
+        
+        # Enable debug logging for mcp_utils
+        logging.getLogger('testrail_api_module.mcp_utils').setLevel(logging.DEBUG)
+        
+        with caplog.at_level(logging.DEBUG, logger='testrail_api_module.mcp_utils'):
+            methods = discover_api_methods(api)
+            
+            # Check that debug messages were logged
+            assert any('Starting API method discovery' in record.message 
+                      for record in caplog.records)
+            assert any('Discovery complete' in record.message 
+                      for record in caplog.records)
+            assert any('Scanning module' in record.message 
+                      for record in caplog.records)
 

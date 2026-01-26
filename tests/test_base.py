@@ -246,11 +246,32 @@ class TestBaseAPI:
         result = base_api._handle_response(response)
         assert result == [{"id": 1}, {"id": 2}]
 
-    def test_handle_response_invalid_json(self, base_api: BaseAPI) -> None:
-        """Test _handle_response with invalid JSON."""
+    def test_handle_response_empty_body(self, base_api: BaseAPI) -> None:
+        """Test _handle_response with empty response body (common for delete operations)."""
         response = Mock(spec=requests.Response)
         response.status_code = 200
-        response.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
+        response.text = ""  # Empty response body
+        
+        result = base_api._handle_response(response)
+        # Empty responses should return empty dict for delete operations
+        assert result == {}
+
+    def test_handle_response_empty_body_with_whitespace(self, base_api: BaseAPI) -> None:
+        """Test _handle_response with response body containing only whitespace."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 200
+        response.text = "   \n\t  "  # Only whitespace
+        
+        result = base_api._handle_response(response)
+        # Whitespace-only responses should be treated as empty
+        assert result == {}
+
+    def test_handle_response_invalid_json(self, base_api: BaseAPI) -> None:
+        """Test _handle_response with invalid JSON (non-empty but malformed)."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 200
+        response.text = "not valid json"  # Non-empty but invalid JSON
+        response.json.side_effect = json.JSONDecodeError("Invalid JSON", "not valid json", 0)
         
         with pytest.raises(TestRailAPIException, match="Invalid JSON response"):
             base_api._handle_response(response)

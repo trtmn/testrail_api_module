@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """
 Script to generate library stubs for the TestRail API module using stubgen.
+
+Note: On some Python versions/platforms, `mypy` may be installed as compiled
+extension modules (mypy+mypyc). In that case, `python -m mypy.stubgen` cannot
+run because there is no Python code object available. The `stubgen` console
+script still works, so we use that.
 Library stubs (.pyi files) provide type information for better IDE support and static type checking.
 """
 import subprocess
 import sys
 import shutil
 from pathlib import Path
+
 
 
 def clean_existing_stubs(project_root: Path) -> None:
@@ -32,22 +38,52 @@ def generate_stubs(project_root: Path) -> None:
     print("Generating library stubs with stubgen...")
     
     try:
+        # Try to find stubgen executable first
+        stubgen_executable = shutil.which("stubgen")
+        
+        # If not found, try to use python -m mypy.stubgen
+        if not stubgen_executable:
+            # Check if we're in a virtual environment
+            venv_python = project_root / ".venv" / "bin" / "python"
+            if venv_python.exists():
+                python_executable = str(venv_python)
+            else:
+                python_executable = sys.executable
+            
+            # Try to import mypy to verify it's available
+            try:
+                import mypy.stubgen  # pyright: ignore[reportMissingImports]
+                stubgen_executable = python_executable
+                stubgen_args = ["-m", "mypy.stubgen"]
+            except ImportError:
+                print(
+                    "❌ Error generating stubs: 'mypy' not found. "
+                    "Install the dev dependencies (includes 'mypy'), e.g. "
+                    "`uv sync --extra dev`."
+                )
+                sys.exit(1)
+        else:
+            stubgen_args = []
+
         # Generate stubs in a temporary directory first
         temp_dir = project_root / "temp_stubs"
         temp_dir.mkdir(exist_ok=True)
         
+        # Build the command
+        cmd = [stubgen_executable] + stubgen_args + [
+            "--output",
+            str(temp_dir),
+            str(src_dir),
+            "--include-docstrings",
+            "--include-private",
+        ]
+        
         # Generate stubs for the entire package
         subprocess.run(
-            [
-                "stubgen",
-                "--output",
-                str(temp_dir),
-                str(src_dir),
-                "--include-docstrings",
-                "--include-private",
-            ],
+            cmd,
             check=True,
             capture_output=True,
+            text=True,
         )
         
         # Copy stubs from nested directory to the correct location
@@ -64,7 +100,28 @@ def generate_stubs(project_root: Path) -> None:
         print("✅ Library stubs generated successfully!")
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Error generating stubs: {e}")
+        stderr = ""
+        stdout = ""
+        if getattr(e, "stderr", None):
+            stderr = e.stderr.strip()
+        if getattr(e, "stdout", None):
+            stdout = e.stdout.strip()
+        
+        error_msg = f"❌ Error generating stubs (exit code {e.returncode})"
+        if stderr:
+            error_msg += f":\n{stderr}"
+        elif stdout:
+            error_msg += f":\n{stdout}"
+        else:
+            error_msg += f": {e}"
+        print(error_msg)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(
+            f"❌ Error: Required executable not found: {e}\n"
+            "Install the dev dependencies (includes 'mypy'), e.g. "
+            "`uv sync --extra dev`."
+        )
         sys.exit(1)
 
 
@@ -100,126 +157,55 @@ def improve_stubs(project_root: Path) -> None:
 def improve_single_stub(stub_file: Path) -> None:
     """Improve a single stub file with better type annotations."""
     try:
-        with open(stub_file, 'r') as f:
+        with open(stub_file, "r", encoding="utf-8") as f:
             content = f.read()
         
         # Replace common issues in stubs
         improvements = [
             # Replace Incomplete with proper types
-            ("from _typeshed import Incomplete", "from typing import Any, Optional, Dict, List"),
+            (
+                "from _typeshed import Incomplete",
+                "from typing import Any, Optional, Dict, List",
+            ),
             (": Incomplete", ": Any"),
             ("client: Incomplete", "client: Any"),
             ("logger: Incomplete", "logger: Any"),
             
             # Fix common method signatures
-            ("def __init__(self, client) -> None:", "def __init__(self, client: Any) -> None:"),
+            (
+                "def __init__(self, client) -> None:",
+                "def __init__(self, client: Any) -> None:",
+            ),
             
             # Add proper type annotations for common API methods
-            ("def _api_request(self, method, endpoint, data=None, **kwargs):", 
-             "def _api_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Optional[Dict[str, Any]]:"),
+            (
+                "def _api_request(self, method, endpoint, data=None, **kwargs):",
+                "def _api_request(self, method: str, endpoint: str, "
+                "data: Optional[Dict[str, Any]] = None, **kwargs: Any) -> "
+                "Optional[Dict[str, Any]]:",
+            ),
             
             # Add proper return types for other API methods
-            ("def _api_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:", 
-             "def _api_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:"),
+            (
+                "def _api_request(self, method: str, endpoint: str, "
+                "data: Optional[Dict[str, Any]] = None) -> Any:",
+                "def _api_request(self, method: str, endpoint: str, "
+                "data: Optional[Dict[str, Any]] = None) -> "
+                "Optional[Dict[str, Any]]:",
+            ),
         ]
         
         for old, new in improvements:
             content = content.replace(old, new)
         
         # Write improved content back
-        with open(stub_file, 'w') as f:
+        with open(stub_file, "w", encoding="utf-8") as f:
             f.write(content)
             
         print(f"🔧 Improved: {stub_file.name}")
         
     except Exception as e:
         print(f"⚠️  Warning: Could not improve {stub_file.name}: {e}")
-
-
-def update_pyproject_toml(project_root: Path) -> None:
-    """Update pyproject.toml to include mypy configuration and stub generation."""
-    pyproject_file = project_root / "pyproject.toml"
-    
-    if not pyproject_file.exists():
-        print("❌ pyproject.toml not found")
-        return
-    
-    # Read current content
-    with open(pyproject_file, 'r') as f:
-        content = f.read()
-    
-    # Check if mypy configuration already exists
-    if "[tool.mypy]" in content:
-        print("ℹ️  mypy configuration already exists in pyproject.toml")
-        return
-    
-    # Add mypy configuration
-    mypy_config = """
-
-[tool.mypy]
-python_version = "3.10"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false  # Allow untyped defs for now
-disallow_incomplete_defs = false  # Allow incomplete defs for now
-check_untyped_defs = true
-disallow_untyped_decorators = false  # Allow untyped decorators for now
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
-
-# Include stubs in the package
-[tool.setuptools.package-data]
-testrail_api_module = ["*.pyi", "py.typed"]
-"""
-    
-    # Append mypy configuration
-    with open(pyproject_file, 'a') as f:
-        f.write(mypy_config)
-    
-    print("✅ Added mypy configuration to pyproject.toml")
-
-
-def add_stub_generation_to_dev_deps(project_root: Path) -> None:
-    """Add stubgen to development dependencies if not already present."""
-    pyproject_file = project_root / "pyproject.toml"
-    
-    if not pyproject_file.exists():
-        print("❌ pyproject.toml not found")
-        return
-    
-    # Read current content
-    with open(pyproject_file, 'r') as f:
-        content = f.read()
-    
-    # Check if stubgen is already in dev dependencies
-    if "stubgen" in content:
-        print("ℹ️  stubgen already in development dependencies")
-        return
-    
-    # Find the dev dependencies section and add stubgen
-    lines = content.split('\n')
-    for i, line in enumerate(lines):
-        if line.strip() == 'dev = [':
-            # Find the closing bracket
-            for j in range(i + 1, len(lines)):
-                if lines[j].strip() == ']':
-                    # Insert stubgen before the closing bracket
-                    lines.insert(j, '    "stubgen",')
-                    break
-            break
-    
-    # Write updated content
-    with open(pyproject_file, 'w') as f:
-        f.write('\n'.join(lines))
-    
-    print("✅ Added stubgen to development dependencies")
-
-
-
 
 
 def main() -> None:
@@ -242,12 +228,9 @@ def main() -> None:
     # Create py.typed file
     create_py_typed_file(project_root)
     
-    # Update pyproject.toml
-    update_pyproject_toml(project_root)
-    add_stub_generation_to_dev_deps(project_root)
-    
+    # Note: This script does not modify pyproject.toml. Keep stub tooling
+    # dependencies in `pyproject.toml`'s dev extras.
 
-    
     print("\n🎉 Library stubs generation completed!")
     print("📋 Next steps:")
     print("   1. Review generated .pyi files in src/testrail_api_module/")

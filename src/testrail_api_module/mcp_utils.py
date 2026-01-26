@@ -13,8 +13,11 @@ The module includes functions for:
 - Creating TestRailAPI instances from environment variables
 """
 import inspect
+import logging
 from typing import Dict, List, Callable, Any, Optional
 from . import TestRailAPI
+
+logger = logging.getLogger(__name__)
 
 
 def discover_api_methods(api_instance: TestRailAPI) -> Dict[str, List[Callable]]:
@@ -39,6 +42,7 @@ def discover_api_methods(api_instance: TestRailAPI) -> Dict[str, List[Callable]]
         >>> print(methods['cases'])  # List of (name, method) tuples
         [('get_case', <bound method ...>), ('get_cases', <bound method ...>), ...]
     """
+    logger.debug("Starting API method discovery")
     methods_by_module: Dict[str, List[Callable]] = {}
     
     # List of all API module attributes
@@ -61,15 +65,27 @@ def discover_api_methods(api_instance: TestRailAPI) -> Dict[str, List[Callable]]
             module_instance = getattr(api_instance, module_name)
             methods = []
             
+            logger.debug(f"Scanning module: {module_name}")
+            
             # Get all methods from the module instance
             for name, method in inspect.getmembers(module_instance, 
                                                    predicate=inspect.ismethod):
                 # Only include public methods that aren't in the exclusion list
                 if not name.startswith('_') and name not in excluded_methods:
                     methods.append((name, method))
+                    logger.debug(f"  Found method: {module_name}.{name}")
             
             if methods:
                 methods_by_module[module_name] = methods
+                logger.debug(f"Module {module_name} has {len(methods)} public methods")
+        else:
+            logger.debug(f"Module {module_name} not found on API instance")
+    
+    total_methods = sum(len(methods) for methods in methods_by_module.values())
+    logger.debug(
+        f"Discovery complete: {len(methods_by_module)} modules, "
+        f"{total_methods} total methods"
+    )
     
     return methods_by_module
 
@@ -200,29 +216,43 @@ def create_api_from_env() -> TestRailAPI:
     """
     import os
     
+    logger.debug("Creating TestRailAPI instance from environment variables")
+    
     base_url = os.getenv('TESTRAIL_BASE_URL')
     username = os.getenv('TESTRAIL_USERNAME')
     api_key = os.getenv('TESTRAIL_API_KEY')
     password = os.getenv('TESTRAIL_PASSWORD')
     timeout = int(os.getenv('TESTRAIL_TIMEOUT', '30'))
     
+    # Log configuration (but mask sensitive data)
+    logger.debug(f"Base URL: {base_url}")
+    logger.debug(f"Username: {username}")
+    logger.debug(f"API Key: {'***' if api_key else 'not set'}")
+    logger.debug(f"Password: {'***' if password else 'not set'}")
+    logger.debug(f"Timeout: {timeout}s")
+    
     if not base_url or not username:
+        logger.error("Missing required environment variables: TESTRAIL_BASE_URL and/or TESTRAIL_USERNAME")
         raise ValueError(
             "TESTRAIL_BASE_URL and TESTRAIL_USERNAME must be set as "
             "environment variables"
         )
     
     if not api_key and not password:
+        logger.error("Missing authentication: Neither TESTRAIL_API_KEY nor TESTRAIL_PASSWORD is set")
         raise ValueError(
             "Either TESTRAIL_API_KEY or TESTRAIL_PASSWORD must be set as "
             "environment variables"
         )
     
-    return TestRailAPI(
+    api = TestRailAPI(
         base_url=base_url,
         username=username,
         api_key=api_key,
         password=password,
         timeout=timeout
     )
+    
+    logger.debug("TestRailAPI instance created successfully")
+    return api
 

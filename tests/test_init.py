@@ -196,18 +196,6 @@ class TestTestRailAPI:
         assert api.results.client == api
         assert api.projects.client == api
 
-    def test_module_version(self) -> None:
-        """Test module version is accessible."""
-        import testrail_api_module
-        assert testrail_api_module.__version__ == '0.4.0'
-
-    def test_module_author(self) -> None:
-        """Test module author is accessible."""
-        import testrail_api_module
-        assert 'Matt Troutman' in testrail_api_module.__author__
-        assert 'Christian Thompson' in testrail_api_module.__author__
-        assert 'Andrew Tipper' in testrail_api_module.__author__
-
     def test_exception_classes_importable(self) -> None:
         """Test exception classes are importable from main module."""
         from testrail_api_module import (

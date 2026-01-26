@@ -68,41 +68,70 @@ def load_env_file(env_file: str) -> None:
         pass
 
 
-def setup_logging(verbose: bool = False) -> None:
+def setup_logging(verbose: bool = False, debug: bool = False) -> None:
     """
     Set up logging configuration for the CLI.
     
     Configures Python's logging module with appropriate format and level.
-    When verbose is True, DEBUG level logging is enabled for detailed
+    When verbose or debug is True, DEBUG level logging is enabled for detailed
     information about tool registration and API calls.
     
     For MCP servers running in stdio mode, logging is disabled by default
-    to avoid interfering with stdio communication. Use --verbose only for
-    debugging.
+    to avoid interfering with stdio communication. Use --verbose or set
+    TESTRAIL_MCP_DEBUG=1 only for debugging.
     
     Args:
         verbose: If True, set log level to DEBUG. Otherwise, logging is
                  disabled to avoid interfering with stdio communication.
+        debug: If True, enable debug logging. This can be set via the
+               TESTRAIL_MCP_DEBUG environment variable.
         
     Note:
-        This function configures the root logger, so it affects all
-        loggers in the application.
+        This function configures logging to show only TestRail MCP debug
+        messages, not FastMCP's internal debug logs.
     """
-    if verbose:
-        level = logging.DEBUG
+    if verbose or debug:
+        # Configure basic logging to stderr with INFO level for root logger
+        # This prevents FastMCP's internal debug logs from appearing
         logging.basicConfig(
-            level=level,
+            level=logging.INFO,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            # Log to stderr to avoid interfering with stdio
+            stream=sys.stderr
         )
+        
+        # Enable DEBUG logging only for testrail_api_module loggers
+        logging.getLogger('testrail_api_module').setLevel(logging.DEBUG)
+        
+        # Keep upstream/internal loggers at WARNING to reduce noise
+        #
+        # Cursor surfaces stderr output as "errors" in its MCP console, even if
+        # the log record level is INFO. So we aggressively clamp 3rd-party
+        # libraries to WARNING and above, while allowing our own module to log
+        # DEBUG details when requested.
+        logging.getLogger('fastmcp').setLevel(logging.WARNING)
+        logging.getLogger('mcp').setLevel(logging.WARNING)
+        logging.getLogger('mcp.server').setLevel(logging.WARNING)
+        logging.getLogger('mcp.server.lowlevel').setLevel(logging.WARNING)
+        logging.getLogger('mcp.server.lowlevel.server').setLevel(logging.WARNING)
+        logging.getLogger('docket').setLevel(logging.WARNING)
+        logging.getLogger('fakeredis').setLevel(logging.WARNING)
+        logging.getLogger('uvicorn').setLevel(logging.WARNING)
     else:
-        # Disable all logging in stdio mode to avoid interfering with MCP communication
-        # This includes FastMCP's internal logging
-        logging.disable(logging.CRITICAL)
-        # Also set log level to ERROR for all loggers
-        logging.getLogger().setLevel(logging.ERROR)
-        # Specifically disable FastMCP logging
+        # Keep logging quiet in stdio mode to avoid interfering with MCP communication,
+        # but do NOT globally disable logging (tests and embedding applications may
+        # need to enable it later).
+        logging.basicConfig(
+            level=logging.ERROR,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            stream=sys.stderr,
+        )
+        logging.getLogger('testrail_api_module').setLevel(logging.ERROR)
         logging.getLogger('fastmcp').setLevel(logging.ERROR)
+        logging.getLogger('mcp').setLevel(logging.ERROR)
+        logging.getLogger('mcp.server').setLevel(logging.ERROR)
         logging.getLogger('uvicorn').setLevel(logging.ERROR)
 
 
@@ -199,12 +228,18 @@ Examples:
     )
     
     args = parser.parse_args()
-    setup_logging(args.verbose)
+    
+    # Check for debug environment variable
+    debug_enabled = os.getenv('TESTRAIL_MCP_DEBUG', '').lower() in ('1', 'true', 'yes', 'on')
+    
+    setup_logging(args.verbose, debug_enabled)
     logger = logging.getLogger(__name__)
     
-    # Suppress FastMCP and uvicorn logging in non-verbose mode
-    if not args.verbose:
-        import os
+    if debug_enabled and not args.verbose:
+        logger.debug("Debug logging enabled via TESTRAIL_MCP_DEBUG environment variable")
+    
+    # Suppress FastMCP and uvicorn logging in non-verbose/non-debug mode
+    if not args.verbose and not debug_enabled:
         os.environ.setdefault('LOG_LEVEL', 'ERROR')
         os.environ.setdefault('UVICORN_LOG_LEVEL', 'error')
     
