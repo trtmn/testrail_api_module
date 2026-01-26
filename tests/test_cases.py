@@ -1127,7 +1127,7 @@ class TestGetRequiredCaseFields:
                     "configs": []
                 },
                 {
-                    "system_name": "field_stepped",
+                    "system_name": "custom_steps_separated",
                     "type_id": 12,
                     "is_required": True,
                     "configs": []
@@ -1139,13 +1139,13 @@ class TestGetRequiredCaseFields:
             fields_by_name = {f['system_name']: f for f in result['required_fields']}
             
             assert fields_by_name['field_checkbox']['type_name'] == 'Checkbox'
-            assert fields_by_name['field_checkbox']['type_hint'] == 'boolean'
+            assert fields_by_name['field_checkbox']['type_hint'] == 'boolean (True/False)'
             
             assert fields_by_name['field_multiselect']['type_name'] == 'Multi-select'
-            assert fields_by_name['field_multiselect']['type_hint'] == 'array of string IDs'
+            assert fields_by_name['field_multiselect']['type_hint'] == 'array of IDs'
             
-            assert fields_by_name['field_stepped']['type_name'] == 'Stepped'
-            assert 'array of step objects' in fields_by_name['field_stepped']['type_hint']
+            assert fields_by_name['custom_steps_separated']['type_name'] == 'Stepped'
+            assert 'array of step objects' in fields_by_name['custom_steps_separated']['type_hint']
 
 
 

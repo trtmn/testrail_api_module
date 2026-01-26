@@ -147,13 +147,13 @@ testrail-mcp-server --env-file .env
 
 All TestRail API methods are automatically exposed as MCP tools with the naming convention:
 
-`testrail_{module}_{method}`
+`testrail_{module}`
 
-For example:
-- `testrail_cases_get_case` - Get a test case by ID
-- `testrail_cases_get_cases` - Get all test cases for a project
-- `testrail_results_add_result` - Add a test result
-- `testrail_runs_get_runs` - Get all test runs for a project
+Each module tool accepts an `action` parameter to specify which method to call. For example:
+- `testrail_cases` with action `get_case` - Get a test case by ID
+- `testrail_cases` with action `get_cases` - Get all test cases for a project
+- `testrail_results` with action `add_result` - Add a test result
+- `testrail_runs` with action `get_runs` - Get all test runs for a project
 
 ### Tool Discovery
 
@@ -182,6 +182,99 @@ The MCP server automatically discovers and registers all public methods from all
 - `tests` - Tests
 - `users` - Users
 - `variables` - Variables
+
+## Available Prompts
+
+The MCP server also provides reusable prompts that guide you through common TestRail workflows. Prompts are instruction templates that help you accomplish tasks more efficiently than using tools directly.
+
+### What Are Prompts?
+
+Prompts are pre-defined instruction templates that provide step-by-step guidance for common operations. They differ from tools in that:
+- **Tools** execute actions directly (e.g., create a test case)
+- **Prompts** provide guided workflows with instructions and examples
+
+Prompts are especially useful for complex operations that require multiple steps or specific field formats.
+
+### Available Prompts
+
+The following prompts are available:
+
+1. **testrail_add_test_cases** - Guide for adding test cases
+   - Helps discover required fields first
+   - Provides format examples for custom fields
+   - Ensures proper field structure
+
+2. **testrail_retrieve_test_run_data** - Guide for retrieving test run information
+   - Gets run details, tests, and results
+   - Provides comprehensive data retrieval workflow
+
+3. **testrail_create_test_run** - Guide for creating test runs
+   - Helps configure runs properly
+   - Explains include_all vs case_ids options
+
+4. **testrail_create_test_plan** - Guide for creating test plans
+   - Helps structure plan entries
+   - Explains plan vs run relationships
+
+5. **testrail_add_test_results** - Guide for recording test results
+   - Explains status codes
+   - Provides format examples for elapsed time and defects
+
+6. **testrail_get_test_case_details** - Guide for retrieving test case information
+   - Gets case details and history
+   - Provides comprehensive case data retrieval
+
+7. **testrail_update_test_case** - Guide for updating test cases
+   - Helps update cases with proper formats
+   - Explains partial update behavior
+
+8. **testrail_get_test_plan_details** - Guide for retrieving test plan information
+   - Gets plan details and statistics
+   - Retrieves associated runs and results
+
+9. **testrail_get_project_info** - Guide for exploring project structure
+   - Navigates project hierarchy
+   - Gets suites, sections, and cases
+
+10. **testrail_get_run_results** - Guide for retrieving test run results
+    - Gets all results and statistics
+    - Provides status breakdown
+
+### Using Prompts
+
+Prompts are used through the MCP protocol's prompt system. In MCP-compatible clients (like Cursor or Claude Desktop), prompts appear as reusable templates that you can invoke with parameters.
+
+**Example prompt usage:**
+```json
+{
+  "prompt": "testrail_add_test_cases",
+  "arguments": {
+    "section_id": 123,
+    "title": "Test Login Functionality",
+    "type_id": 1,
+    "priority_id": 3
+  }
+}
+```
+
+The prompt will return formatted instructions that guide you through:
+1. Discovering required fields
+2. Understanding field formats
+3. Creating the test case with proper structure
+
+### Prompt vs Tool: When to Use Which?
+
+- **Use Prompts** when:
+  - You're learning how to perform an operation
+  - You need step-by-step guidance
+  - You want to understand field formats and requirements
+  - You're performing a complex multi-step operation
+
+- **Use Tools** when:
+  - You know exactly what you want to do
+  - You're automating repetitive tasks
+  - You need direct API access
+  - You're building scripts or integrations
 
 ## Error Handling
 
@@ -615,6 +708,34 @@ TESTRAIL_MCP_DEBUG=1
 **Note**: Debug logs are written to `stderr` to avoid interfering with the MCP protocol's `stdio` communication. This is important for MCP clients like Cursor and Claude Desktop that communicate via standard input/output.
 
 Debug logging is configured to show only TestRail API module messages, not FastMCP's internal debug logs, keeping the output clean and relevant.
+
+## Prompt Examples
+
+### Example: Adding Test Cases with Prompts
+
+When using the `testrail_add_test_cases` prompt, you'll receive step-by-step instructions:
+
+1. **Discover Required Fields**: The prompt guides you to first call `get_required_case_fields` to understand what fields are needed
+2. **Review Field Types**: Learn about dropdown formats, step objects, and other field types
+3. **Get Field Options**: For dropdowns, get available options
+4. **Create the Case**: Use the proper format with all required fields
+
+The prompt provides complete JSON examples for each step, ensuring you use the correct formats.
+
+### Example: Creating Test Runs with Prompts
+
+The `testrail_create_test_run` prompt helps you:
+- Understand the difference between `include_all` and `case_ids`
+- Configure runs with proper suite selection
+- Verify the run was created correctly
+
+### Example: Retrieving Test Run Data
+
+The `testrail_retrieve_test_run_data` prompt guides you through:
+- Getting run details and statistics
+- Retrieving all tests in the run
+- Getting comprehensive results data
+- Understanding the complete data structure
 
 ## Examples
 
