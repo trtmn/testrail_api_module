@@ -10,21 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ✨ Added
 
 - **MCP Prompts for Common TestRail Actions**: Added 10 reusable MCP prompts that provide guided workflows for common TestRail operations
-  - `testrail_add_test_cases` - Step-by-step guide for adding test cases with field discovery
-  - `testrail_retrieve_test_run_data` - Comprehensive guide for retrieving test run information
-  - `testrail_create_test_run` - Guide for creating test runs with proper configuration
-  - `testrail_create_test_plan` - Guide for creating test plans with optional entries
-  - `testrail_add_test_results` - Guide for recording test execution results
-  - `testrail_get_test_case_details` - Guide for retrieving comprehensive test case information
-  - `testrail_update_test_case` - Guide for updating existing test cases
-  - `testrail_get_test_plan_details` - Guide for retrieving test plan information
-  - `testrail_get_project_info` - Guide for exploring project structure
-  - `testrail_get_run_results` - Guide for retrieving all test run results
-  - Prompts provide step-by-step instructions, format examples, and tool call examples
-  - Each prompt includes related prompts and tools for navigation
-  - Prompts help users understand proper field formats and workflows
-  - All prompts are automatically registered with the MCP server
-  - Updated MCP usage documentation with prompt examples and usage guidance
+  - Created new `mcp_prompts.py` module with prompt function definitions
+  - Created `mcp_prompts.pyi` type stubs for type safety
+  - Integrated prompt registration into `mcp_server.py` with automatic discovery
+  - All prompts automatically registered when MCP server is created
+  - Impact: Users can now use guided prompts instead of raw tool calls, reducing errors and improving workflow efficiency
+  - Available prompts:
+    - `testrail_add_test_cases` - Step-by-step guide for adding test cases with required field discovery workflow
+    - `testrail_retrieve_test_run_data` - Comprehensive guide for retrieving test run information including details, tests, and results
+    - `testrail_create_test_run` - Guide for creating test runs with proper configuration and case selection
+    - `testrail_create_test_plan` - Guide for creating test plans with optional test run entries
+    - `testrail_add_test_results` - Guide for recording test execution results with proper status codes
+    - `testrail_get_test_case_details` - Guide for retrieving comprehensive test case information and history
+    - `testrail_update_test_case` - Guide for updating existing test cases with proper field formats
+    - `testrail_get_test_plan_details` - Guide for retrieving test plan information with statistics
+    - `testrail_get_project_info` - Guide for exploring project structure including suites, sections, and cases
+    - `testrail_get_run_results` - Guide for retrieving all test run results with status breakdown
+  - Each prompt provides:
+    - Step-by-step instructions with clear workflow guidance
+    - JSON examples of tool calls with proper parameter formats
+    - Field format guidelines (e.g., string IDs for arrays, step object structure)
+    - References to related prompts and tools for navigation
+    - Best practices and common pitfalls to avoid
+  - Updated `docs/MCP_USAGE.md` with comprehensive prompts documentation
+  - Added test suite in `tests/test_mcp_prompts.py` for prompt validation
+  - Prompts use FastMCP's `@prompt` decorator pattern and return `UserMessage` objects
+  - Graceful fallback handling if MCP prompts module cannot be imported
 
 ## [0.5.1] - 2026-01-23
 

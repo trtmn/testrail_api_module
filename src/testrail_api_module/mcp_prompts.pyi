@@ -4,8 +4,10 @@ Type stubs for MCP prompts module.
 from typing import Optional, List, Dict, Any
 
 def add_test_cases_prompt(
-    section_id: int,
+    project_name: str,
+    section_name: str,
     title: str,
+    suite_name: Optional[str] = None,
     type_id: Optional[int] = None,
     priority_id: Optional[int] = None,
     estimate: Optional[str] = None,
@@ -13,32 +15,32 @@ def add_test_cases_prompt(
 ) -> List[Any]: ...
 
 def retrieve_test_run_data_prompt(
-    run_id: int
+    run_name: str,
+    project_name: Optional[str] = None
 ) -> List[Any]: ...
 
 def create_test_run_prompt(
-    project_id: int,
+    project_name: str,
     name: str,
-    suite_id: Optional[int] = None,
-    milestone_id: Optional[int] = None,
+    suite_name: Optional[str] = None,
+    milestone_name: Optional[str] = None,
     description: Optional[str] = None,
-    assignedto_id: Optional[int] = None,
     include_all: bool = True,
-    case_ids: Optional[List[int]] = None
+    case_titles: Optional[List[str]] = None
 ) -> List[Any]: ...
 
 def create_test_plan_prompt(
-    project_id: int,
+    project_name: str,
     name: str,
     description: Optional[str] = None,
-    milestone_id: Optional[int] = None,
-    entries: Optional[List[Dict[str, Any]]] = None
+    milestone_name: Optional[str] = None
 ) -> List[Any]: ...
 
 def add_test_results_prompt(
-    run_id: int,
-    case_id: int,
+    run_name: str,
+    case_title: str,
     status_id: int,
+    project_name: Optional[str] = None,
     comment: Optional[str] = None,
     version: Optional[str] = None,
     elapsed: Optional[str] = None,
@@ -46,11 +48,13 @@ def add_test_results_prompt(
 ) -> List[Any]: ...
 
 def get_test_case_details_prompt(
-    case_id: int
+    case_title: str,
+    project_name: Optional[str] = None
 ) -> List[Any]: ...
 
 def update_test_case_prompt(
-    case_id: int,
+    case_title: str,
+    project_name: Optional[str] = None,
     title: Optional[str] = None,
     type_id: Optional[int] = None,
     priority_id: Optional[int] = None,
@@ -59,13 +63,15 @@ def update_test_case_prompt(
 ) -> List[Any]: ...
 
 def get_test_plan_details_prompt(
-    plan_id: int
+    plan_name: str,
+    project_name: Optional[str] = None
 ) -> List[Any]: ...
 
 def get_project_info_prompt(
-    project_id: int
+    project_name: str
 ) -> List[Any]: ...
 
 def get_run_results_prompt(
-    run_id: int
+    run_name: str,
+    project_name: Optional[str] = None
 ) -> List[Any]: ...
