@@ -121,3 +121,6 @@ __private__/
 
 # Security reports
 .security_reports/
+
+# Cursor configuration (may contain sensitive credentials)
+.cursor/mcp.json
