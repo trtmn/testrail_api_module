@@ -46,6 +46,56 @@ def get_current_version() -> str:
         sys.exit(1)
 
 
+def bump_version(
+    bump_type: str,
+    dry_run: bool = False,
+) -> str:
+    """Bump the version using uv version --bump.
+    
+    Args:
+        bump_type: Type of bump (major, minor, patch, stable, alpha, beta, rc, post, dev)
+        dry_run: If True, don't actually update the version
+    
+    Returns:
+        The new version string
+    """
+    project_root = get_project_root()
+    
+    cmd = ["uv", "version", "--bump", bump_type]
+    if dry_run:
+        cmd.append("--dry-run")
+    
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        # uv version --bump outputs: "package-name 0.5.2 => 0.5.3"
+        # Extract the new version (after "=>")
+        output = result.stdout.strip()
+        if "=>" in output:
+            # Extract version after "=>"
+            new_version = output.split("=>")[-1].strip()
+        else:
+            # Fallback: try to extract version from output
+            new_version = output
+        
+        if dry_run:
+            print(f"[DRY RUN] Would bump version to: {new_version}")
+        else:
+            print(f"✅ Bumped version to: {new_version}")
+        
+        return new_version
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"❌ Error bumping version with uv: {e}")
+        print("   Make sure uv is installed and available in PATH")
+        sys.exit(1)
+
+
 def update_version_in_pyproject(new_version: str, dry_run: bool = False) -> None:
     """Update version in pyproject.toml using uv."""
     project_root = get_project_root()
@@ -164,12 +214,20 @@ def run_command(
 
 
 def run_tests(dry_run: bool = False) -> bool:
-    """Run the test suite."""
-    print("\n🧪 Running tests...")
+    """Run the test suite.
+    
+    Note: Tests always run, even in dry-run mode, since they don't modify anything.
+    """
+    if dry_run:
+        print("\n🧪 Running tests (dry-run mode - tests still execute)...")
+    else:
+        print("\n🧪 Running tests...")
+    
     try:
+        # Always run tests, even in dry-run mode (they don't modify anything)
         run_command(
             [sys.executable, "-m", "pytest", "-v"],
-            dry_run=dry_run,
+            dry_run=False,  # Force actual execution
         )
         print("✅ Tests passed")
         return True
@@ -179,12 +237,20 @@ def run_tests(dry_run: bool = False) -> bool:
 
 
 def run_type_check(dry_run: bool = False) -> bool:
-    """Run mypy type checking."""
-    print("\n🔍 Running type checks...")
+    """Run mypy type checking.
+    
+    Note: Type checks always run, even in dry-run mode, since they don't modify anything.
+    """
+    if dry_run:
+        print("\n🔍 Running type checks (dry-run mode - checks still execute)...")
+    else:
+        print("\n🔍 Running type checks...")
+    
     try:
+        # Always run type checks, even in dry-run mode (they don't modify anything)
         run_command(
             [sys.executable, "-m", "mypy", "src/testrail_api_module"],
-            dry_run=dry_run,
+            dry_run=False,  # Force actual execution
         )
         print("✅ Type checks passed")
         return True
@@ -619,6 +685,59 @@ def confirm_step(prompt: str, default: bool = False, non_interactive: bool = Fal
     return response in ("y", "yes")
 
 
+def prompt_version_bump(
+    current_version: str,
+    non_interactive: bool = False,
+) -> Optional[str]:
+    """Prompt user to select a version bump type.
+    
+    Args:
+        current_version: The current version string
+        non_interactive: If True, skip prompt and return None
+    
+    Returns:
+        Bump type (major, minor, patch, etc.) or None if cancelled
+    """
+    if non_interactive:
+        return None
+    
+    print(f"\n📋 Current version: {current_version}")
+    print("\nSelect version bump type:")
+    print("  1. patch  - Bug fixes (0.5.2 → 0.5.3)")
+    print("  2. minor  - New features (0.5.2 → 0.6.0)")
+    print("  3. major  - Breaking changes (0.5.2 → 1.0.0)")
+    print("  4. alpha  - Alpha pre-release")
+    print("  5. beta   - Beta pre-release")
+    print("  6. rc     - Release candidate")
+    print("  7. stable - Remove pre-release suffix")
+    print("  8. post   - Post-release")
+    print("  9. dev    - Development version")
+    print("  0. Cancel")
+    
+    bump_map = {
+        "1": "patch",
+        "2": "minor",
+        "3": "major",
+        "4": "alpha",
+        "5": "beta",
+        "6": "rc",
+        "7": "stable",
+        "8": "post",
+        "9": "dev",
+    }
+    
+    while True:
+        choice = input("\nEnter your choice (1-9, or 0 to cancel): ").strip()
+        
+        if choice == "0":
+            return None
+        
+        if choice in bump_map:
+            return bump_map[choice]
+        
+        print("❌ Invalid choice. Please enter 1-9 or 0 to cancel.")
+
+
 def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -626,13 +745,16 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Interactive mode (default) - prompts for confirmation at each step
+  # Interactive mode (default) - prompts for version bump type and confirmation at each step
+  python utilities/build_and_release.py
+
+  # Specify version explicitly
   python utilities/build_and_release.py --version 0.5.3
 
-  # Dry run to see what would happen (non-interactive)
-  python utilities/build_and_release.py --version 0.5.3 --dry-run
+  # Dry run to see what would happen
+  python utilities/build_and_release.py --dry-run
 
-  # Non-interactive mode (for automation/CI)
+  # Non-interactive mode (for automation/CI) - requires --version
   python utilities/build_and_release.py --version 0.5.3 --non-interactive
 
   # Create PR to different release branch
@@ -641,7 +763,10 @@ Examples:
   # Skip PR creation
   python utilities/build_and_release.py --version 0.5.3 --skip-pr
 
-  # Create and push tag (must be on release branch)
+  # Create and push tag (must be on release branch, uses version from pyproject.toml)
+  python utilities/build_and_release.py --tag
+
+  # Create and push tag with specific version
   python utilities/build_and_release.py --version 0.5.3 --tag
 
   # Skip tests and type checks (not recommended)
@@ -655,7 +780,7 @@ Examples:
     parser.add_argument(
         "--version",
         type=str,
-        help="New version number (e.g., 0.5.3 or v0.5.3)",
+        help="New version number (e.g., 0.5.3 or v0.5.3). If not provided, will prompt for bump type (major/minor/patch).",
     )
     
     parser.add_argument(
@@ -722,7 +847,7 @@ Examples:
     parser.add_argument(
         "--tag",
         action="store_true",
-        help="Create and push a git tag (only works on release branch)",
+        help="Create and push a git tag using current version from pyproject.toml (only works on release branch)",
     )
     
     args = parser.parse_args()
@@ -741,8 +866,15 @@ Examples:
         print("\n✅ Build complete")
         return
     
-    # Validate version if provided
-    if args.version:
+    # Handle version: required unless using --tag-only or --build-only
+    # If --tag is used without --version, use current version from pyproject.toml
+    tag_only_mode = args.tag and not args.version
+    if tag_only_mode:
+        # For tag-only operation, use current version and skip release steps
+        new_version = current_version
+        print(f"Using current version from pyproject.toml: {new_version}")
+        print("Tag-only mode: skipping release steps (tests, version update, changelog, build, PR)")
+    elif args.version:
         if not validate_version(args.version):
             sys.exit(1)
         
@@ -754,148 +886,168 @@ Examples:
             response = input("Continue anyway? (y/N): ")
             if response.lower() != "y":
                 sys.exit(0)
-    else:
-        print("❌ --version is required (unless using --build-only)")
-        print(f"\n💡 Tip: Current version is {current_version}")
-        print("   To do a dry run, use: --version <new_version> --dry-run")
-        print("   To just build, use: --build-only")
-        parser.print_help()
-        sys.exit(1)
-    
-    # Check git status
-    if not args.dry_run and not check_git_status():
-        response = input("\nContinue with uncommitted changes? (y/N): ")
-        if response.lower() != "y":
-            sys.exit(0)
-    
-    # Run tests
-    if not args.skip_tests:
-        if not confirm_step(
-            "\n🧪 Proceed with running tests?",
-            default=True,
-            non_interactive=args.non_interactive or args.dry_run,
-        ):
-            print("⚠️  Skipping tests (user cancelled)")
-            if not args.non_interactive:
+    elif not args.build_only:
+        # No version specified - prompt for bump type
+        # Note: dry-run should still allow interactive prompts, only --non-interactive skips them
+        bump_type = prompt_version_bump(
+            current_version,
+            non_interactive=args.non_interactive,
+        )
+        
+        if bump_type is None:
+            if args.non_interactive:
+                print("❌ Version bump cancelled (non-interactive mode requires --version)")
+                sys.exit(1)
+            else:
+                print("❌ Version bump cancelled")
                 sys.exit(0)
+        
+        # Show what the new version would be (dry run)
+        if args.dry_run:
+            print(f"\n[DRY RUN] Would bump version using: {bump_type}")
+            # Get the new version from a dry run
+            new_version = bump_version(bump_type, dry_run=True)
         else:
-            if not run_tests(dry_run=args.dry_run):
-                if not args.dry_run:
-                    sys.exit(1)
+            # Actually bump the version
+            new_version = bump_version(bump_type, dry_run=False)
+        
+        print(f"New version: {new_version}")
     
-    # Run type checks
-    if not args.skip_type_check:
-        if not confirm_step(
-            "\n🔍 Proceed with type checking?",
-            default=True,
-            non_interactive=args.non_interactive or args.dry_run,
-        ):
-            print("⚠️  Skipping type checks (user cancelled)")
-            if not args.non_interactive:
+    # Skip release steps if tag-only mode
+    if not tag_only_mode:
+        # Check git status
+        if not args.dry_run and not check_git_status():
+            response = input("\nContinue with uncommitted changes? (y/N): ")
+            if response.lower() != "y":
                 sys.exit(0)
-        else:
-            if not run_type_check(dry_run=args.dry_run):
-                if not args.dry_run:
-                    sys.exit(1)
-    
-    # Update version
-    if args.version:
-        if not confirm_step(
-            f"\n📝 Update version from {current_version} to {new_version}?",
-            default=True,
-            non_interactive=args.non_interactive or args.dry_run,
-        ):
-            print("⚠️  Skipping version update (user cancelled)")
-            if not args.non_interactive:
-                sys.exit(0)
-        else:
-            update_version_in_pyproject(new_version, dry_run=args.dry_run)
-    
-    # Update changelog
-    if args.version and not args.skip_changelog:
-        if not confirm_step(
-            f"\n📄 Update CHANGELOG.md for version {new_version}?",
-            default=True,
-            non_interactive=args.non_interactive or args.dry_run,
-        ):
-            print("⚠️  Skipping changelog update (user cancelled)")
-            if not args.non_interactive:
-                sys.exit(0)
-        else:
-            update_changelog(new_version, dry_run=args.dry_run)
-    
-    # Build package
-    if not args.skip_build:
-        if not confirm_step(
-            "\n📦 Proceed with building the package?",
-            default=True,
-            non_interactive=args.non_interactive or args.dry_run,
-        ):
-            print("⚠️  Skipping package build (user cancelled)")
-            if not args.non_interactive:
-                sys.exit(0)
-        else:
-            if not build_package(dry_run=args.dry_run):
-                if not args.dry_run:
-                    sys.exit(1)
-    
-    # Commit and create PR
-    if args.version and not args.skip_pr:
-        # Commit the changes first
-        if not confirm_step(
-            f"\n💾 Commit version and changelog changes for v{new_version}?",
-            default=True,
-            non_interactive=args.non_interactive or args.dry_run,
-        ):
-            print("⚠️  Skipping commit (user cancelled)")
-            if not args.non_interactive:
-                sys.exit(0)
-        else:
-            if not commit_release_changes(new_version, dry_run=args.dry_run):
-                if not args.dry_run:
-                    sys.exit(1)
-            
-            # Push the branch
-            current_branch = get_current_branch()
-            if current_branch:
-                if not confirm_step(
-                    f"\n📤 Push branch '{current_branch}' to remote?",
-                    default=True,
-                    non_interactive=args.non_interactive or args.dry_run,
-                ):
-                    print("⚠️  Skipping branch push (user cancelled)")
-                    if not args.non_interactive:
-                        sys.exit(0)
-                else:
-                    if not push_branch(current_branch, dry_run=args.dry_run):
-                        if not args.dry_run:
-                            sys.exit(1)
-            
-            # Create PR
+        
+        # Run tests
+        if not args.skip_tests:
             if not confirm_step(
-                f"\n🔀 Create pull request to merge into '{args.release_branch}' branch?",
+                "\n🧪 Proceed with running tests?",
                 default=True,
                 non_interactive=args.non_interactive or args.dry_run,
             ):
-                print("⚠️  Skipping PR creation (user cancelled)")
+                print("⚠️  Skipping tests (user cancelled)")
                 if not args.non_interactive:
                     sys.exit(0)
             else:
-                pr_url = create_release_pr(
-                    new_version,
-                    release_branch=args.release_branch,
-                    dry_run=args.dry_run,
-                )
-                if pr_url and not args.dry_run:
-                    print(f"\n📌 PR created: {pr_url}")
-                    print("   Wait for the PR to be reviewed and merged before creating the tag.")
+                if not run_tests(dry_run=args.dry_run):
+                    # Always exit on test failure, even in dry-run mode
+                    print("❌ Tests failed - fix issues before proceeding")
+                    sys.exit(1)
+        
+        # Run type checks
+        if not args.skip_type_check:
+            if not confirm_step(
+                "\n🔍 Proceed with type checking?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping type checks (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                if not run_type_check(dry_run=args.dry_run):
+                    # Always exit on type check failure, even in dry-run mode
+                    print("❌ Type checks failed - fix issues before proceeding")
+                    sys.exit(1)
+        
+        # Update version (if version was explicitly provided, not if it was bumped)
+        # When version is bumped, it's already updated, so we skip this step
+        if args.version and new_version != current_version:
+            if not confirm_step(
+                f"\n📝 Update version from {current_version} to {new_version}?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping version update (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                update_version_in_pyproject(new_version, dry_run=args.dry_run)
+        
+        # Update changelog (always update if we have a new version)
+        if new_version != current_version and not args.skip_changelog:
+            if not confirm_step(
+                f"\n📄 Update CHANGELOG.md for version {new_version}?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping changelog update (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                update_changelog(new_version, dry_run=args.dry_run)
+        
+        # Build package
+        if not args.skip_build:
+            if not confirm_step(
+                "\n📦 Proceed with building the package?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping package build (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                if not build_package(dry_run=args.dry_run):
+                    if not args.dry_run:
+                        sys.exit(1)
+        
+        # Commit and create PR (always create if we have a new version)
+        if new_version != current_version and not args.skip_pr:
+            # Commit the changes first
+            if not confirm_step(
+                f"\n💾 Commit version and changelog changes for v{new_version}?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping commit (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                if not commit_release_changes(new_version, dry_run=args.dry_run):
+                    if not args.dry_run:
+                        sys.exit(1)
+                
+                # Push the branch
+                current_branch = get_current_branch()
+                if current_branch:
+                    if not confirm_step(
+                        f"\n📤 Push branch '{current_branch}' to remote?",
+                        default=True,
+                        non_interactive=args.non_interactive or args.dry_run,
+                    ):
+                        print("⚠️  Skipping branch push (user cancelled)")
+                        if not args.non_interactive:
+                            sys.exit(0)
+                    else:
+                        if not push_branch(current_branch, dry_run=args.dry_run):
+                            if not args.dry_run:
+                                sys.exit(1)
+                
+                # Create PR
+                if not confirm_step(
+                    f"\n🔀 Create pull request to merge into '{args.release_branch}' branch?",
+                    default=True,
+                    non_interactive=args.non_interactive or args.dry_run,
+                ):
+                    print("⚠️  Skipping PR creation (user cancelled)")
+                    if not args.non_interactive:
+                        sys.exit(0)
+                else:
+                    pr_url = create_release_pr(
+                        new_version,
+                        release_branch=args.release_branch,
+                        dry_run=args.dry_run,
+                    )
+                    if pr_url and not args.dry_run:
+                        print(f"\n📌 PR created: {pr_url}")
+                        print("   Wait for the PR to be reviewed and merged before creating the tag.")
     
     # Handle tag creation (only with --tag flag, and only on release branch)
     if args.tag:
-        if not args.version:
-            print("❌ --tag requires --version to be specified")
-            sys.exit(1)
-        
         current_branch = get_current_branch()
         if not current_branch:
             print("❌ Could not determine current branch")
@@ -947,12 +1099,12 @@ Examples:
             if not args.tag:
                 print(f"   2. After PR is merged, checkout release branch and create tag:")
                 print(f"      git checkout {args.release_branch}")
-                print(f"      python utilities/build_and_release.py --version {new_version} --tag")
+                print(f"      python utilities/build_and_release.py --tag")
         else:
             if not args.tag:
                 print(f"\n💡 To create and push a tag, use:")
-                print(f"   python utilities/build_and_release.py --version {new_version} --tag")
-                print(f"   (Must be on {args.release_branch} branch)")
+                print(f"   python utilities/build_and_release.py --tag")
+                print(f"   (Must be on {args.release_branch} branch, uses version from pyproject.toml)")
 
 
 if __name__ == "__main__":
