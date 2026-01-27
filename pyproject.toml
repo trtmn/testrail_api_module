@@ -62,16 +62,21 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+norecursedirs = ["src", ".venv", "venv", "build", "dist"]
 addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
     "--tb=short",
+    "--ignore=src",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+]
+filterwarnings = [
+    "ignore::pytest.PytestCollectionWarning",
 ]
 
 
