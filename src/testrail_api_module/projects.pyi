@@ -35,7 +35,7 @@ class ProjectsAPI(BaseAPI):
         Returns:
             dict: The created project data if successful, None otherwise.
         """
-    def update_project(self, project_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_project(self, project_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a project.
         

@@ -94,10 +94,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Build and Release Script Tag Management**: Refactored tag creation to be opt-in and release-branch-only
   - Removed automatic tag creation from the main release workflow
   - Added `--tag` option that only works when on the release branch (prevents accidental tagging on wrong branch)
-  - Tag creation now requires explicit `--tag` flag and validates current branch matches release branch
+  - `--tag` automatically reads version from `pyproject.toml` (no need to specify `--version`)
+  - When using `--tag` alone, skips all release steps (tests, version update, changelog, build, PR) and only creates/pushes tag
+  - Tag creation validates current branch matches release branch
   - After tag creation, automatically prompts to push the tag (with confirmation)
   - Removed `--skip-push` option (no longer needed)
-  - Impact: Prevents accidental tag creation on wrong branches and ensures tags are only created on the release branch after PR merge
+  - Impact: Prevents accidental tag creation on wrong branches, ensures tags are only created on the release branch after PR merge, and simplifies tag creation workflow
+
+- **Build and Release Script Version Bumping**: Added interactive version bump prompts
+  - When `--version` is not provided, script prompts user to select bump type (major, minor, patch, alpha, beta, rc, stable, post, dev)
+  - Uses `uv version --bump` to automatically calculate and update the new version
+  - Shows current version and what the new version will be before bumping
+  - Supports all semantic versioning bump types
+  - `--version` flag still works for explicit version specification
+  - Impact: Simplifies version management by automatically calculating next version based on semantic versioning rules
 
 ## [0.5.2] 2026-01-23
 

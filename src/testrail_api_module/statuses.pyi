@@ -41,7 +41,7 @@ class StatusesAPI(BaseAPI):
         Returns:
             dict: The created status data if successful, None otherwise.
         """
-    def update_status(self, status_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_status(self, status_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a status.
         

@@ -38,7 +38,7 @@ class SharedStepsAPI(BaseAPI):
         Returns:
             Dict containing the created shared step data.
         """
-    def update_shared_step(self, shared_step_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_shared_step(self, shared_step_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a shared step.
         

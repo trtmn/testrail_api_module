@@ -66,7 +66,7 @@ class BaseAPI:
             TestRailRateLimitError: If rate limit is exceeded
             TestRailAPIException: For other API errors
         """
-    def _api_request(self, method: str, endpoint: str, data: dict[str, Any] | None = None, params: dict[str, Any] | None = None, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+    def _api_request(self, method: str, endpoint: str, data: dict[str, Any] | None = None, params: dict[str, Any] | None = None, **kwargs: Any) -> dict[str, Any] | list[dict[str, Any]]:
         """
         Make an API request to TestRail following official patterns.
 
@@ -83,7 +83,7 @@ class BaseAPI:
         Raises:
             TestRailAPIError: For various API-related errors
         """
-    def _get(self, endpoint: str, params: dict[str, Any] | None = None, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+    def _get(self, endpoint: str, params: dict[str, Any] | None = None, **kwargs: Any) -> dict[str, Any] | list[dict[str, Any]]:
         """Make a GET request to the TestRail API."""
-    def _post(self, endpoint: str, data: dict[str, Any] | None = None, **kwargs) -> dict[str, Any] | list[dict[str, Any]]:
+    def _post(self, endpoint: str, data: dict[str, Any] | None = None, **kwargs: Any) -> dict[str, Any] | list[dict[str, Any]]:
         """Make a POST request to the TestRail API."""

@@ -40,7 +40,7 @@ class MilestonesAPI(BaseAPI):
         Returns:
             dict: The created milestone data if successful, None otherwise.
         """
-    def update_milestone(self, milestone_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_milestone(self, milestone_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a milestone.
         
