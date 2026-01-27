@@ -121,6 +121,20 @@ __private__/
 
 # Security reports
 .security_reports/
+bandit-report.json
 
 # Cursor configuration (may contain sensitive credentials)
 .cursor/mcp.json
+
+# Credential and secret files
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+secrets.json
+credentials.json
+.secrets.baseline

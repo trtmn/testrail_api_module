@@ -365,6 +365,65 @@ management.
 
 - `pyproject.toml` - Package configuration and dependency specifications
 
+## 🔒 Security & Credential Protection
+
+This project includes automated credential detection to prevent secrets from being committed to the repository.
+
+### Pre-commit Hooks
+
+The repository uses [pre-commit](https://pre-commit.com/) hooks that automatically:
+- **Detect secrets**: Scans for API keys, passwords, tokens, private keys, and other credentials using detect-secrets
+- **Block commits**: Prevents commits containing detected secrets
+- **Run on all git clients**: Works with command line, GUI clients, and IDEs
+
+### Setting Up Pre-commit Hooks
+
+1. **Install dependencies**:
+   ```bash
+   uv sync --extra dev
+   ```
+
+2. **Install git hooks**:
+   ```bash
+   pre-commit install
+   ```
+
+3. **Run hooks manually** (optional):
+   ```bash
+   pre-commit run --all-files
+   ```
+
+### Credential Management Best Practices
+
+**✅ DO:**
+- Use environment variables for credentials (`TESTRAIL_API_KEY`, `TESTRAIL_PASSWORD`)
+- Store credentials in `.env` files (already in `.gitignore`)
+- Use GitHub Secrets for CI/CD pipelines
+- Use test credentials in test files (they're excluded from secret detection)
+
+**❌ DON'T:**
+- Commit `.env` files or any files containing real credentials
+- Hardcode API keys or passwords in source code
+- Commit files with `.key`, `.pem`, or other credential file extensions
+- Bypass pre-commit hooks with `--no-verify` when committing credentials
+
+### What Gets Detected
+
+The secret detection scans for:
+- API keys and tokens (TestRail, GitHub, AWS, etc.)
+- Passwords and authentication credentials
+- Private keys (SSH, SSL certificates)
+- High-entropy strings (likely to be secrets)
+- Common credential patterns
+
+### If You Accidentally Commit Credentials
+
+If credentials are accidentally committed:
+1. **Immediately rotate/revoke** the exposed credentials
+2. **Remove from git history** using `git filter-branch` or BFG Repo-Cleaner
+3. **Force push** to update the remote repository (coordinate with team)
+4. **Notify team members** to update their local repositories
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
