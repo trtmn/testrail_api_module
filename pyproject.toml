@@ -30,6 +30,10 @@ dev = [
     "mypy>=1.0.0",
     "toml>=0.10.0",
     "python-dotenv>=1.0.0",
+    "pre-commit>=3.8.0",
+    "ruff>=0.8.0",
+    "bandit>=1.7.0",
+    "detect-secrets>=1.5.0",
 ]
 
 # Optional docs extra so consumers can install only what's needed to build docs
@@ -113,3 +117,28 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@abstractmethod",
 ]
+
+# Ruff configuration for linting and formatting
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.isort]
+known-first-party = ["testrail_api_module"]

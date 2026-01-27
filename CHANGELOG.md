@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✨ Added
+
+- **Pre-commit Hooks Configuration**: Added pre-commit framework to automatically run code quality checks on every commit
+  - Configured hooks for Python linting and formatting (ruff)
+  - Added type checking with mypy
+  - Included markdown linting
+  - Added security checks with bandit
+  - Configured general file checks (trailing whitespace, end of file, YAML/TOML/JSON validation)
+  - **Credential Detection**: Added detect-secrets hook to prevent credentials, API keys, passwords, and other secrets from being committed
+    - Scans all files for common secret patterns (API keys, tokens, passwords, private keys, etc.)
+    - Excludes test files and lock files from scanning
+    - Blocks commits containing detected secrets (exit code 1)
+    - Uses baseline file to track known false positives
+  - Enhanced .gitignore to exclude credential files (.env, *.key, *.pem, secrets.json, etc.)
+  - Hooks run automatically regardless of git client (command line, GUI, IDE)
+  - Impact: Ensures code quality and consistency across all commits, prevents credentials from being committed, and prevents common issues before they reach the repository
+
+- **Repository Ruleset for Main Branch Protection**: Created GitHub repository ruleset to prevent direct pushes to main branch
+  - Ruleset prevents branch deletion and force pushes (non-fast-forward)
+  - Works in conjunction with existing branch protection that requires pull requests
+  - Ruleset configuration stored in `.github/ruleset-main-protection.json`
+  - Impact: Ensures all changes to main branch go through pull request review process
+
+- **Build and Release Script**: Added comprehensive `build_and_release.py` script to automate the release process
+  - Runs tests and type checking before release
+  - Automatically updates version in `pyproject.toml`
+  - Automatically updates `CHANGELOG.md` (moves unreleased entries to new version)
+  - Builds the package using `python -m build`
+  - Creates git tags for releases
+  - Optionally pushes tags to trigger GitHub Actions workflow
+  - Supports dry-run mode for testing
+  - Includes validation and safety checks
+  - Checks for existing tags and handles them gracefully
+  - Validates git repository status and handles edge cases
+  - Improved error messages with helpful tips
+  - Impact: Streamlines the release process and reduces manual errors
+
 ### 🐛 Fixed
 
 - **Test Case Type Mapping**: Fixed test expectations in `test_get_required_case_fields_type_mapping` to match actual implementation
