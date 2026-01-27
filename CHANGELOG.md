@@ -46,6 +46,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Fixed
 
+- **Bandit Test File Scanning**: Updated bandit security scanner to include test files in security checks
+  - Removed exclusion of test files from bandit scanning
+  - Changed scanning scope from `src/` only to project root (excluding only build artifacts and virtual environments)
+  - Test files are now scanned for security vulnerabilities and credentials, ensuring no secrets are committed in test code
+  - Impact: Improved security coverage by ensuring test files are also checked for security issues
+
+- **Pytest Collection Warnings**: Fixed 86 pytest collection warnings caused by pytest attempting to collect classes from source code
+  - Added `norecursedirs` configuration to exclude `src` directory from test discovery
+  - Added `--ignore=src` to pytest options to prevent scanning source code during collection
+  - Added `filterwarnings` configuration to suppress `PytestCollectionWarning` messages
+  - Classes like `TestRailAPIError`, `TestRailAuthenticationError`, `TestRailRateLimitError`, and `TestsAPI` were being incorrectly collected as test classes
+  - Impact: All 468 tests now pass cleanly without warnings, improving test output readability
+
 - **Test Case Type Mapping**: Fixed test expectations in `test_get_required_case_fields_type_mapping` to match actual implementation
   - Updated checkbox field type_hint expectation from `'boolean'` to `'boolean (True/False)'`
   - Updated multi-select field type_hint expectation from `'array of string IDs'` to `'array of IDs'`

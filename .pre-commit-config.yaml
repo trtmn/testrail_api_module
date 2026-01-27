@@ -65,5 +65,4 @@ repos:
     rev: 1.7.9
     hooks:
       - id: bandit
-        args: ['-r', 'src/', '-f', 'json', '-o', 'bandit-report.json']
-        exclude: ^tests/
+        args: ['-r', '.', '-f', 'json', '-o', 'bandit-report.json', '--exclude', '.venv', '--exclude', 'venv', '--exclude', 'build', '--exclude', 'dist', '--exclude', '.git']

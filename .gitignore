@@ -138,3 +138,4 @@ bandit-report.json
 secrets.json
 credentials.json
 .secrets.baseline
+bandit-report.html
