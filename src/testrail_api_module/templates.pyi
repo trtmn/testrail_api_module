@@ -43,7 +43,7 @@ class TemplatesAPI(BaseAPI):
         Returns:
             dict: The created template data if successful, None otherwise.
         """
-    def update_template(self, template_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_template(self, template_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a template.
         
@@ -96,7 +96,7 @@ class TemplatesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-    def update_template_field(self, template_id: int, field_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_template_field(self, template_id: int, field_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a field in a template.
         

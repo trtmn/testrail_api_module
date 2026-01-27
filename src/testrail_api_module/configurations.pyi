@@ -38,7 +38,7 @@ class ConfigurationsAPI(BaseAPI):
         Returns:
             Dict containing the created configuration data.
         """
-    def update_configuration(self, config_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_configuration(self, config_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a configuration.
         

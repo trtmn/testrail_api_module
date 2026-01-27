@@ -46,7 +46,7 @@ class UsersAPI(BaseAPI):
         Returns:
             dict: The created user data if successful, None otherwise.
         """
-    def update_user(self, user_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_user(self, user_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a user.
         

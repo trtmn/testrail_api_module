@@ -45,7 +45,7 @@ class PlansAPI(BaseAPI):
         Returns:
             dict: The created test plan data if successful, None otherwise.
         """
-    def update_plan(self, plan_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_plan(self, plan_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a test plan.
         

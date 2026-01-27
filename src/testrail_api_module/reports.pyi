@@ -56,7 +56,7 @@ class ReportsAPI(BaseAPI):
         Returns:
             dict: The created report data if successful, None otherwise.
         """
-    def update_report(self, report_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_report(self, report_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a report.
         

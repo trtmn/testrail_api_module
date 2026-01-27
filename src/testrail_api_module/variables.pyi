@@ -38,7 +38,7 @@ class VariablesAPI(BaseAPI):
         Returns:
             dict: The created variable data if successful, None otherwise.
         """
-    def update_variable(self, variable_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_variable(self, variable_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a variable.
         
@@ -81,7 +81,7 @@ class VariablesAPI(BaseAPI):
         Returns:
             dict: The created variable group data if successful, None otherwise.
         """
-    def update_variable_group(self, group_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_variable_group(self, group_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a variable group.
         

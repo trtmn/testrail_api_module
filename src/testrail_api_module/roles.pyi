@@ -60,7 +60,7 @@ class RolesAPI(BaseAPI):
         Returns:
             dict: The created role data if successful, None otherwise.
         """
-    def update_role(self, role_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_role(self, role_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a role.
         
