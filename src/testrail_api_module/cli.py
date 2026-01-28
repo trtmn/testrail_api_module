@@ -15,7 +15,7 @@ Example:
     export TESTRAIL_USERNAME="user@example.com"
     export TESTRAIL_API_KEY="api-key-123"
     testrail-mcp-server
-    
+
     # Using command-line arguments
     testrail-mcp-server \\
       --base-url "https://test.testrail.io" \\
@@ -26,7 +26,6 @@ Example:
 import logging
 import os
 import sys
-from pathlib import Path
 
 try:
     from . import TestRailAPI
@@ -47,14 +46,14 @@ except ImportError as e:
 def load_env_file(env_file: str) -> None:
     """
     Load environment variables from a .env file.
-    
+
     This function uses python-dotenv to load environment variables from
     a .env file. If python-dotenv is not installed, this function silently
     does nothing (it's an optional dependency).
-    
+
     Args:
         env_file: Path to the .env file to load.
-        
+
     Note:
         This function will not raise an error if python-dotenv is not
         installed, making it safe to call even when the dependency is
@@ -71,21 +70,21 @@ def load_env_file(env_file: str) -> None:
 def setup_logging(verbose: bool = False, debug: bool = False) -> None:
     """
     Set up logging configuration for the CLI.
-    
+
     Configures Python's logging module with appropriate format and level.
     When verbose or debug is True, DEBUG level logging is enabled for detailed
     information about tool registration and API calls.
-    
+
     For MCP servers running in stdio mode, logging is disabled by default
     to avoid interfering with stdio communication. Use --verbose or set
     TESTRAIL_MCP_DEBUG=1 only for debugging.
-    
+
     Args:
         verbose: If True, set log level to DEBUG. Otherwise, logging is
                  disabled to avoid interfering with stdio communication.
         debug: If True, enable debug logging. This can be set via the
                TESTRAIL_MCP_DEBUG environment variable.
-        
+
     Note:
         This function configures logging to show only TestRail MCP debug
         messages, not FastMCP's internal debug logs.
@@ -100,10 +99,10 @@ def setup_logging(verbose: bool = False, debug: bool = False) -> None:
             # Log to stderr to avoid interfering with stdio
             stream=sys.stderr
         )
-        
+
         # Enable DEBUG logging only for testrail_api_module loggers
         logging.getLogger('testrail_api_module').setLevel(logging.DEBUG)
-        
+
         # Keep upstream/internal loggers at WARNING to reduce noise
         #
         # Cursor surfaces stderr output as "errors" in its MCP console, even if
@@ -114,7 +113,8 @@ def setup_logging(verbose: bool = False, debug: bool = False) -> None:
         logging.getLogger('mcp').setLevel(logging.WARNING)
         logging.getLogger('mcp.server').setLevel(logging.WARNING)
         logging.getLogger('mcp.server.lowlevel').setLevel(logging.WARNING)
-        logging.getLogger('mcp.server.lowlevel.server').setLevel(logging.WARNING)
+        logging.getLogger('mcp.server.lowlevel.server').setLevel(
+            logging.WARNING)
         logging.getLogger('docket').setLevel(logging.WARNING)
         logging.getLogger('fakeredis').setLevel(logging.WARNING)
         logging.getLogger('uvicorn').setLevel(logging.WARNING)
@@ -138,11 +138,11 @@ def setup_logging(verbose: bool = False, debug: bool = False) -> None:
 def main() -> None:
     """
     Main entry point for the CLI.
-    
+
     This function parses command-line arguments, loads configuration from
     environment variables or .env files, validates the configuration, creates
     a TestRailAPI instance, and starts the MCP server.
-    
+
     The function handles:
     - Command-line argument parsing
     - Environment variable loading
@@ -150,14 +150,14 @@ def main() -> None:
     - API client initialization
     - MCP server creation and startup
     - Error handling and logging
-    
+
     Exits with code 0 on success, 1 on error.
-    
+
     Raises:
         SystemExit: Always exits (either 0 or 1), never returns normally.
     """
     import argparse
-    
+
     parser = argparse.ArgumentParser(
         description="Start TestRail API MCP server",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -182,7 +182,7 @@ Examples:
   testrail-mcp-server --verbose
         """
     )
-    
+
     parser.add_argument(
         '--base-url',
         type=str,
@@ -226,46 +226,57 @@ Examples:
         action='store_true',
         help='Enable verbose logging'
     )
-    
+
     args = parser.parse_args()
-    
+
     # Check for debug environment variable
-    debug_enabled = os.getenv('TESTRAIL_MCP_DEBUG', '').lower() in ('1', 'true', 'yes', 'on')
-    
+    debug_enabled = os.getenv(
+        'TESTRAIL_MCP_DEBUG',
+        '').lower() in (
+        '1',
+        'true',
+        'yes',
+        'on')
+
     setup_logging(args.verbose, debug_enabled)
     logger = logging.getLogger(__name__)
-    
+
     if debug_enabled and not args.verbose:
-        logger.debug("Debug logging enabled via TESTRAIL_MCP_DEBUG environment variable")
-    
+        logger.debug(
+            "Debug logging enabled via TESTRAIL_MCP_DEBUG environment variable")
+
     # Suppress FastMCP and uvicorn logging in non-verbose/non-debug mode
     if not args.verbose and not debug_enabled:
         os.environ.setdefault('LOG_LEVEL', 'ERROR')
         os.environ.setdefault('UVICORN_LOG_LEVEL', 'error')
-    
+
     # Load .env file if specified or if .env exists in current directory
     env_file = args.env_file or '.env'
     if os.path.exists(env_file):
         load_env_file(env_file)
         if args.verbose:
             logger.debug(f"Loaded environment variables from {env_file}")
-    
+
     # Get configuration from args or environment
     base_url = args.base_url or os.getenv('TESTRAIL_BASE_URL')
     username = args.username or os.getenv('TESTRAIL_USERNAME')
     api_key = args.api_key or os.getenv('TESTRAIL_API_KEY')
     password = args.password or os.getenv('TESTRAIL_PASSWORD')
     timeout = args.timeout or int(os.getenv('TESTRAIL_TIMEOUT', '30'))
-    
+
     # Validate required parameters
     if not base_url:
-        print("ERROR: TESTRAIL_BASE_URL is required (use --base-url or set env var)", file=sys.stderr)
+        print(
+            "ERROR: TESTRAIL_BASE_URL is required (use --base-url or set env var)",
+            file=sys.stderr)
         sys.exit(1)
-    
+
     if not username:
-        print("ERROR: TESTRAIL_USERNAME is required (use --username or set env var)", file=sys.stderr)
+        print(
+            "ERROR: TESTRAIL_USERNAME is required (use --username or set env var)",
+            file=sys.stderr)
         sys.exit(1)
-    
+
     if not api_key and not password:
         print(
             "ERROR: Either TESTRAIL_API_KEY or TESTRAIL_PASSWORD is required "
@@ -273,7 +284,7 @@ Examples:
             file=sys.stderr
         )
         sys.exit(1)
-    
+
     # Create API instance
     try:
         api = TestRailAPI(
@@ -286,11 +297,15 @@ Examples:
         if args.verbose:
             logger.info("TestRail API client initialized")
     except Exception as e:
-        print(f"ERROR: Failed to initialize TestRail API client: {e}", file=sys.stderr)
+        print(
+            f"ERROR: Failed to initialize TestRail API client: {e}",
+            file=sys.stderr)
         if args.verbose:
-            logger.error(f"Failed to initialize TestRail API client: {e}", exc_info=True)
+            logger.error(
+                f"Failed to initialize TestRail API client: {e}",
+                exc_info=True)
         sys.exit(1)
-    
+
     # Create and run MCP server
     try:
         mcp = create_mcp_server(api_instance=api, server_name=args.server_name)
@@ -310,4 +325,3 @@ Examples:
         if args.verbose:
             logger.error(f"Error running MCP server: {e}", exc_info=True)
         sys.exit(1)
-

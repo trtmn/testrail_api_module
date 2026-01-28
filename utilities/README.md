@@ -76,6 +76,82 @@ Runs the test suite for the project.
 python utilities/run_tests.py
 ```
 
+### `build_and_release.py`
+
+Comprehensive build and release script that automates the entire release process.
+
+**Features:**
+
+- Runs tests and type checking before release
+- Automatically updates version in `pyproject.toml`
+- Automatically updates `CHANGELOG.md` (moves unreleased entries to new version)
+- Builds the package using `uv build`
+- Creates git tags for releases
+- Optionally pushes tags to trigger GitHub Actions workflow
+- Supports dry-run mode for testing
+- Includes validation and safety checks
+- Interactive prompts for confirmation
+
+**Usage:**
+
+```bash
+# Dry run to see what would happen
+python utilities/build_and_release.py --version 0.5.3 --dry-run
+
+# Build and create tag (without pushing)
+python utilities/build_and_release.py --version 0.5.3 --skip-push
+
+# Full release (build, tag, and push)
+python utilities/build_and_release.py --version 0.5.3
+
+# Skip tests and type checks (not recommended)
+python utilities/build_and_release.py --version 0.5.3 --skip-tests --skip-type-check
+
+# Only build package without version updates
+python utilities/build_and_release.py --build-only
+```
+
+**Command-line options:**
+
+- `--version VERSION`: New version number (required unless using `--build-only`)
+- `--dry-run`: Show what would be done without making changes
+- `--skip-tests`: Skip running tests
+- `--skip-type-check`: Skip type checking
+- `--skip-build`: Skip building the package
+- `--skip-push`: Create tag but don't push to remote
+- `--build-only`: Only build the package (skip version updates, changelog, and tagging)
+- `--tag-message MESSAGE`: Custom message for the git tag
+- `--skip-changelog`: Skip updating CHANGELOG.md
+
+**What it does:**
+
+1. Validates version format (semantic versioning)
+2. Checks for uncommitted changes (with warning)
+3. Runs tests (unless `--skip-tests`)
+4. Runs type checking with mypy (unless `--skip-type-check`)
+5. Updates version in `pyproject.toml`
+6. Updates `CHANGELOG.md` (moves unreleased to new version section)
+7. Builds the package
+8. Creates git tag
+9. Optionally pushes tag to trigger GitHub Actions workflow
+
+**Release Workflow:**
+
+```bash
+# 1. Prepare release (dry run first)
+python utilities/build_and_release.py --version 0.5.3 --dry-run
+
+# 2. Execute release
+python utilities/build_and_release.py --version 0.5.3
+
+# 3. Review changes and commit
+git add pyproject.toml CHANGELOG.md
+git commit -m "Prepare release v0.5.3"
+
+# 4. Push tag (or use --skip-push and push manually)
+git push origin v0.5.3
+```
+
 ### `build.py`
 
 Comprehensive build script that handles the entire build process with interactive prompts.

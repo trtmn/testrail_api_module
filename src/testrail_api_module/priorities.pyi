@@ -35,7 +35,7 @@ class PrioritiesAPI(BaseAPI):
         Returns:
             dict: The created priority data if successful, None otherwise.
         """
-    def update_priority(self, priority_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_priority(self, priority_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a priority.
         

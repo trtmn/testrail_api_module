@@ -13,7 +13,7 @@ from testrail_api_module.results import ResultsAPI
 from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
+    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestResultsAPI:
@@ -56,26 +56,26 @@ class TestResultsAPI:
         """Test add_result with minimal required parameters."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
-            
+
             result = results_api.add_result(
-                run_id=1, 
-                case_id=1, 
+                run_id=1,
+                case_id=1,
                 status_id=1
             )
-            
+
             expected_data = {"status_id": 1}
             mock_post.assert_called_once_with(
-                'add_result_for_case/1/1', 
+                'add_result_for_case/1/1',
                 data=expected_data
             )
             assert result == {"id": 1, "status_id": 1}
 
     def test_add_result_with_all_parameters(self, results_api: ResultsAPI,
-                                          sample_result_data: dict) -> None:
+                                            sample_result_data: dict) -> None:
         """Test add_result with all optional parameters."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, **sample_result_data}
-            
+
             result = results_api.add_result(
                 run_id=1,
                 case_id=1,
@@ -87,7 +87,7 @@ class TestResultsAPI:
                 assignedto_id=1,
                 custom_fields={"custom1": "value1"}
             )
-            
+
             expected_data = {
                 "status_id": 1,
                 "comment": "Test passed successfully",
@@ -98,7 +98,7 @@ class TestResultsAPI:
                 "custom1": "value1"
             }
             mock_post.assert_called_once_with(
-                'add_result_for_case/1/1', 
+                'add_result_for_case/1/1',
                 data=expected_data
             )
             assert result == {"id": 1, **sample_result_data}
@@ -107,7 +107,7 @@ class TestResultsAPI:
         """Test add_result with None values for optional parameters."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
-            
+
             result = results_api.add_result(
                 run_id=1,
                 case_id=1,
@@ -119,10 +119,10 @@ class TestResultsAPI:
                 assignedto_id=None,
                 custom_fields=None
             )
-            
+
             expected_data = {"status_id": 1}
             mock_post.assert_called_once_with(
-                'add_result_for_case/1/1', 
+                'add_result_for_case/1/1',
                 data=expected_data
             )
             assert result == {"id": 1, "status_id": 1}
@@ -131,7 +131,7 @@ class TestResultsAPI:
         """Test add_result with empty strings for optional parameters."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
-            
+
             result = results_api.add_result(
                 run_id=1,
                 case_id=1,
@@ -143,8 +143,9 @@ class TestResultsAPI:
                 assignedto_id=0,
                 custom_fields={}
             )
-            
-            # Empty strings are included (not filtered), only None values are filtered
+
+            # Empty strings are included (not filtered), only None values are
+            # filtered
             expected_data = {
                 "status_id": 1,
                 "comment": "",
@@ -154,7 +155,7 @@ class TestResultsAPI:
                 "assignedto_id": 0
             }
             mock_post.assert_called_once_with(
-                'add_result_for_case/1/1', 
+                'add_result_for_case/1/1',
                 data=expected_data
             )
             assert result == {"id": 1, "status_id": 1}
@@ -163,17 +164,18 @@ class TestResultsAPI:
         """Test add_results_for_cases method."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"results": [{"id": 1}, {"id": 2}]}
-            
+
             results_data = [
                 {"case_id": 1, "status_id": 1, "comment": "Passed"},
                 {"case_id": 2, "status_id": 5, "comment": "Failed"}
             ]
-            
-            result = results_api.add_results_for_cases(run_id=1, results=results_data)
-            
+
+            result = results_api.add_results_for_cases(
+                run_id=1, results=results_data)
+
             expected_data = {"results": results_data}
             mock_post.assert_called_once_with(
-                'add_results_for_cases/1', 
+                'add_results_for_cases/1',
                 data=expected_data
             )
             assert result == {"results": [{"id": 1}, {"id": 2}]}
@@ -182,24 +184,25 @@ class TestResultsAPI:
         """Test add_result_for_run with minimal required parameters."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
-            
+
             result = results_api.add_result_for_run(
-                run_id=1, 
+                run_id=1,
                 status_id=1
             )
-            
+
             expected_data = {"status_id": 1}
             mock_post.assert_called_once_with(
-                'add_result_for_run/1', 
+                'add_result_for_run/1',
                 data=expected_data
             )
             assert result == {"id": 1, "status_id": 1}
 
-    def test_add_result_for_run_with_all_parameters(self, results_api, sample_result_data):
+    def test_add_result_for_run_with_all_parameters(
+            self, results_api, sample_result_data):
         """Test add_result_for_run with all optional parameters."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, **sample_result_data}
-            
+
             result = results_api.add_result_for_run(
                 run_id=1,
                 status_id=1,
@@ -210,7 +213,7 @@ class TestResultsAPI:
                 assignedto_id=1,
                 custom_fields={"custom1": "value1"}
             )
-            
+
             expected_data = {
                 "status_id": 1,
                 "comment": "Test passed successfully",
@@ -221,7 +224,7 @@ class TestResultsAPI:
                 "custom1": "value1"
             }
             mock_post.assert_called_once_with(
-                'add_result_for_run/1', 
+                'add_result_for_run/1',
                 data=expected_data
             )
             assert result == {"id": 1, **sample_result_data}
@@ -233,9 +236,9 @@ class TestResultsAPI:
                 {"id": 1, "status_id": 1},
                 {"id": 2, "status_id": 5}
             ]
-            
+
             result = results_api.get_results(run_id=1)
-            
+
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
                 params={}
@@ -245,12 +248,13 @@ class TestResultsAPI:
                 {"id": 2, "status_id": 5}
             ]
 
-    def test_get_results_with_all_parameters(self, results_api: ResultsAPI) -> None:
+    def test_get_results_with_all_parameters(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results with all optional parameters."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1, "status_id": 1}]
-            
-            result = results_api.get_results(
+
+            results_api.get_results(
                 run_id=1,
                 status_id=[1, 5],
                 created_after=1000000,
@@ -260,7 +264,7 @@ class TestResultsAPI:
                 limit=50,
                 offset=10
             )
-            
+
             expected_params = {
                 'status_id': '1,5',
                 'created_after': 1000000,
@@ -275,49 +279,52 @@ class TestResultsAPI:
                 params=expected_params
             )
 
-    def test_get_results_with_single_status_id(self, results_api: ResultsAPI) -> None:
+    def test_get_results_with_single_status_id(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results with single status_id (int, not list)."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1, "status_id": 1}]
-            
-            result = results_api.get_results(
+
+            results_api.get_results(
                 run_id=1,
                 status_id=1
             )
-            
+
             expected_params = {'status_id': 1}
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
                 params=expected_params
             )
 
-    def test_get_results_with_single_created_by(self, results_api: ResultsAPI) -> None:
+    def test_get_results_with_single_created_by(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results with single created_by (int, not list)."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results(
+
+            results_api.get_results(
                 run_id=1,
                 created_by=1
             )
-            
+
             expected_params = {'created_by': 1}
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
                 params=expected_params
             )
 
-    def test_get_results_with_timestamp_filters(self, results_api: ResultsAPI) -> None:
+    def test_get_results_with_timestamp_filters(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results with timestamp filters."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results(
+
+            results_api.get_results(
                 run_id=1,
                 created_after=1000000,
                 created_before=2000000
             )
-            
+
             expected_params = {
                 'created_after': 1000000,
                 'created_before': 2000000
@@ -327,17 +334,18 @@ class TestResultsAPI:
                 params=expected_params
             )
 
-    def test_get_results_with_pagination(self, results_api: ResultsAPI) -> None:
+    def test_get_results_with_pagination(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results with pagination parameters."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results(
+
+            results_api.get_results(
                 run_id=1,
                 limit=100,
                 offset=50
             )
-            
+
             expected_params = {
                 'limit': 100,
                 'offset': 50
@@ -347,16 +355,17 @@ class TestResultsAPI:
                 params=expected_params
             )
 
-    def test_get_results_with_defects_filter(self, results_api: ResultsAPI) -> None:
+    def test_get_results_with_defects_filter(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results with defects_filter parameter."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results(
+
+            results_api.get_results(
                 run_id=1,
                 defects_filter="TR-123"
             )
-            
+
             expected_params = {'defects_filter': 'TR-123'}
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
@@ -370,9 +379,9 @@ class TestResultsAPI:
                 {"id": 1, "status_id": 1, "case_id": 1},
                 {"id": 2, "status_id": 5, "case_id": 1}
             ]
-            
+
             result = results_api.get_results_for_case(run_id=1, case_id=1)
-            
+
             mock_get.assert_called_once_with(
                 'get_results_for_case/1/1'
             )
@@ -388,9 +397,9 @@ class TestResultsAPI:
                 {"id": 1, "status_id": 1},
                 {"id": 2, "status_id": 5}
             ]
-            
+
             result = results_api.get_results_for_run(run_id=1)
-            
+
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
                 params={}
@@ -400,12 +409,13 @@ class TestResultsAPI:
                 {"id": 2, "status_id": 5}
             ]
 
-    def test_get_results_for_run_with_all_parameters(self, results_api: ResultsAPI) -> None:
+    def test_get_results_for_run_with_all_parameters(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results_for_run with all optional parameters."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1, "status_id": 1}]
-            
-            result = results_api.get_results_for_run(
+
+            results_api.get_results_for_run(
                 run_id=1,
                 status_id=[1, 5],
                 created_after=1000000,
@@ -415,7 +425,7 @@ class TestResultsAPI:
                 limit=50,
                 offset=10
             )
-            
+
             expected_params = {
                 'status_id': '1,5',
                 'created_after': 1000000,
@@ -430,49 +440,52 @@ class TestResultsAPI:
                 params=expected_params
             )
 
-    def test_get_results_for_run_with_single_status_id(self, results_api: ResultsAPI) -> None:
+    def test_get_results_for_run_with_single_status_id(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results_for_run with single status_id (int, not list)."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1, "status_id": 1}]
-            
-            result = results_api.get_results_for_run(
+
+            results_api.get_results_for_run(
                 run_id=1,
                 status_id=1
             )
-            
+
             expected_params = {'status_id': 1}
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
                 params=expected_params
             )
 
-    def test_get_results_for_run_with_single_created_by(self, results_api: ResultsAPI) -> None:
+    def test_get_results_for_run_with_single_created_by(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results_for_run with single created_by (int, not list)."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results_for_run(
+
+            results_api.get_results_for_run(
                 run_id=1,
                 created_by=1
             )
-            
+
             expected_params = {'created_by': 1}
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
                 params=expected_params
             )
 
-    def test_get_results_for_run_with_timestamp_filters(self, results_api: ResultsAPI) -> None:
+    def test_get_results_for_run_with_timestamp_filters(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results_for_run with timestamp filters."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results_for_run(
+
+            results_api.get_results_for_run(
                 run_id=1,
                 created_after=1000000,
                 created_before=2000000
             )
-            
+
             expected_params = {
                 'created_after': 1000000,
                 'created_before': 2000000
@@ -482,17 +495,18 @@ class TestResultsAPI:
                 params=expected_params
             )
 
-    def test_get_results_for_run_with_pagination(self, results_api: ResultsAPI) -> None:
+    def test_get_results_for_run_with_pagination(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results_for_run with pagination parameters."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results_for_run(
+
+            results_api.get_results_for_run(
                 run_id=1,
                 limit=100,
                 offset=50
             )
-            
+
             expected_params = {
                 'limit': 100,
                 'offset': 50
@@ -502,16 +516,17 @@ class TestResultsAPI:
                 params=expected_params
             )
 
-    def test_get_results_for_run_with_defects_filter(self, results_api: ResultsAPI) -> None:
+    def test_get_results_for_run_with_defects_filter(
+            self, results_api: ResultsAPI) -> None:
         """Test get_results_for_run with defects_filter parameter."""
         with patch.object(results_api, '_get') as mock_get:
             mock_get.return_value = [{"id": 1}]
-            
-            result = results_api.get_results_for_run(
+
+            results_api.get_results_for_run(
                 run_id=1,
                 defects_filter="TR-123"
             )
-            
+
             expected_params = {'defects_filter': 'TR-123'}
             mock_get.assert_called_once_with(
                 'get_results_for_run/1',
@@ -522,17 +537,17 @@ class TestResultsAPI:
         """Test add_results method."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"results": [{"id": 1}, {"id": 2}]}
-            
+
             results_data = [
                 {"case_id": 1, "status_id": 1, "comment": "Passed"},
                 {"case_id": 2, "status_id": 5, "comment": "Failed"}
             ]
-            
+
             result = results_api.add_results(run_id=1, results=results_data)
-            
+
             expected_data = {"results": results_data}
             mock_post.assert_called_once_with(
-                'add_results_for_cases/1', 
+                'add_results_for_cases/1',
                 data=expected_data
             )
             assert result == {"results": [{"id": 1}, {"id": 2}]}
@@ -541,35 +556,37 @@ class TestResultsAPI:
         """Test behavior when API request fails."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.side_effect = TestRailAPIError("API request failed")
-            
+
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 results_api.add_result(
-                    run_id=1, 
-                    case_id=1, 
+                    run_id=1,
+                    case_id=1,
                     status_id=1
                 )
-    
+
     def test_authentication_error(self, results_api: ResultsAPI) -> None:
         """Test behavior when authentication fails."""
         with patch.object(results_api, '_post') as mock_post:
-            mock_post.side_effect = TestRailAuthenticationError("Authentication failed")
-            
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed")
+
             with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
                 results_api.add_result(
-                    run_id=1, 
-                    case_id=1, 
+                    run_id=1,
+                    case_id=1,
                     status_id=1
                 )
-    
+
     def test_rate_limit_error(self, results_api: ResultsAPI) -> None:
         """Test behavior when rate limit is exceeded."""
         with patch.object(results_api, '_post') as mock_post:
-            mock_post.side_effect = TestRailRateLimitError("Rate limit exceeded")
-            
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded")
+
             with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
                 results_api.add_result(
-                    run_id=1, 
-                    case_id=1, 
+                    run_id=1,
+                    case_id=1,
                     status_id=1
                 )
 
@@ -577,25 +594,25 @@ class TestResultsAPI:
         """Test that custom_fields properly override explicit parameters."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 999}
-            
+
             custom_fields = {
                 "status_id": 999,  # This should override the explicit status_id
                 "custom_field": "custom_value"
             }
-            
-            result = results_api.add_result(
+
+            results_api.add_result(
                 run_id=1,
                 case_id=1,
                 status_id=1,
                 custom_fields=custom_fields
             )
-            
+
             expected_data = {
                 "status_id": 999,  # Should be from custom_fields, overriding explicit status_id
                 "custom_field": "custom_value"
             }
             mock_post.assert_called_once_with(
-                'add_result_for_case/1/1', 
+                'add_result_for_case/1/1',
                 data=expected_data
             )
 
@@ -604,16 +621,16 @@ class TestResultsAPI:
         """Test add_result with different status IDs."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": status_id}
-            
+
             result = results_api.add_result(
-                run_id=1, 
-                case_id=1, 
+                run_id=1,
+                case_id=1,
                 status_id=status_id
             )
-            
+
             expected_data = {"status_id": status_id}
             mock_post.assert_called_once_with(
-                'add_result_for_case/1/1', 
+                'add_result_for_case/1/1',
                 data=expected_data
             )
             assert result["status_id"] == status_id
@@ -622,15 +639,15 @@ class TestResultsAPI:
         """Test with large run and case IDs."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
-            
-            result = results_api.add_result(
-                run_id=999999, 
-                case_id=999999, 
+
+            results_api.add_result(
+                run_id=999999,
+                case_id=999999,
                 status_id=1
             )
-            
+
             mock_post.assert_called_once_with(
-                'add_result_for_case/999999/999999', 
+                'add_result_for_case/999999/999999',
                 data={"status_id": 1}
             )
 
@@ -638,12 +655,12 @@ class TestResultsAPI:
         """Test add_results with empty results list."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"results": []}
-            
+
             result = results_api.add_results(run_id=1, results=[])
-            
+
             expected_data = {"results": []}
             mock_post.assert_called_once_with(
-                'add_results_for_cases/1', 
+                'add_results_for_cases/1',
                 data=expected_data
             )
             assert result == {"results": []}
@@ -652,7 +669,7 @@ class TestResultsAPI:
         """Test with complex custom fields data."""
         with patch.object(results_api, '_post') as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
-            
+
             complex_custom_fields = {
                 "string_field": "test_value",
                 "number_field": 42,
@@ -661,19 +678,19 @@ class TestResultsAPI:
                 "list_field": [1, 2, 3],
                 "nested_dict": {"key": "value"}
             }
-            
-            result = results_api.add_result(
+
+            results_api.add_result(
                 run_id=1,
                 case_id=1,
                 status_id=1,
                 custom_fields=complex_custom_fields
             )
-            
+
             expected_data = {
                 "status_id": 1,
                 **complex_custom_fields
             }
             mock_post.assert_called_once_with(
-                'add_result_for_case/1/1', 
+                'add_result_for_case/1/1',
                 data=expected_data
-            ) 
+            )

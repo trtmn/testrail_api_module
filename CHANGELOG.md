@@ -5,6 +5,128 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] 2026-01-27
+
+### Changed
+- **Refactored `build_and_release.py` to use GitFlow workflow**: The script now follows a proper GitFlow branching model:
+  - **dev branch → main**: Version bump happens here (because main is protected), then changes are merged to main
+  - **main → release**: When ready to release, merge main into release branch (version already set from dev→main)
+  - **release branch**: Version tags are created and pushed on the release branch
+  - The script automatically detects which branch you're on and adapts its behavior accordingly
+  - PRs are now fully created (not drafts) before showing the URL
+  - Impact: Provides a clear, structured workflow for managing releases with proper branch separation and version bumping on dev branch where main is protected
+
+### Fixed
+- Fixed `build_and_release.py` to automatically create a release branch when run on protected branches (like `main`), preventing uncommitted changes from blocking the release process. The script now detects protected branches and creates a `release/v{VERSION}` branch before making any file changes.
+
+### ✨ Added
+
+- **Pre-commit Hooks Configuration**: Added pre-commit framework to automatically run code quality checks on every commit
+  - Configured hooks for Python linting and formatting (ruff)
+  - Added type checking with mypy
+  - Included markdown linting
+  - Added security checks with bandit
+  - Configured general file checks (trailing whitespace, end of file, YAML/TOML/JSON validation)
+  - **Credential Detection**: Added detect-secrets hook to prevent credentials, API keys, passwords, and other secrets from being committed
+    - Scans all files for common secret patterns (API keys, tokens, passwords, private keys, etc.)
+    - Excludes test files and lock files from scanning
+    - Blocks commits containing detected secrets (exit code 1)
+    - Uses baseline file to track known false positives
+  - Enhanced .gitignore to exclude credential files (.env, *.key, *.pem, secrets.json, etc.)
+  - Hooks run automatically regardless of git client (command line, GUI, IDE)
+  - Impact: Ensures code quality and consistency across all commits, prevents credentials from being committed, and prevents common issues before they reach the repository
+
+- **Repository Ruleset for Main Branch Protection**: Created GitHub repository ruleset to prevent direct pushes to main branch
+  - Ruleset prevents branch deletion and force pushes (non-fast-forward)
+  - Works in conjunction with existing branch protection that requires pull requests
+  - Ruleset configuration stored in `.github/ruleset-main-protection.json`
+  - Impact: Ensures all changes to main branch go through pull request review process
+
+- **Build and Release Script**: Added comprehensive `build_and_release.py` script to automate the release process
+  - Runs tests and type checking before release
+  - Automatically updates version in `pyproject.toml`
+  - Automatically updates `CHANGELOG.md` (moves unreleased entries to new version)
+  - Builds the package using `uv build`
+  - Creates git tags for releases
+  - Optionally pushes tags to trigger GitHub Actions workflow
+  - Supports dry-run mode for testing
+  - Includes validation and safety checks
+  - Checks for existing tags and handles them gracefully
+  - Validates git repository status and handles edge cases
+  - Improved error messages with helpful tips
+  - Impact: Streamlines the release process and reduces manual errors
+
+### 🐛 Fixed
+
+- **Bandit Test File Scanning**: Updated bandit security scanner to include test files in security checks
+  - Removed exclusion of test files from bandit scanning
+  - Changed scanning scope from `src/` only to project root (excluding only build artifacts and virtual environments)
+  - Test files are now scanned for security vulnerabilities and credentials, ensuring no secrets are committed in test code
+  - Impact: Improved security coverage by ensuring test files are also checked for security issues
+
+- **Pytest Collection Warnings**: Fixed 86 pytest collection warnings caused by pytest attempting to collect classes from source code
+  - Added `norecursedirs` configuration to exclude `src` directory from test discovery
+  - Added `--ignore=src` to pytest options to prevent scanning source code during collection
+  - Added `filterwarnings` configuration to suppress `PytestCollectionWarning` messages
+  - Classes like `TestRailAPIError`, `TestRailAuthenticationError`, `TestRailRateLimitError`, and `TestsAPI` were being incorrectly collected as test classes
+  - Impact: All 468 tests now pass cleanly without warnings, improving test output readability
+
+- **Test Case Type Mapping**: Fixed test expectations in `test_get_required_case_fields_type_mapping` to match actual implementation
+  - Updated checkbox field type_hint expectation from `'boolean'` to `'boolean (True/False)'`
+  - Updated multi-select field type_hint expectation from `'array of string IDs'` to `'array of IDs'`
+  - Fixed stepped field test to use field name containing `'steps_separated'` to properly test step objects hint
+  - Impact: All tests in `test_cases.py` now pass correctly
+
+### 🔧 Changed
+
+- **Build and Release Script Version Management**: Updated `build_and_release.py` to use `uv` for version management instead of manual file manipulation
+  - Replaced manual `pyproject.toml` file parsing and regex-based version updates with `uv version` command
+  - `get_current_version()` now uses `uv version --short` to read the current version
+  - `update_version_in_pyproject()` now uses `uv version <version>` to update the version
+  - Removed dependency on `toml` package for version management
+  - Impact: More reliable version management using uv's built-in capabilities, consistent with project's use of uv for dependency management
+
+- **Build and Release Script Interactive Mode**: Made `build_and_release.py` interactive with user confirmation prompts at each major step
+  - Added `confirm_step()` helper function for consistent user prompts
+  - Added interactive confirmations before: running tests, type checking, updating version, updating changelog, building package, creating git tag, and pushing tag
+  - Added `--non-interactive` flag to skip all prompts for automation/CI scenarios
+  - Prompts show default values (Y/n or y/N) and accept Enter to use defaults
+  - Dry-run mode automatically skips prompts (non-interactive)
+  - Impact: Users can review and confirm each step before execution, reducing risk of accidental releases while maintaining automation capability
+
+- **Build and Release Script PR Creation**: Added pull request creation functionality to `build_and_release.py`
+  - Automatically commits version and changelog changes
+  - Pushes the current branch to remote
+  - Creates a pull request to merge changes into the release branch (configurable via `--release-branch`, default: "release")
+  - Uses GitHub CLI (`gh`) if available, otherwise provides manual instructions
+  - Added `--skip-pr` flag to skip PR creation
+  - Integrated into the release workflow: updates → build → commit → push → PR
+  - Impact: Enables proper release workflow with PR review before tagging, ensuring changes are reviewed before release
+
+- **Build and Release Script Tag Management**: Refactored tag creation to be opt-in and release-branch-only
+  - Removed automatic tag creation from the main release workflow
+  - Added `--tag` option that only works when on the release branch (prevents accidental tagging on wrong branch)
+  - `--tag` automatically reads version from `pyproject.toml` (no need to specify `--version`)
+  - When using `--tag` alone, skips all release steps (tests, version update, changelog, build, PR) and only creates/pushes tag
+  - Tag creation validates current branch matches release branch
+  - After tag creation, automatically prompts to push the tag (with confirmation)
+  - Removed `--skip-push` option (no longer needed)
+  - Impact: Prevents accidental tag creation on wrong branches, ensures tags are only created on the release branch after PR merge, and simplifies tag creation workflow
+
+- **Build and Release Script Version Bumping**: Added interactive version bump prompts
+  - When `--version` is not provided, script prompts user to select bump type (major, minor, patch, alpha, beta, rc, stable, post, dev)
+  - Uses `uv version --bump` to automatically calculate and update the new version
+  - Shows current version and what the new version will be before bumping
+  - Supports all semantic versioning bump types
+  - `--version` flag still works for explicit version specification
+  - Impact: Simplifies version management by automatically calculating next version based on semantic versioning rules
+
+
+
+## [Unreleased]
+
+## [0.5.3] 2026-01-27
+
 ## [0.5.2] 2026-01-23
 
 ### ✨ Added
@@ -25,6 +147,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated workflow name and descriptions to clearly indicate it's for publishing documentation
   - Documentation now publishes automatically when release tags are created
   - Impact: Documentation stays in sync with releases and is only published for tagged versions
+
+### ✨ Added
+
+- **MCP Prompts for Common TestRail Actions**: Added 10 reusable MCP prompts that provide guided workflows for common TestRail operations
+  - Created new `mcp_prompts.py` module with prompt function definitions
+  - Created `mcp_prompts.pyi` type stubs for type safety
+  - Integrated prompt registration into `mcp_server.py` with automatic discovery
+  - All prompts automatically registered when MCP server is created
+  - Impact: Users can now use guided prompts instead of raw tool calls, reducing errors and improving workflow efficiency
+  - Available prompts:
+    - `testrail_add_test_cases` - Step-by-step guide for adding test cases with required field discovery workflow
+    - `testrail_retrieve_test_run_data` - Comprehensive guide for retrieving test run information including details, tests, and results
+    - `testrail_create_test_run` - Guide for creating test runs with proper configuration and case selection
+    - `testrail_create_test_plan` - Guide for creating test plans with optional test run entries
+    - `testrail_add_test_results` - Guide for recording test execution results with proper status codes
+    - `testrail_get_test_case_details` - Guide for retrieving comprehensive test case information and history
+    - `testrail_update_test_case` - Guide for updating existing test cases with proper field formats
+    - `testrail_get_test_plan_details` - Guide for retrieving test plan information with statistics
+    - `testrail_get_project_info` - Guide for exploring project structure including suites, sections, and cases
+    - `testrail_get_run_results` - Guide for retrieving all test run results with status breakdown
+  - Each prompt provides:
+    - Step-by-step instructions with clear workflow guidance
+    - JSON examples of tool calls with proper parameter formats
+    - Field format guidelines (e.g., string IDs for arrays, step object structure)
+    - References to related prompts and tools for navigation
+    - Best practices and common pitfalls to avoid
+  - Updated `docs/MCP_USAGE.md` with comprehensive prompts documentation
+  - Added test suite in `tests/test_mcp_prompts.py` for prompt validation
+  - Prompts use FastMCP's `@prompt` decorator pattern and return `UserMessage` objects
+  - Graceful fallback handling if MCP prompts module cannot be imported
 
 ## [0.5.1] - 2026-01-23
 

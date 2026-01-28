@@ -162,7 +162,7 @@ These are useful for testing before the final release.
 
 - **Version mismatch**: Ensure `pyproject.toml` version matches the tag
 - **Missing dependencies**: Check that all build dependencies are specified
-- **Syntax errors**: Run `python -m build` locally to test
+- **Syntax errors**: Run `uv build` locally to test
 
 ### PyPI Upload Failures
 
@@ -184,7 +184,7 @@ These are useful for testing before the final release.
 
 ## Best Practices
 
-1. **Always test locally first**: Run `python -m build` and `twine check dist/*` before tagging
+1. **Always test locally first**: Run `uv build` and `twine check dist/*` before tagging
 2. **Use annotated tags**: Include a message describing the release
 3. **Keep versions in sync**: Tag version should match `pyproject.toml` version
 4. **Update changelog**: Document all changes before releasing

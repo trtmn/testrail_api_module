@@ -13,7 +13,7 @@ from testrail_api_module.suites import SuitesAPI
 from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
+    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestSuitesAPI:
@@ -43,9 +43,8 @@ class TestSuitesAPI:
         """Test get_suite method."""
         with patch.object(suites_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "Test Suite"}
-            
-            result = suites_api.get_suite(suite_id=1)
-            
+
+            result = result = suites_api.get_suite(suite_id=1)
             mock_request.assert_called_once_with('GET', 'get_suite/1')
             assert result == {"id": 1, "name": "Test Suite"}
 
@@ -56,9 +55,8 @@ class TestSuitesAPI:
                 {"id": 1, "name": "Suite 1"},
                 {"id": 2, "name": "Suite 2"}
             ]
-            
+
             result = suites_api.get_suites(project_id=1)
-            
             mock_request.assert_called_once_with('GET', 'get_suites/1')
             assert len(result) == 2
             assert result[0]["id"] == 1
@@ -67,71 +65,75 @@ class TestSuitesAPI:
         """Test add_suite with minimal required parameters."""
         with patch.object(suites_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Suite"}
-            
+
             result = suites_api.add_suite(project_id=1, name="New Suite")
-            
+
             expected_data = {"name": "New Suite"}
-            mock_request.assert_called_once_with('POST', 'add_suite/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_suite/1', data=expected_data)
             assert result == {"id": 1, "name": "New Suite"}
 
-    def test_add_suite_with_all_parameters(self, suites_api: SuitesAPI) -> None:
+    def test_add_suite_with_all_parameters(
+            self, suites_api: SuitesAPI) -> None:
         """Test add_suite with all optional parameters."""
         with patch.object(suites_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Suite"}
-            
-            result = suites_api.add_suite(
+
+            suites_api.add_suite(
                 project_id=1,
                 name="New Suite",
                 description="Suite description",
                 url="https://example.com"
             )
-            
+
             expected_data = {
                 "name": "New Suite",
                 "description": "Suite description",
                 "url": "https://example.com"
             }
-            mock_request.assert_called_once_with('POST', 'add_suite/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_suite/1', data=expected_data)
 
     def test_add_suite_with_none_values(self, suites_api: SuitesAPI) -> None:
         """Test add_suite with None values for optional parameters."""
         with patch.object(suites_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Suite"}
-            
-            result = suites_api.add_suite(
+
+            suites_api.add_suite(
                 project_id=1,
                 name="New Suite",
                 description=None,
                 url=None
             )
-            
+
             expected_data = {"name": "New Suite"}
-            mock_request.assert_called_once_with('POST', 'add_suite/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_suite/1', data=expected_data)
 
     def test_update_suite(self, suites_api: SuitesAPI) -> None:
         """Test update_suite method."""
         with patch.object(suites_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "Updated Suite"}
-            
-            result = suites_api.update_suite(
+
+            suites_api.update_suite(
                 suite_id=1,
                 name="Updated Suite",
                 description="Updated description"
             )
-            
+
             expected_data = {
                 "name": "Updated Suite",
                 "description": "Updated description"
             }
-            mock_request.assert_called_once_with('POST', 'update_suite/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'update_suite/1', data=expected_data)
 
     def test_delete_suite(self, suites_api: SuitesAPI) -> None:
         """Test delete_suite method."""
         with patch.object(suites_api, '_api_request') as mock_request:
             mock_request.return_value = {}
-            
-            result = suites_api.delete_suite(suite_id=1)
-            
+
+            result = result = suites_api.delete_suite(suite_id=1)
             mock_request.assert_called_once_with('POST', 'delete_suite/1')
             assert result == {}
 
@@ -142,9 +144,8 @@ class TestSuitesAPI:
                 {"id": 1, "title": "Case 1"},
                 {"id": 2, "title": "Case 2"}
             ]
-            
+
             result = suites_api.get_suite_cases(suite_id=1)
-            
             mock_request.assert_called_once_with('GET', 'get_suite_cases/1')
             assert len(result) == 2
 
@@ -156,9 +157,8 @@ class TestSuitesAPI:
                 "passed": 40,
                 "failed": 10
             }
-            
-            result = suites_api.get_suite_stats(suite_id=1)
-            
+
+            result = result = suites_api.get_suite_stats(suite_id=1)
             mock_request.assert_called_once_with('GET', 'get_suite_stats/1')
             assert result["total"] == 50
 
@@ -169,9 +169,8 @@ class TestSuitesAPI:
                 {"id": 1, "name": "Run 1"},
                 {"id": 2, "name": "Run 2"}
             ]
-            
+
             result = suites_api.get_suite_runs(suite_id=1)
-            
             mock_request.assert_called_once_with('GET', 'get_suite_runs/1')
             assert len(result) == 2
 
@@ -179,28 +178,24 @@ class TestSuitesAPI:
         """Test behavior when API request fails."""
         with patch.object(suites_api, '_api_request') as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
-            
+
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 suites_api.get_suite(suite_id=1)
 
     def test_authentication_error(self, suites_api: SuitesAPI) -> None:
         """Test behavior when authentication fails."""
         with patch.object(suites_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError("Authentication failed")
-            
+            mock_request.side_effect = TestRailAuthenticationError(
+                "Authentication failed")
+
             with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
                 suites_api.get_suite(suite_id=1)
 
     def test_rate_limit_error(self, suites_api: SuitesAPI) -> None:
         """Test behavior when rate limit is exceeded."""
         with patch.object(suites_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailRateLimitError("Rate limit exceeded")
-            
+            mock_request.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded")
+
             with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
                 suites_api.get_suite(suite_id=1)
-
-
-
-
-
-

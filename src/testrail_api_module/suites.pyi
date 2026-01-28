@@ -38,7 +38,7 @@ class SuitesAPI(BaseAPI):
         Returns:
             dict: The created test suite data if successful, None otherwise.
         """
-    def update_suite(self, suite_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_suite(self, suite_id: int, **kwargs: Any) -> dict[str, Any] | None:
         """
         Update a test suite.
         
