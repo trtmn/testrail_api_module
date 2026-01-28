@@ -8,7 +8,7 @@ accomplish tasks more efficiently than using tools directly.
 Prompts use FastMCP's @prompt decorator and return formatted instruction
 messages that guide users through TestRail operations.
 """
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp.prompts import UserMessage

@@ -1,0 +1,15 @@
+[flake8]
+# Ignore line too long errors (E501)
+# Line length is handled by ruff formatter
+# Ignore W503 (line break before binary operator) - conflicts with W504
+# W503 is PEP 8 recommended, but flake8 defaults to W504
+ignore = E501,W503
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    *.egg-info,
+    .eggs

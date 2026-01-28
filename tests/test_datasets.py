@@ -18,7 +18,7 @@ from testrail_api_module.base import (
 )
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
+    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestDatasetsAPI:
@@ -105,7 +105,8 @@ class TestDatasetsAPI:
             mock_request.assert_called_once_with('GET', 'get_datasets/1')
             assert result == []
 
-    def test_get_dataset_with_variables(self, datasets_api: DatasetsAPI) -> None:
+    def test_get_dataset_with_variables(
+            self, datasets_api: DatasetsAPI) -> None:
         """Test get_dataset with multiple variables."""
         with patch.object(datasets_api, '_api_request') as mock_request:
             mock_request.return_value = {
@@ -163,7 +164,7 @@ class TestDatasetsAPI:
         """Test behavior when API request fails."""
         with patch.object(datasets_api, '_api_request') as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
-            
+
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 datasets_api.get_dataset(dataset_id=1)
 
@@ -236,4 +237,3 @@ class TestDatasetsAPI:
                 TestRailRateLimitError, match="Rate limit exceeded"
             ):
                 datasets_api.get_datasets(project_id=1)
-

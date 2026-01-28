@@ -6,7 +6,6 @@ including initialization, validation, and submodule setup.
 """
 
 import pytest
-from unittest.mock import Mock, patch
 from typing import TYPE_CHECKING
 
 from testrail_api_module import (
@@ -18,7 +17,7 @@ from testrail_api_module import (
 )
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
+    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestTestRailAPI:
@@ -31,7 +30,7 @@ class TestTestRailAPI:
             username="testuser@example.com",
             api_key="test_api_key"
         )
-        
+
         assert api.base_url == "https://testrail.example.com"
         assert api.username == "testuser@example.com"
         assert api.api_key == "test_api_key"
@@ -45,7 +44,7 @@ class TestTestRailAPI:
             username="testuser@example.com",
             password="test_password"
         )
-        
+
         assert api.base_url == "https://testrail.example.com"
         assert api.username == "testuser@example.com"
         assert api.password == "test_password"
@@ -60,7 +59,7 @@ class TestTestRailAPI:
             api_key="test_api_key",
             timeout=60
         )
-        
+
         assert api.timeout == 60
 
     def test_init_with_both_api_key_and_password(self) -> None:
@@ -71,7 +70,7 @@ class TestTestRailAPI:
             api_key="test_api_key",
             password="test_password"
         )
-        
+
         assert api.api_key == "test_api_key"
         assert api.password == "test_password"
 
@@ -82,7 +81,7 @@ class TestTestRailAPI:
             username="testuser@example.com",
             api_key="test_api_key"
         )
-        
+
         assert api.base_url == "https://testrail.example.com"
 
     def test_init_normalizes_base_url_multiple_slashes(self) -> None:
@@ -92,7 +91,7 @@ class TestTestRailAPI:
             username="testuser@example.com",
             api_key="test_api_key"
         )
-        
+
         assert api.base_url == "https://testrail.example.com"
 
     def test_init_raises_error_no_credentials(self) -> None:
@@ -146,7 +145,7 @@ class TestTestRailAPI:
             username="testuser@example.com",
             api_key="test_api_key"
         )
-        
+
         assert api.base_url == "http://testrail.example.com"
 
     def test_init_initializes_all_submodules(self) -> None:
@@ -156,7 +155,7 @@ class TestTestRailAPI:
             username="testuser@example.com",
             api_key="test_api_key"
         )
-        
+
         # Check that all submodules are initialized
         assert hasattr(api, 'attachments')
         assert hasattr(api, 'bdd')
@@ -189,7 +188,7 @@ class TestTestRailAPI:
             username="testuser@example.com",
             api_key="test_api_key"
         )
-        
+
         # Check that submodules have the client reference
         assert api.cases.client == api
         assert api.runs.client == api
@@ -204,7 +203,7 @@ class TestTestRailAPI:
             TestRailRateLimitError,
             TestRailAPIException
         )
-        
+
         assert TestRailAPIError is not None
         assert TestRailAuthenticationError is not None
         assert TestRailRateLimitError is not None
@@ -224,7 +223,7 @@ class TestTestRailAPI:
             api_key="",
             password="test_password"
         )
-        
+
         assert api.api_key == ""
         assert api.password == "test_password"
 
@@ -236,7 +235,7 @@ class TestTestRailAPI:
             api_key="test_api_key",
             password=""
         )
-        
+
         assert api.api_key == "test_api_key"
         assert api.password == ""
 
@@ -259,4 +258,3 @@ class TestTestRailAPI:
                 api_key=None,
                 password=None
             )
-
