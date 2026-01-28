@@ -24,6 +24,7 @@ This script automates:
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -617,6 +618,16 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         print(f"  - Title: {pr_title}")
         return None
     
+    # Check if gh CLI is available
+    if not is_gh_available():
+        print("⚠️  GitHub CLI (gh) not available in PATH")
+        print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
+        print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
+        print(f"   2. Title: {pr_title}")
+        print(f"   3. Description: {pr_body}")
+        print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
+        return None
+    
     # Try using gh CLI (creates full PR, not draft by default)
     try:
         result = subprocess.run(
@@ -635,9 +646,19 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         pr_url = result.stdout.strip()
         print(f"✅ Created pull request: {pr_url}")
         return pr_url
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        # gh CLI not available - provide manual instructions
-        print("⚠️  GitHub CLI (gh) not available")
+    except subprocess.CalledProcessError as e:
+        # gh CLI failed (authentication, network, etc.)
+        error_msg = e.stderr.strip() if e.stderr else str(e)
+        print(f"❌ Failed to create PR with gh CLI: {error_msg}")
+        print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
+        print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
+        print(f"   2. Title: {pr_title}")
+        print(f"   3. Description: {pr_body}")
+        print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
+        return None
+    except FileNotFoundError:
+        # This shouldn't happen if is_gh_available() worked, but handle it anyway
+        print("⚠️  GitHub CLI (gh) not found")
         print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
         print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
         print(f"   2. Title: {pr_title}")
@@ -645,7 +666,7 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
         return None
     except Exception as e:
-        print(f"❌ Failed to create PR: {e}")
+        print(f"❌ Unexpected error creating PR: {e}")
         return None
 
 
@@ -660,6 +681,11 @@ def is_git_repo() -> bool:
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
+
+
+def is_gh_available() -> bool:
+    """Check if GitHub CLI (gh) is available in PATH."""
+    return shutil.which("gh") is not None
 
 
 def is_protected_branch(branch_name: Optional[str] = None) -> bool:
