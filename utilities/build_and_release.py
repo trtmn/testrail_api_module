@@ -24,6 +24,7 @@ This script automates:
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -499,10 +500,23 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
 
 
 def push_branch(branch_name: str, dry_run: bool = False) -> bool:
-    """Push the current branch to remote."""
+    """Push the current branch to remote.
+    
+    Args:
+        branch_name: Name of the branch to push
+        dry_run: If True, don't actually push
+    
+    Returns:
+        True if successful or skipped, False if failed
+    """
     if not is_git_repo():
         print("⚠️  Not in a git repository, skipping push")
         return True  # Not an error, just skip
+
+    # Skip pushing protected branches (they can't be pushed to directly)
+    if is_protected_branch(branch_name):
+        print(f"ℹ️  Branch '{branch_name}' is protected - skipping push (use PRs to update)")
+        return True  # Not an error, protected branches use PRs
 
     project_root = get_project_root()
 
@@ -523,7 +537,29 @@ def push_branch(branch_name: str, dry_run: bool = False) -> bool:
         branch_exists_remote = bool(result.stdout.strip())
 
         if branch_exists_remote:
-            # Branch exists, push updates
+            # Branch exists, try to push updates
+            # First, try to pull/merge any remote changes
+            try:
+                subprocess.run(
+                    ["git", "pull", "--rebase", "origin", branch_name],
+                    cwd=project_root,
+                    check=True,
+                    capture_output=True,
+                )
+            except subprocess.CalledProcessError:
+                # If rebase fails, try regular merge
+                try:
+                    subprocess.run(
+                        ["git", "pull", "origin", branch_name],
+                        cwd=project_root,
+                        check=True,
+                        capture_output=True,
+                    )
+                except subprocess.CalledProcessError:
+                    # If pull fails, warn but continue with push attempt
+                    print(f"⚠️  Could not pull remote changes for {branch_name}, attempting push anyway...")
+            
+            # Now push
             subprocess.run(
                 ["git", "push", "origin", branch_name],
                 cwd=project_root,
@@ -542,6 +578,7 @@ def push_branch(branch_name: str, dry_run: bool = False) -> bool:
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to push branch {branch_name}: {e}")
         print("   Make sure you have push access and the remote is configured")
+        print("   If this is a protected branch, changes should be made via PR")
         return False
 
 
@@ -617,6 +654,16 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         print(f"  - Title: {pr_title}")
         return None
     
+    # Check if gh CLI is available
+    if not is_gh_available():
+        print("⚠️  GitHub CLI (gh) not available in PATH")
+        print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
+        print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
+        print(f"   2. Title: {pr_title}")
+        print(f"   3. Description: {pr_body}")
+        print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
+        return None
+    
     # Try using gh CLI (creates full PR, not draft by default)
     try:
         result = subprocess.run(
@@ -635,9 +682,19 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         pr_url = result.stdout.strip()
         print(f"✅ Created pull request: {pr_url}")
         return pr_url
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        # gh CLI not available - provide manual instructions
-        print("⚠️  GitHub CLI (gh) not available")
+    except subprocess.CalledProcessError as e:
+        # gh CLI failed (authentication, network, etc.)
+        error_msg = e.stderr.strip() if e.stderr else str(e)
+        print(f"❌ Failed to create PR with gh CLI: {error_msg}")
+        print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
+        print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
+        print(f"   2. Title: {pr_title}")
+        print(f"   3. Description: {pr_body}")
+        print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
+        return None
+    except FileNotFoundError:
+        # This shouldn't happen if is_gh_available() worked, but handle it anyway
+        print("⚠️  GitHub CLI (gh) not found")
         print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
         print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
         print(f"   2. Title: {pr_title}")
@@ -645,7 +702,7 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
         return None
     except Exception as e:
-        print(f"❌ Failed to create PR: {e}")
+        print(f"❌ Unexpected error creating PR: {e}")
         return None
 
 
@@ -660,6 +717,11 @@ def is_git_repo() -> bool:
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
+
+
+def is_gh_available() -> bool:
+    """Check if GitHub CLI (gh) is available in PATH."""
+    return shutil.which("gh") is not None
 
 
 def is_protected_branch(branch_name: Optional[str] = None) -> bool:
@@ -950,6 +1012,39 @@ def confirm_step(prompt: str, default: bool = False,
     return response in ("y", "yes")
 
 
+def get_next_version_preview(current_version: str, bump_type: str) -> str:
+    """Get a preview of what the next version would be for a given bump type.
+    
+    Args:
+        current_version: The current version string
+        bump_type: The bump type (patch, minor, major, etc.)
+    
+    Returns:
+        The next version string, or "?" if calculation fails
+    """
+    project_root = get_project_root()
+    
+    try:
+        result = subprocess.run(
+            ["uv", "version", "--bump", bump_type, "--dry-run"],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        # uv version --bump outputs: "package-name 0.5.3 => 0.5.4"
+        output = result.stdout.strip()
+        if "=>" in output:
+            # Extract version after "=>"
+            next_version = output.split("=>")[-1].strip()
+            return next_version
+        else:
+            return "?"
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "?"
+
+
 def prompt_version_bump(
     current_version: str,
     non_interactive: bool = False,
@@ -966,17 +1061,28 @@ def prompt_version_bump(
     if non_interactive:
         return None
 
+    # Calculate next versions for display
+    next_patch = get_next_version_preview(current_version, "patch")
+    next_minor = get_next_version_preview(current_version, "minor")
+    next_major = get_next_version_preview(current_version, "major")
+    next_alpha = get_next_version_preview(current_version, "alpha")
+    next_beta = get_next_version_preview(current_version, "beta")
+    next_rc = get_next_version_preview(current_version, "rc")
+    next_stable = get_next_version_preview(current_version, "stable")
+    next_post = get_next_version_preview(current_version, "post")
+    next_dev = get_next_version_preview(current_version, "dev")
+
     print(f"\n📋 Current version: {current_version}")
     print("\nSelect version bump type:")
-    print("  1. patch  - Bug fixes (0.5.2 → 0.5.3)")
-    print("  2. minor  - New features (0.5.2 → 0.6.0)")
-    print("  3. major  - Breaking changes (0.5.2 → 1.0.0)")
-    print("  4. alpha  - Alpha pre-release")
-    print("  5. beta   - Beta pre-release")
-    print("  6. rc     - Release candidate")
-    print("  7. stable - Remove pre-release suffix")
-    print("  8. post   - Post-release")
-    print("  9. dev    - Development version")
+    print(f"  1. patch  - Bug fixes ({current_version} → {next_patch})")
+    print(f"  2. minor  - New features ({current_version} → {next_minor})")
+    print(f"  3. major  - Breaking changes ({current_version} → {next_major})")
+    print(f"  4. alpha  - Alpha pre-release ({current_version} → {next_alpha})")
+    print(f"  5. beta   - Beta pre-release ({current_version} → {next_beta})")
+    print(f"  6. rc     - Release candidate ({current_version} → {next_rc})")
+    print(f"  7. stable - Remove pre-release suffix ({current_version} → {next_stable})")
+    print(f"  8. post   - Post-release ({current_version} → {next_post})")
+    print(f"  9. dev    - Development version ({current_version} → {next_dev})")
     print("  0. Cancel")
 
     bump_map = {
@@ -1439,67 +1545,75 @@ GitFlow Workflow Examples:
         if should_commit and not args.skip_pr:
             current_branch = get_current_branch()
             if current_branch:
-                if not confirm_step(
-                    f"\n📤 Push branch '{current_branch}' to remote?",
-                    default=True,
-                    non_interactive=args.non_interactive or args.dry_run,
-                ):
-                    print("⚠️  Skipping branch push (user cancelled)")
-                    if not args.non_interactive:
-                        sys.exit(0)
+                # For protected branches, skip push prompt (they can't be pushed to directly)
+                is_protected = is_protected_branch(current_branch)
+                
+                if not is_protected:
+                    # Only prompt to push if branch is not protected
+                    if not confirm_step(
+                        f"\n📤 Push branch '{current_branch}' to remote?",
+                        default=True,
+                        non_interactive=args.non_interactive or args.dry_run,
+                    ):
+                        print("⚠️  Skipping branch push (user cancelled)")
+                        if not args.non_interactive:
+                            sys.exit(0)
+                    else:
+                        if not push_branch(current_branch, dry_run=args.dry_run):
+                            if not args.dry_run:
+                                sys.exit(1)
                 else:
-                    if not push_branch(current_branch, dry_run=args.dry_run):
-                        if not args.dry_run:
-                            sys.exit(1)
-                    
-                    # Create PR
-                    if target_branch:
-                        if not confirm_step(
-                            f"\n🔀 Create pull request to merge into '{target_branch}' branch?",
-                            default=True,
-                            non_interactive=args.non_interactive or args.dry_run,
-                        ):
-                            print("⚠️  Skipping PR creation (user cancelled)")
-                            if not args.non_interactive:
-                                sys.exit(0)
-                        else:
-                            pr_version = new_version if workflow_type == "dev_to_main" else current_version
-                            pr_url = create_release_pr(
-                                pr_version,
-                                release_branch=target_branch,
-                                workflow_type=workflow_type,
-                                dry_run=args.dry_run,
-                            )
-                            if pr_url and not args.dry_run:
-                                print(f"\n📌 PR created: {pr_url}")
-                                # Optionally open the PR in browser
-                                if not confirm_step(
-                                    "\n🌐 Open PR in browser?",
-                                    default=True,
-                                    non_interactive=args.non_interactive,
-                                ):
-                                    print(f"   PR URL: {pr_url}")
-                                else:
-                                    try:
-                                        import webbrowser
-                                        webbrowser.open(pr_url)
-                                        print(f"   Opened: {pr_url}")
-                                    except Exception:
-                                        print(f"   Could not open browser. PR URL: {pr_url}")
-                                
-                                if workflow_type == "dev_to_main":
-                                    print("\n   After PR is merged to main, create a PR from main to release branch.")
-                                elif workflow_type == "main_to_release":
-                                    print("\n   After PR is merged to release branch, use --tag to create version tag.")
-                                else:
-                                    print("\n   Wait for the PR to be reviewed and merged.")
-                            elif not args.dry_run:
-                                # PR creation failed or was skipped
-                                repo_info = get_remote_repo_info()
-                                if repo_info:
-                                    owner, repo = repo_info
-                                    print(f"\n📝 PR not created. You can create it manually:")
-                                    print(f"   https://github.com/{owner}/{repo}/compare/{target_branch}...{current_branch}")
+                    # Protected branch - skip push, just create PR
+                    print(f"ℹ️  Branch '{current_branch}' is protected - will create PR without pushing")
+                
+                # Create PR
+                if target_branch:
+                    if not confirm_step(
+                        f"\n🔀 Create pull request to merge into '{target_branch}' branch?",
+                        default=True,
+                        non_interactive=args.non_interactive or args.dry_run,
+                    ):
+                        print("⚠️  Skipping PR creation (user cancelled)")
+                        if not args.non_interactive:
+                            sys.exit(0)
+                    else:
+                        pr_version = new_version if workflow_type == "dev_to_main" else current_version
+                        pr_url = create_release_pr(
+                            pr_version,
+                            release_branch=target_branch,
+                            workflow_type=workflow_type,
+                            dry_run=args.dry_run,
+                        )
+                        if pr_url and not args.dry_run:
+                            print(f"\n📌 PR created: {pr_url}")
+                            # Optionally open the PR in browser
+                            if not confirm_step(
+                                "\n🌐 Open PR in browser?",
+                                default=True,
+                                non_interactive=args.non_interactive,
+                            ):
+                                print(f"   PR URL: {pr_url}")
+                            else:
+                                try:
+                                    import webbrowser
+                                    webbrowser.open(pr_url)
+                                    print(f"   Opened: {pr_url}")
+                                except Exception:
+                                    print(f"   Could not open browser. PR URL: {pr_url}")
+                            
+                            if workflow_type == "dev_to_main":
+                                print("\n   After PR is merged to main, create a PR from main to release branch.")
+                            elif workflow_type == "main_to_release":
+                                print("\n   After PR is merged to release branch, use --tag to create version tag.")
+                            else:
+                                print("\n   Wait for the PR to be reviewed and merged.")
+                        elif not args.dry_run:
+                            # PR creation failed or was skipped
+                            repo_info = get_remote_repo_info()
+                            if repo_info:
+                                owner, repo = repo_info
+                                print(f"\n📝 PR not created. You can create it manually:")
+                                print(f"   https://github.com/{owner}/{repo}/compare/{target_branch}...{current_branch}")
     
     print("\n✅ Process complete!")
     

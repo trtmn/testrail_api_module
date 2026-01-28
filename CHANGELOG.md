@@ -123,7 +123,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.5.4] 2026-01-27
+
+
+
+## [0.5.5] 2026-01-27
+
+
 ## [Unreleased]
+
+## [0.5.4] 2026-01-27
 
 ## [0.5.3] 2026-01-27
 
