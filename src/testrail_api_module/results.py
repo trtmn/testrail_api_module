@@ -8,18 +8,27 @@ from .base import BaseAPI
 
 __all__ = ['ResultsAPI']
 
+
 class ResultsAPI(BaseAPI):
     """
     API for managing test results in TestRail.
-    
+
     This class provides methods to create, read, and manage test results
     in TestRail, following the official TestRail API patterns.
     """
 
-    def add_result(self, run_id: int, case_id: int, status_id: int, 
-                  comment: Optional[str] = None, version: Optional[str] = None,
-                  elapsed: Optional[str] = None, defects: Optional[str] = None,
-                  assignedto_id: Optional[int] = None, custom_fields: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def add_result(self,
+                   run_id: int,
+                   case_id: int,
+                   status_id: int,
+                   comment: Optional[str] = None,
+                   version: Optional[str] = None,
+                   elapsed: Optional[str] = None,
+                   defects: Optional[str] = None,
+                   assignedto_id: Optional[int] = None,
+                   custom_fields: Optional[Dict[str,
+                                                Any]] = None) -> Dict[str,
+                                                                      Any]:
         """
         Add a test result for a specific test case in a test run.
 
@@ -36,10 +45,10 @@ class ResultsAPI(BaseAPI):
 
         Returns:
             Dict containing the created test result data.
-            
+
         Raises:
             TestRailAPIError: If the API request fails.
-            
+
         Example:
             >>> result = api.results.add_result(
             ...     run_id=1,
@@ -50,7 +59,7 @@ class ResultsAPI(BaseAPI):
             ... )
         """
         data = {"status_id": status_id}
-        
+
         # Add optional fields only if they are provided
         optional_fields = {
             "comment": comment,
@@ -59,18 +68,19 @@ class ResultsAPI(BaseAPI):
             "defects": defects,
             "assignedto_id": assignedto_id
         }
-        
+
         for field, value in optional_fields.items():
             if value is not None:
                 data[field] = value
-        
+
         # Add custom fields
         if custom_fields:
             data.update(custom_fields)
-            
+
         return self._post(f'add_result_for_case/{run_id}/{case_id}', data=data)
 
-    def add_results_for_cases(self, run_id: int, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def add_results_for_cases(
+            self, run_id: int, results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Add multiple test results for test cases in a test run.
 
@@ -89,10 +99,10 @@ class ResultsAPI(BaseAPI):
 
         Returns:
             Dict containing the created test results data.
-            
+
         Raises:
             TestRailAPIError: If the API request fails.
-            
+
         Example:
             >>> results_data = [
             ...     {"case_id": 1, "status_id": 1, "comment": "Passed"},
@@ -100,12 +110,22 @@ class ResultsAPI(BaseAPI):
             ... ]
             >>> result = api.results.add_results_for_cases(run_id=1, results=results_data)
         """
-        return self._post(f'add_results_for_cases/{run_id}', data={"results": results})
+        return self._post(
+            f'add_results_for_cases/{run_id}',
+            data={
+                "results": results})
 
-    def add_result_for_run(self, run_id: int, status_id: int,
-                          comment: Optional[str] = None, version: Optional[str] = None,
-                          elapsed: Optional[str] = None, defects: Optional[str] = None,
-                          assignedto_id: Optional[int] = None, custom_fields: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def add_result_for_run(self,
+                           run_id: int,
+                           status_id: int,
+                           comment: Optional[str] = None,
+                           version: Optional[str] = None,
+                           elapsed: Optional[str] = None,
+                           defects: Optional[str] = None,
+                           assignedto_id: Optional[int] = None,
+                           custom_fields: Optional[Dict[str,
+                                                        Any]] = None) -> Dict[str,
+                                                                              Any]:
         """
         Add a test result for an entire test run.
 
@@ -121,10 +141,10 @@ class ResultsAPI(BaseAPI):
 
         Returns:
             Dict containing the created test result data.
-            
+
         Raises:
             TestRailAPIError: If the API request fails.
-            
+
         Example:
             >>> result = api.results.add_result_for_run(
             ...     run_id=1,
@@ -133,7 +153,7 @@ class ResultsAPI(BaseAPI):
             ... )
         """
         data = {"status_id": status_id}
-        
+
         # Add optional fields only if they are provided
         optional_fields = {
             "comment": comment,
@@ -142,25 +162,25 @@ class ResultsAPI(BaseAPI):
             "defects": defects,
             "assignedto_id": assignedto_id
         }
-        
+
         for field, value in optional_fields.items():
             if value is not None:
                 data[field] = value
-        
+
         # Add custom fields
         if custom_fields:
             data.update(custom_fields)
-            
+
         return self._post(f'add_result_for_run/{run_id}', data=data)
 
     def get_results(self, run_id: int,
-                   status_id: Optional[Union[int, List[int]]] = None,
-                   created_after: Optional[int] = None,
-                   created_before: Optional[int] = None,
-                   created_by: Optional[Union[int, List[int]]] = None,
-                   defects_filter: Optional[str] = None,
-                   limit: Optional[int] = None,
-                   offset: Optional[int] = None) -> List[Dict[str, Any]]:
+                    status_id: Optional[Union[int, List[int]]] = None,
+                    created_after: Optional[int] = None,
+                    created_before: Optional[int] = None,
+                    created_by: Optional[Union[int, List[int]]] = None,
+                    defects_filter: Optional[str] = None,
+                    limit: Optional[int] = None,
+                    offset: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Get all test results for a test run.
 
@@ -176,10 +196,10 @@ class ResultsAPI(BaseAPI):
 
         Returns:
             List of dictionaries containing test result data.
-            
+
         Raises:
             TestRailAPIError: If the API request fails.
-            
+
         Example:
             >>> results = api.results.get_results(run_id=1)
             >>> for result in results:
@@ -194,24 +214,27 @@ class ResultsAPI(BaseAPI):
         params = {}
         if status_id is not None:
             # Convert list to comma-separated string if needed
-            params['status_id'] = ','.join(map(str, status_id)) if isinstance(status_id, list) else status_id
+            params['status_id'] = ','.join(map(str, status_id)) if isinstance(
+                status_id, list) else status_id
         if created_after is not None:
             params['created_after'] = created_after
         if created_before is not None:
             params['created_before'] = created_before
         if created_by is not None:
             # Convert list to comma-separated string if needed
-            params['created_by'] = ','.join(map(str, created_by)) if isinstance(created_by, list) else created_by
+            params['created_by'] = ','.join(map(str, created_by)) if isinstance(
+                created_by, list) else created_by
         if defects_filter is not None:
             params['defects_filter'] = defects_filter
         if limit is not None:
             params['limit'] = limit
         if offset is not None:
             params['offset'] = offset
-            
+
         return self._get(f'get_results_for_run/{run_id}', params=params)
 
-    def get_results_for_case(self, run_id: int, case_id: int) -> List[Dict[str, Any]]:
+    def get_results_for_case(
+            self, run_id: int, case_id: int) -> List[Dict[str, Any]]:
         """
         Get all test results for a specific test case in a test run.
 
@@ -221,10 +244,10 @@ class ResultsAPI(BaseAPI):
 
         Returns:
             List of dictionaries containing test result data.
-            
+
         Raises:
             TestRailAPIError: If the API request fails.
-            
+
         Example:
             >>> results = api.results.get_results_for_case(run_id=1, case_id=123)
             >>> for result in results:
@@ -233,13 +256,13 @@ class ResultsAPI(BaseAPI):
         return self._get(f'get_results_for_case/{run_id}/{case_id}')
 
     def get_results_for_run(self, run_id: int,
-                           status_id: Optional[Union[int, List[int]]] = None,
-                           created_after: Optional[int] = None,
-                           created_before: Optional[int] = None,
-                           created_by: Optional[Union[int, List[int]]] = None,
-                           defects_filter: Optional[str] = None,
-                           limit: Optional[int] = None,
-                           offset: Optional[int] = None) -> List[Dict[str, Any]]:
+                            status_id: Optional[Union[int, List[int]]] = None,
+                            created_after: Optional[int] = None,
+                            created_before: Optional[int] = None,
+                            created_by: Optional[Union[int, List[int]]] = None,
+                            defects_filter: Optional[str] = None,
+                            limit: Optional[int] = None,
+                            offset: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Get all test results for a test run.
 
@@ -255,10 +278,10 @@ class ResultsAPI(BaseAPI):
 
         Returns:
             List of dictionaries containing test result data.
-            
+
         Raises:
             TestRailAPIError: If the API request fails.
-            
+
         Example:
             >>> results = api.results.get_results_for_run(run_id=1)
             >>> # Filter by status and created date
@@ -272,24 +295,27 @@ class ResultsAPI(BaseAPI):
         params = {}
         if status_id is not None:
             # Convert list to comma-separated string if needed
-            params['status_id'] = ','.join(map(str, status_id)) if isinstance(status_id, list) else status_id
+            params['status_id'] = ','.join(map(str, status_id)) if isinstance(
+                status_id, list) else status_id
         if created_after is not None:
             params['created_after'] = created_after
         if created_before is not None:
             params['created_before'] = created_before
         if created_by is not None:
             # Convert list to comma-separated string if needed
-            params['created_by'] = ','.join(map(str, created_by)) if isinstance(created_by, list) else created_by
+            params['created_by'] = ','.join(map(str, created_by)) if isinstance(
+                created_by, list) else created_by
         if defects_filter is not None:
             params['defects_filter'] = defects_filter
         if limit is not None:
             params['limit'] = limit
         if offset is not None:
             params['offset'] = offset
-            
+
         return self._get(f'get_results_for_run/{run_id}', params=params)
 
-    def add_results(self, run_id: int, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def add_results(self, run_id: int,
+                    results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Add multiple test results for test cases in a test run (alias for add_results_for_cases).
 
@@ -308,10 +334,10 @@ class ResultsAPI(BaseAPI):
 
         Returns:
             Dict containing the created test results data.
-            
+
         Raises:
             TestRailAPIError: If the API request fails.
-            
+
         Example:
             >>> results_data = [
             ...     {"case_id": 1, "status_id": 1, "comment": "Passed"},
@@ -319,4 +345,7 @@ class ResultsAPI(BaseAPI):
             ... ]
             >>> result = api.results.add_results(run_id=1, results=results_data)
         """
-        return self._post(f'add_results_for_cases/{run_id}', data={"results": results})
+        return self._post(
+            f'add_results_for_cases/{run_id}',
+            data={
+                "results": results})

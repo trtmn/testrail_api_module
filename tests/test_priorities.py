@@ -13,7 +13,7 @@ from testrail_api_module.priorities import PrioritiesAPI
 from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
+    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestPrioritiesAPI:
@@ -42,10 +42,11 @@ class TestPrioritiesAPI:
     def test_get_priority(self, priorities_api: PrioritiesAPI) -> None:
         """Test get_priority method."""
         with patch.object(priorities_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, "name": "High", "priority": 1}
-            
+            mock_request.return_value = {
+                "id": 1, "name": "High", "priority": 1}
+
             result = priorities_api.get_priority(priority_id=1)
-            
+
             mock_request.assert_called_once_with('GET', 'get_priority/1')
             assert result == {"id": 1, "name": "High", "priority": 1}
 
@@ -57,9 +58,9 @@ class TestPrioritiesAPI:
                 {"id": 2, "name": "Medium"},
                 {"id": 3, "name": "Low"}
             ]
-            
+
             result = priorities_api.get_priorities()
-            
+
             mock_request.assert_called_once_with('GET', 'get_priorities')
             assert len(result) == 3
             assert result[0]["id"] == 1
@@ -68,66 +69,70 @@ class TestPrioritiesAPI:
         """Test add_priority with minimal required parameters."""
         with patch.object(priorities_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "Custom Priority"}
-            
+
             result = priorities_api.add_priority(
                 name="Custom Priority",
                 short_name="Custom",
                 color="#FF0000"
             )
-            
+
             expected_data = {
                 "name": "Custom Priority",
                 "short_name": "Custom",
                 "color": "#FF0000",
                 "is_default": False
             }
-            mock_request.assert_called_once_with('POST', 'add_priority', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_priority', data=expected_data)
             assert result == {"id": 1, "name": "Custom Priority"}
 
-    def test_add_priority_with_all_parameters(self, priorities_api: PrioritiesAPI) -> None:
+    def test_add_priority_with_all_parameters(
+            self, priorities_api: PrioritiesAPI) -> None:
         """Test add_priority with all optional parameters."""
         with patch.object(priorities_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "Custom Priority"}
-            
-            result = priorities_api.add_priority(
+
+            priorities_api.add_priority(
                 name="Custom Priority",
                 short_name="Custom",
                 color="#FF0000",
                 is_default=True
             )
-            
+
             expected_data = {
                 "name": "Custom Priority",
                 "short_name": "Custom",
                 "color": "#FF0000",
                 "is_default": True
             }
-            mock_request.assert_called_once_with('POST', 'add_priority', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_priority', data=expected_data)
 
     def test_update_priority(self, priorities_api: PrioritiesAPI) -> None:
         """Test update_priority method."""
         with patch.object(priorities_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "Updated Priority"}
-            
-            result = priorities_api.update_priority(
+
+            priorities_api.update_priority(
                 priority_id=1,
                 name="Updated Priority",
                 color="#00FF00"
             )
-            
+
             expected_data = {
                 "name": "Updated Priority",
                 "color": "#00FF00"
             }
-            mock_request.assert_called_once_with('POST', 'update_priority/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'update_priority/1', data=expected_data)
 
     def test_delete_priority(self, priorities_api: PrioritiesAPI) -> None:
         """Test delete_priority method."""
         with patch.object(priorities_api, '_api_request') as mock_request:
             mock_request.return_value = {}
-            
+
             result = priorities_api.delete_priority(priority_id=1)
-            
+
             mock_request.assert_called_once_with('POST', 'delete_priority/1')
             assert result == {}
 
@@ -139,10 +144,11 @@ class TestPrioritiesAPI:
                 "2": 30,
                 "3": 10
             }
-            
+
             result = priorities_api.get_priority_counts(project_id=1)
-            
-            mock_request.assert_called_once_with('GET', 'get_priority_counts/1')
+
+            mock_request.assert_called_once_with(
+                'GET', 'get_priority_counts/1')
             assert result["1"] == 20
 
     def test_get_priority_stats(self, priorities_api: PrioritiesAPI) -> None:
@@ -156,9 +162,9 @@ class TestPrioritiesAPI:
                     "3": 10
                 }
             }
-            
+
             result = priorities_api.get_priority_stats(project_id=1)
-            
+
             mock_request.assert_called_once_with('GET', 'get_priority_stats/1')
             assert result["total"] == 60
 
@@ -166,28 +172,24 @@ class TestPrioritiesAPI:
         """Test behavior when API request fails."""
         with patch.object(priorities_api, '_api_request') as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
-            
+
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 priorities_api.get_priority(priority_id=1)
 
     def test_authentication_error(self, priorities_api: PrioritiesAPI) -> None:
         """Test behavior when authentication fails."""
         with patch.object(priorities_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError("Authentication failed")
-            
+            mock_request.side_effect = TestRailAuthenticationError(
+                "Authentication failed")
+
             with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
                 priorities_api.get_priority(priority_id=1)
 
     def test_rate_limit_error(self, priorities_api: PrioritiesAPI) -> None:
         """Test behavior when rate limit is exceeded."""
         with patch.object(priorities_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailRateLimitError("Rate limit exceeded")
-            
+            mock_request.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded")
+
             with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
                 priorities_api.get_priority(priority_id=1)
-
-
-
-
-
-

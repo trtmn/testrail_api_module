@@ -13,7 +13,7 @@ from testrail_api_module.result_fields import ResultFieldsAPI
 from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
+    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestResultFieldsAPI:
@@ -39,56 +39,63 @@ class TestResultFieldsAPI:
         assert api.client == mock_client
         assert hasattr(api, 'logger')
 
-    def test_get_result_field(self, result_fields_api: ResultFieldsAPI) -> None:
+    def test_get_result_field(
+            self,
+            result_fields_api: ResultFieldsAPI) -> None:
         """Test get_result_field method."""
         with patch.object(result_fields_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, "name": "Custom Field", "type": "string"}
-            
-            result = result_fields_api.get_result_field(field_id=1)
-            
-            mock_request.assert_called_once_with('GET', 'get_result_field/1')
-            assert result == {"id": 1, "name": "Custom Field", "type": "string"}
+            mock_request.return_value = {
+                "id": 1, "name": "Custom Field", "type": "string"}
 
-    def test_get_result_fields(self, result_fields_api: ResultFieldsAPI) -> None:
+            result = result_fields_api.get_result_field(field_id=1)
+
+            mock_request.assert_called_once_with('GET', 'get_result_field/1')
+            assert result == {
+                "id": 1,
+                "name": "Custom Field",
+                "type": "string"}
+
+    def test_get_result_fields(
+            self, result_fields_api: ResultFieldsAPI) -> None:
         """Test get_result_fields method."""
         with patch.object(result_fields_api, '_api_request') as mock_request:
             mock_request.return_value = [
                 {"id": 1, "name": "Field 1"},
                 {"id": 2, "name": "Field 2"}
             ]
-            
+
             result = result_fields_api.get_result_fields()
-            
+
             mock_request.assert_called_once_with('GET', 'get_result_fields')
             assert len(result) == 2
             assert result[0]["id"] == 1
 
-    def test_api_request_failure(self, result_fields_api: ResultFieldsAPI) -> None:
+    def test_api_request_failure(
+            self, result_fields_api: ResultFieldsAPI) -> None:
         """Test behavior when API request fails."""
         with patch.object(result_fields_api, '_api_request') as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
-            
+
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 result_fields_api.get_result_field(field_id=1)
 
-    def test_authentication_error(self, result_fields_api: ResultFieldsAPI) -> None:
+    def test_authentication_error(
+            self, result_fields_api: ResultFieldsAPI) -> None:
         """Test behavior when authentication fails."""
         with patch.object(result_fields_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError("Authentication failed")
-            
+            mock_request.side_effect = TestRailAuthenticationError(
+                "Authentication failed")
+
             with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
                 result_fields_api.get_result_field(field_id=1)
 
-    def test_rate_limit_error(self, result_fields_api: ResultFieldsAPI) -> None:
+    def test_rate_limit_error(
+            self,
+            result_fields_api: ResultFieldsAPI) -> None:
         """Test behavior when rate limit is exceeded."""
         with patch.object(result_fields_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailRateLimitError("Rate limit exceeded")
-            
+            mock_request.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded")
+
             with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
                 result_fields_api.get_result_field(field_id=1)
-
-
-
-
-
-

@@ -11,11 +11,12 @@ api = TestRailAPI(
 )
 mcp = create_mcp_server(api_instance=api)
 
+
 async def test():
     """Test tool execution."""
     tools_dict = dict(await mcp.get_tools())
     runs_tool = tools_dict.get('testrail_runs')
-    
+
     if runs_tool:
         print('Testing testrail_runs tool execution...')
         try:
@@ -25,7 +26,8 @@ async def test():
             result = fn(action='get_runs', params={'project_id': 3})
             print(f'Success! Got {len(result)} runs')
             if result:
-                print(f'First run: {result[0].get("name", "N/A")} (ID: {result[0].get("id", "N/A")})')
+                print(
+                    f'First run: {result[0].get("name", "N/A")} (ID: {result[0].get("id", "N/A")})')
         except Exception as e:
             print(f'Error executing tool: {e}')
             import traceback
@@ -34,4 +36,3 @@ async def test():
         print('testrail_runs tool not found')
 
 asyncio.run(test())
-
