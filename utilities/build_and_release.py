@@ -765,6 +765,97 @@ def create_and_checkout_branch(branch_name: str, dry_run: bool = False) -> bool:
         return False
 
 
+def check_and_commit_version_changes(version: str, workflow_type: str, dry_run: bool = False) -> bool:
+    """Check for uncommitted changes and commit if they're only version-related files.
+    
+    Args:
+        version: The version string (for commit message)
+        workflow_type: The workflow type (dev_to_main, main_to_release, etc.)
+        dry_run: If True, don't actually commit
+    
+    Returns:
+        True if we can proceed (no changes or changes committed), False otherwise
+    """
+    if not is_git_repo():
+        print("⚠️  Warning: Not in a git repository")
+        return True  # Continue anyway, might be building only
+    
+    project_root = get_project_root()
+    
+    try:
+        # Check all uncommitted changes
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        if not result.stdout.strip():
+            return True  # No uncommitted changes
+        
+        # Check if only version-related files are changed
+        version_files_result = subprocess.run(
+            ["git", "status", "--porcelain", "pyproject.toml", "CHANGELOG.md"],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        # Get all changed files
+        all_changes = result.stdout.strip().split("\n")
+        version_changes = version_files_result.stdout.strip().split("\n") if version_files_result.stdout.strip() else []
+        
+        # Filter out empty strings
+        all_changes = [c for c in all_changes if c.strip()]
+        version_changes = [c for c in version_changes if c.strip()]
+        
+        # Check if only version files are changed
+        if len(all_changes) == len(version_changes) and len(version_changes) > 0:
+            # Only version files are changed - auto-commit them
+            print(f"📝 Found uncommitted version changes (pyproject.toml, CHANGELOG.md)")
+            
+            if workflow_type == "dev_to_main":
+                commit_msg = f"Bump version to v{version}"
+            else:
+                commit_msg = f"Prepare release v{version}"
+            
+            if dry_run:
+                print(f"[DRY RUN] Would commit version changes: {commit_msg}")
+                return True
+            
+            # Commit the version changes
+            try:
+                subprocess.run(
+                    ["git", "add", "pyproject.toml", "CHANGELOG.md"],
+                    cwd=project_root,
+                    check=True,
+                    capture_output=True,
+                )
+                subprocess.run(
+                    ["git", "commit", "-m", commit_msg],
+                    cwd=project_root,
+                    check=True,
+                    capture_output=True,
+                )
+                print(f"✅ Committed version changes: {commit_msg}")
+                return True
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Failed to commit version changes: {e}")
+                return False
+        else:
+            # Other files are also changed - show warning
+            print("⚠️  Warning: You have uncommitted changes:")
+            print(result.stdout)
+            return False
+        
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("⚠️  Warning: Could not check git status (git may not be available)")
+        return True  # Continue anyway
+
+
 def check_git_status() -> bool:
     """Check if there are uncommitted changes."""
     if not is_git_repo():
@@ -1112,11 +1203,20 @@ GitFlow Workflow Examples:
         print("   Expected: dev, main, or release branch")
         sys.exit(1)
     
-    # Check git status
-    if not args.dry_run and not check_git_status():
-        response = input("\nContinue with uncommitted changes? (y/N): ")
-        if response.lower() != "y":
-            sys.exit(0)
+    # Check git status and auto-commit version changes if that's all that's changed
+    if not args.dry_run:
+        # For dev_to_main workflow, check if we can auto-commit version changes
+        if workflow_type == "dev_to_main" and new_version != current_version:
+            if not check_and_commit_version_changes(new_version, workflow_type, dry_run=args.dry_run):
+                response = input("\nContinue with uncommitted changes? (y/N): ")
+                if response.lower() != "y":
+                    sys.exit(0)
+        else:
+            # For other workflows or no version change, use standard check
+            if not check_git_status():
+                response = input("\nContinue with uncommitted changes? (y/N): ")
+                if response.lower() != "y":
+                    sys.exit(0)
     
     # Run tests
     if not args.skip_tests:
@@ -1307,8 +1407,9 @@ GitFlow Workflow Examples:
                     print(f"❌ Failed to commit changes: {e}")
                     if not args.dry_run:
                         sys.exit(1)
-            
-            # Push the branch
+        
+        # Push the branch and create PR (for both workflows)
+        if should_commit and not args.skip_pr:
             current_branch = get_current_branch()
             if current_branch:
                 if not confirm_step(
@@ -1323,33 +1424,55 @@ GitFlow Workflow Examples:
                     if not push_branch(current_branch, dry_run=args.dry_run):
                         if not args.dry_run:
                             sys.exit(1)
-                
-                # Create PR
-                if target_branch:
-                    if not confirm_step(
-                        f"\n🔀 Create pull request to merge into '{target_branch}' branch?",
-                        default=True,
-                        non_interactive=args.non_interactive or args.dry_run,
-                    ):
-                        print("⚠️  Skipping PR creation (user cancelled)")
-                        if not args.non_interactive:
-                            sys.exit(0)
-                    else:
-                        pr_version = new_version if workflow_type == "dev_to_main" else current_version
-                        pr_url = create_release_pr(
-                            pr_version,
-                            release_branch=target_branch,
-                            workflow_type=workflow_type,
-                            dry_run=args.dry_run,
-                        )
-                        if pr_url and not args.dry_run:
-                            print(f"\n📌 PR created: {pr_url}")
-                            if workflow_type == "dev_to_main":
-                                print("   After PR is merged to main, create a PR from main to release branch.")
-                            elif workflow_type == "main_to_release":
-                                print("   After PR is merged to release branch, use --tag to create version tag.")
-                            else:
-                                print("   Wait for the PR to be reviewed and merged.")
+                    
+                    # Create PR
+                    if target_branch:
+                        if not confirm_step(
+                            f"\n🔀 Create pull request to merge into '{target_branch}' branch?",
+                            default=True,
+                            non_interactive=args.non_interactive or args.dry_run,
+                        ):
+                            print("⚠️  Skipping PR creation (user cancelled)")
+                            if not args.non_interactive:
+                                sys.exit(0)
+                        else:
+                            pr_version = new_version if workflow_type == "dev_to_main" else current_version
+                            pr_url = create_release_pr(
+                                pr_version,
+                                release_branch=target_branch,
+                                workflow_type=workflow_type,
+                                dry_run=args.dry_run,
+                            )
+                            if pr_url and not args.dry_run:
+                                print(f"\n📌 PR created: {pr_url}")
+                                # Optionally open the PR in browser
+                                if not confirm_step(
+                                    "\n🌐 Open PR in browser?",
+                                    default=True,
+                                    non_interactive=args.non_interactive,
+                                ):
+                                    print(f"   PR URL: {pr_url}")
+                                else:
+                                    try:
+                                        import webbrowser
+                                        webbrowser.open(pr_url)
+                                        print(f"   Opened: {pr_url}")
+                                    except Exception:
+                                        print(f"   Could not open browser. PR URL: {pr_url}")
+                                
+                                if workflow_type == "dev_to_main":
+                                    print("\n   After PR is merged to main, create a PR from main to release branch.")
+                                elif workflow_type == "main_to_release":
+                                    print("\n   After PR is merged to release branch, use --tag to create version tag.")
+                                else:
+                                    print("\n   Wait for the PR to be reviewed and merged.")
+                            elif not args.dry_run:
+                                # PR creation failed or was skipped
+                                repo_info = get_remote_repo_info()
+                                if repo_info:
+                                    owner, repo = repo_info
+                                    print(f"\n📝 PR not created. You can create it manually:")
+                                    print(f"   https://github.com/{owner}/{repo}/compare/{target_branch}...{current_branch}")
     
     print("\n✅ Process complete!")
     
