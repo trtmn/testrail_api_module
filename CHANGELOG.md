@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Refactored `build_and_release.py` to use GitFlow workflow**: The script now follows a proper GitFlow branching model:
+  - **dev branch → main**: Version bump happens here (because main is protected), then changes are merged to main
+  - **main → release**: When ready to release, merge main into release branch (version already set from dev→main)
+  - **release branch**: Version tags are created and pushed on the release branch
+  - The script automatically detects which branch you're on and adapts its behavior accordingly
+  - PRs are now fully created (not drafts) before showing the URL
+  - Impact: Provides a clear, structured workflow for managing releases with proper branch separation and version bumping on dev branch where main is protected
+
+### Fixed
+- Fixed `build_and_release.py` to automatically create a release branch when run on protected branches (like `main`), preventing uncommitted changes from blocking the release process. The script now detects protected branches and creates a `release/v{VERSION}` branch before making any file changes.
+
 ### ✨ Added
 
 - **Pre-commit Hooks Configuration**: Added pre-commit framework to automatically run code quality checks on every commit

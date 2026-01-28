@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 """
-Build and release script for testrail_api_module.
+Build and release script for testrail_api_module using GitFlow workflow.
 
-This script automates the build and release process:
-1. Runs tests and type checking
-2. Updates version in pyproject.toml
-3. Updates CHANGELOG.md
-4. Builds the package
-5. Creates a PR to merge the changes into the release branch
+GitFlow Workflow:
+1. dev branch → main: Version bump happens here, then merge to main (main is protected)
+2. main → release: Merge main into release branch (version already set)
+3. release branch: Where version tags are created and pushed
 
-Optionally, use --tag to create and push a git tag (only works on release branch).
+Branch-specific behavior:
+- On dev branch: Bumps version, updates changelog, creates PR to merge into main
+- On main branch: Prepares release (no version bump, version already set), creates PR to release branch
+- On release branch: Creates and pushes version tags (use --tag flag)
+
+This script automates:
+1. Running tests and type checking
+2. Updating version in pyproject.toml (dev→main only, since main is protected)
+3. Updating CHANGELOG.md (dev→main only)
+4. Building the package
+5. Creating appropriate PRs based on current branch (fully created, not drafts)
+6. Creating and pushing git tags (release branch only)
 """
 
 import argparse
@@ -260,11 +269,11 @@ def run_type_check(dry_run: bool = False) -> bool:
 
 
 def build_package(dry_run: bool = False) -> bool:
-    """Build the package."""
+    """Build the package using uv."""
     print("\n📦 Building package...")
     try:
         run_command(
-            [sys.executable, "-m", "build"],
+            ["uv", "build"],
             dry_run=dry_run,
         )
         print("✅ Package built successfully")
@@ -413,7 +422,12 @@ def get_remote_repo_info() -> Optional[tuple[str, str]]:
 
 
 def commit_release_changes(version: str, dry_run: bool = False) -> bool:
-    """Commit version and changelog changes."""
+    """Commit version and changelog changes.
+    
+    This function commits both pyproject.toml and CHANGELOG.md changes.
+    It will include any existing uncommitted changes to these files, ensuring
+    the changelog is up-to-date on the release branch.
+    """
     if not is_git_repo():
         print("⚠️  Not in a git repository, skipping commit")
         return True  # Not an error, just skip
@@ -430,9 +444,18 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
             check=True,
         )
         
-        if not result.stdout.strip():
+        changes = result.stdout.strip()
+        if not changes:
             print("ℹ️  No changes to commit (files may already be committed)")
             return True
+        
+        # Show what will be committed
+        if changes:
+            print("📝 Changes to be committed:")
+            for line in changes.split("\n"):
+                if line.strip():
+                    status, file = line.split(maxsplit=1)
+                    print(f"   {status} {file}")
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("⚠️  Could not check git status")
         return False
@@ -444,7 +467,7 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
         return True
     
     try:
-        # Stage the files
+        # Stage the files (this will include any existing uncommitted changes)
         subprocess.run(
             ["git", "add", "pyproject.toml", "CHANGELOG.md"],
             cwd=project_root,
@@ -462,6 +485,7 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
         )
         
         print(f"✅ Committed changes for release v{version}")
+        print("   (Includes version update and changelog changes)")
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to commit changes: {e}")
@@ -518,13 +542,15 @@ def push_branch(branch_name: str, dry_run: bool = False) -> bool:
 def create_release_pr(
     version: str,
     release_branch: str = "release",
+    workflow_type: str = "main_to_release",
     dry_run: bool = False,
 ) -> Optional[str]:
-    """Create a pull request to merge changes into the release branch.
+    """Create a pull request using GitHub API (via MCP or gh CLI).
     
     Args:
-        version: The release version
-        release_branch: The target branch for the PR (default: "release")
+        version: The release version (or current version for dev→main)
+        release_branch: The target branch for the PR
+        workflow_type: The workflow type (dev_to_main or main_to_release)
         dry_run: If True, don't actually create the PR
     
     Returns:
@@ -549,59 +575,69 @@ def create_release_pr(
     
     owner, repo = repo_info
     
+    # Determine PR title and body based on workflow
+    if workflow_type == "dev_to_main":
+        pr_title = f"Merge dev to main (v{version})"
+        pr_body = f"""## Merge dev to main
+
+This PR merges development changes into the main branch.
+
+### Changes
+- Version bumped to {version}
+- Updated `pyproject.toml` with new version
+- Updated `CHANGELOG.md` with release notes
+
+### Next Steps
+After this PR is merged to main, create a PR from main to release branch.
+"""
+    else:  # main_to_release
+        pr_title = f"Prepare release v{version}"
+        pr_body = f"""## Release v{version}
+
+This PR prepares the release of version {version} by merging main into the release branch.
+
+### Changes
+- Version: {version}
+- Ready for release tagging
+
+### Next Steps
+After this PR is merged to release branch, use `--tag` flag to create and push the version tag.
+"""
+    
     if dry_run:
         print(f"[DRY RUN] Would create PR:")
         print(f"  - From: {current_branch}")
         print(f"  - To: {release_branch}")
-        print(f"  - Title: Prepare release v{version}")
+        print(f"  - Title: {pr_title}")
         return None
     
-    # Create PR using GitHub MCP
+    # Try using gh CLI (creates full PR, not draft by default)
     try:
-        # Import here to avoid dependency if MCP is not available
-        # We'll use subprocess to call the MCP tool via a helper or direct API
-        # For now, we'll provide instructions and use gh CLI if available
-        # Otherwise, we'll print the URL to create manually
+        result = subprocess.run(
+            [
+                "gh", "pr", "create",
+                "--base", release_branch,
+                "--head", current_branch,
+                "--title", pr_title,
+                "--body", pr_body,
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         
-        # Try using gh CLI first
-        try:
-            pr_body = f"""## Release v{version}
-
-This PR prepares the release of version {version}.
-
-### Changes
-- Updated version in `pyproject.toml` to {version}
-- Updated `CHANGELOG.md` with release notes
-
-### Next Steps
-After this PR is merged, the release tag will be created.
-"""
-            
-            result = subprocess.run(
-                [
-                    "gh", "pr", "create",
-                    "--base", release_branch,
-                    "--head", current_branch,
-                    "--title", f"Prepare release v{version}",
-                    "--body", pr_body,
-                ],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            
-            pr_url = result.stdout.strip()
-            print(f"✅ Created pull request: {pr_url}")
-            return pr_url
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            # gh CLI not available, provide manual instructions
-            print("⚠️  GitHub CLI (gh) not available")
-            print(f"\n📝 To create the PR manually:")
-            print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
-            print(f"   2. Title: Prepare release v{version}")
-            print(f"   3. Description: Release preparation for version {version}")
-            print(f"   4. Click 'Create pull request'")
-            return None
+        pr_url = result.stdout.strip()
+        print(f"✅ Created pull request: {pr_url}")
+        return pr_url
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # gh CLI not available - provide manual instructions
+        print("⚠️  GitHub CLI (gh) not available")
+        print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
+        print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
+        print(f"   2. Title: {pr_title}")
+        print(f"   3. Description: {pr_body}")
+        print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
+        return None
     except Exception as e:
         print(f"❌ Failed to create PR: {e}")
         return None
@@ -617,6 +653,115 @@ def is_git_repo() -> bool:
         )
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
+def is_protected_branch(branch_name: Optional[str] = None) -> bool:
+    """Check if the current branch (or specified branch) is protected.
+    
+    Protected branches are typically main, master, or release branches
+    where direct commits are not allowed.
+    
+    Args:
+        branch_name: Branch name to check. If None, checks current branch.
+    
+    Returns:
+        True if the branch is protected, False otherwise
+    """
+    if branch_name is None:
+        branch_name = get_current_branch()
+    
+    if not branch_name:
+        return False
+    
+    # Common protected branch names
+    protected_branches = {"main", "master", "release"}
+    return branch_name in protected_branches
+
+
+def get_gitflow_context() -> tuple[str, Optional[str]]:
+    """Determine the GitFlow workflow context based on current branch.
+    
+    Returns:
+        Tuple of (workflow_type, target_branch) where:
+        - workflow_type: "dev_to_main", "main_to_release", "release_tag", or "unknown"
+        - target_branch: The target branch for PRs (None for release_tag)
+    """
+    current_branch = get_current_branch()
+    
+    if not current_branch:
+        return ("unknown", None)
+    
+    # GitFlow branch detection
+    if current_branch == "dev" or current_branch.startswith("dev/"):
+        return ("dev_to_main", "main")
+    elif current_branch == "main" or current_branch == "master":
+        return ("main_to_release", "release")
+    elif current_branch == "release" or current_branch.startswith("release/"):
+        return ("release_tag", None)
+    else:
+        # Default: assume feature branch that should go to main
+        return ("dev_to_main", "main")
+
+
+def create_and_checkout_branch(branch_name: str, dry_run: bool = False) -> bool:
+    """Create and checkout a new branch.
+    
+    Args:
+        branch_name: Name of the branch to create
+        dry_run: If True, don't actually create the branch
+    
+    Returns:
+        True if successful, False otherwise
+    """
+    if not is_git_repo():
+        print("⚠️  Not in a git repository, cannot create branch")
+        return False
+    
+    project_root = get_project_root()
+    
+    # Check if branch already exists
+    try:
+        result = subprocess.run(
+            ["git", "show-ref", "--verify", "--quiet", f"refs/heads/{branch_name}"],
+            cwd=project_root,
+            capture_output=True,
+        )
+        branch_exists = result.returncode == 0
+        
+        if branch_exists:
+            print(f"⚠️  Branch '{branch_name}' already exists")
+            response = input(f"Checkout existing branch '{branch_name}'? (y/N): ")
+            if response.lower() != "y":
+                return False
+        else:
+            if dry_run:
+                print(f"[DRY RUN] Would create and checkout branch: {branch_name}")
+                return True
+            
+            # Create new branch
+            subprocess.run(
+                ["git", "checkout", "-b", branch_name],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+            )
+            print(f"✅ Created and checked out branch: {branch_name}")
+            return True
+        
+        # Branch exists, just checkout
+        if not dry_run:
+            subprocess.run(
+                ["git", "checkout", branch_name],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+            )
+            print(f"✅ Checked out branch: {branch_name}")
+        return True
+        
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to create/checkout branch '{branch_name}': {e}")
         return False
 
 
@@ -739,35 +884,34 @@ def prompt_version_bump(
 
 
 def main() -> None:
-    """Main entry point."""
+    """Main entry point for GitFlow-based build and release workflow."""
     parser = argparse.ArgumentParser(
-        description="Build and release script for testrail_api_module",
+        description="Build and release script for testrail_api_module (GitFlow workflow)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Interactive mode (default) - prompts for version bump type and confirmation at each step
+GitFlow Workflow Examples:
+
+  # On dev branch: Prepare PR to merge into main (no version bump)
+  git checkout dev
   python utilities/build_and_release.py
 
-  # Specify version explicitly
+  # On main branch: Prepare release, bump version, create PR to release branch
+  git checkout main
+  python utilities/build_and_release.py  # Will prompt for version bump type
+
+  # On main branch: Prepare release with specific version
+  git checkout main
   python utilities/build_and_release.py --version 0.5.3
+
+  # On release branch: Create and push version tag
+  git checkout release
+  python utilities/build_and_release.py --tag
 
   # Dry run to see what would happen
   python utilities/build_and_release.py --dry-run
 
   # Non-interactive mode (for automation/CI) - requires --version
   python utilities/build_and_release.py --version 0.5.3 --non-interactive
-
-  # Create PR to different release branch
-  python utilities/build_and_release.py --version 0.5.3 --release-branch main
-
-  # Skip PR creation
-  python utilities/build_and_release.py --version 0.5.3 --skip-pr
-
-  # Create and push tag (must be on release branch, uses version from pyproject.toml)
-  python utilities/build_and_release.py --tag
-
-  # Create and push tag with specific version
-  python utilities/build_and_release.py --version 0.5.3 --tag
 
   # Skip tests and type checks (not recommended)
   python utilities/build_and_release.py --version 0.5.3 --skip-tests --skip-type-check
@@ -832,13 +976,6 @@ Examples:
     )
     
     parser.add_argument(
-        "--release-branch",
-        type=str,
-        default="release",
-        help="Target branch for the release PR (default: release)",
-    )
-    
-    parser.add_argument(
         "--skip-pr",
         action="store_true",
         help="Skip creating a pull request",
@@ -855,8 +992,17 @@ Examples:
     project_root = get_project_root()
     os.chdir(project_root)
     
+    # Determine GitFlow context
+    workflow_type, target_branch = get_gitflow_context()
+    current_branch = get_current_branch()
+    
+    print(f"📍 Current branch: {current_branch}")
+    print(f"🔄 Workflow: {workflow_type}")
+    if target_branch:
+        print(f"🎯 Target branch: {target_branch}")
+    
     current_version = get_current_version()
-    print(f"Current version: {current_version}")
+    print(f"📦 Current version: {current_version}")
     
     if args.build_only:
         # Just build the package
@@ -866,205 +1012,27 @@ Examples:
         print("\n✅ Build complete")
         return
     
-    # Handle version: required unless using --tag-only or --build-only
-    # If --tag is used without --version, use current version from pyproject.toml
-    tag_only_mode = args.tag and not args.version
-    if tag_only_mode:
-        # For tag-only operation, use current version and skip release steps
-        new_version = current_version
-        print(f"Using current version from pyproject.toml: {new_version}")
-        print("Tag-only mode: skipping release steps (tests, version update, changelog, build, PR)")
-    elif args.version:
-        if not validate_version(args.version):
-            sys.exit(1)
-        
-        # Normalize version (remove 'v' prefix for internal use)
-        new_version = args.version.lstrip("v")
-        
-        if new_version == current_version:
-            print(f"⚠️  Version {new_version} is already the current version")
-            response = input("Continue anyway? (y/N): ")
-            if response.lower() != "y":
-                sys.exit(0)
-    elif not args.build_only:
-        # No version specified - prompt for bump type
-        # Note: dry-run should still allow interactive prompts, only --non-interactive skips them
-        bump_type = prompt_version_bump(
-            current_version,
-            non_interactive=args.non_interactive,
-        )
-        
-        if bump_type is None:
-            if args.non_interactive:
-                print("❌ Version bump cancelled (non-interactive mode requires --version)")
-                sys.exit(1)
-            else:
-                print("❌ Version bump cancelled")
-                sys.exit(0)
-        
-        # Show what the new version would be (dry run)
-        if args.dry_run:
-            print(f"\n[DRY RUN] Would bump version using: {bump_type}")
-            # Get the new version from a dry run
-            new_version = bump_version(bump_type, dry_run=True)
-        else:
-            # Actually bump the version
-            new_version = bump_version(bump_type, dry_run=False)
-        
-        print(f"New version: {new_version}")
-    
-    # Skip release steps if tag-only mode
-    if not tag_only_mode:
-        # Check git status
-        if not args.dry_run and not check_git_status():
-            response = input("\nContinue with uncommitted changes? (y/N): ")
-            if response.lower() != "y":
-                sys.exit(0)
-        
-        # Run tests
-        if not args.skip_tests:
-            if not confirm_step(
-                "\n🧪 Proceed with running tests?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping tests (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                if not run_tests(dry_run=args.dry_run):
-                    # Always exit on test failure, even in dry-run mode
-                    print("❌ Tests failed - fix issues before proceeding")
-                    sys.exit(1)
-        
-        # Run type checks
-        if not args.skip_type_check:
-            if not confirm_step(
-                "\n🔍 Proceed with type checking?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping type checks (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                if not run_type_check(dry_run=args.dry_run):
-                    # Always exit on type check failure, even in dry-run mode
-                    print("❌ Type checks failed - fix issues before proceeding")
-                    sys.exit(1)
-        
-        # Update version (if version was explicitly provided, not if it was bumped)
-        # When version is bumped, it's already updated, so we skip this step
-        if args.version and new_version != current_version:
-            if not confirm_step(
-                f"\n📝 Update version from {current_version} to {new_version}?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping version update (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                update_version_in_pyproject(new_version, dry_run=args.dry_run)
-        
-        # Update changelog (always update if we have a new version)
-        if new_version != current_version and not args.skip_changelog:
-            if not confirm_step(
-                f"\n📄 Update CHANGELOG.md for version {new_version}?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping changelog update (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                update_changelog(new_version, dry_run=args.dry_run)
-        
-        # Build package
-        if not args.skip_build:
-            if not confirm_step(
-                "\n📦 Proceed with building the package?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping package build (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                if not build_package(dry_run=args.dry_run):
-                    if not args.dry_run:
-                        sys.exit(1)
-        
-        # Commit and create PR (always create if we have a new version)
-        if new_version != current_version and not args.skip_pr:
-            # Commit the changes first
-            if not confirm_step(
-                f"\n💾 Commit version and changelog changes for v{new_version}?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping commit (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                if not commit_release_changes(new_version, dry_run=args.dry_run):
-                    if not args.dry_run:
-                        sys.exit(1)
-                
-                # Push the branch
-                current_branch = get_current_branch()
-                if current_branch:
-                    if not confirm_step(
-                        f"\n📤 Push branch '{current_branch}' to remote?",
-                        default=True,
-                        non_interactive=args.non_interactive or args.dry_run,
-                    ):
-                        print("⚠️  Skipping branch push (user cancelled)")
-                        if not args.non_interactive:
-                            sys.exit(0)
-                    else:
-                        if not push_branch(current_branch, dry_run=args.dry_run):
-                            if not args.dry_run:
-                                sys.exit(1)
-                
-                # Create PR
-                if not confirm_step(
-                    f"\n🔀 Create pull request to merge into '{args.release_branch}' branch?",
-                    default=True,
-                    non_interactive=args.non_interactive or args.dry_run,
-                ):
-                    print("⚠️  Skipping PR creation (user cancelled)")
-                    if not args.non_interactive:
-                        sys.exit(0)
-                else:
-                    pr_url = create_release_pr(
-                        new_version,
-                        release_branch=args.release_branch,
-                        dry_run=args.dry_run,
-                    )
-                    if pr_url and not args.dry_run:
-                        print(f"\n📌 PR created: {pr_url}")
-                        print("   Wait for the PR to be reviewed and merged before creating the tag.")
-    
-    # Handle tag creation (only with --tag flag, and only on release branch)
+    # Handle tag creation on release branch (separate workflow)
     if args.tag:
-        current_branch = get_current_branch()
-        if not current_branch:
-            print("❌ Could not determine current branch")
-            sys.exit(1)
-        
-        if current_branch != args.release_branch:
-            print(f"❌ Tag creation is only allowed on the release branch ({args.release_branch})")
+        if workflow_type != "release_tag":
+            print(f"❌ Tag creation is only allowed on release branch")
             print(f"   Current branch: {current_branch}")
             print(f"   Please checkout the release branch first:")
-            print(f"   git checkout {args.release_branch}")
+            print(f"   git checkout release")
             sys.exit(1)
         
-        tag_name = f"v{new_version}"
+        # Use current version or specified version
+        tag_version = current_version
+        if args.version:
+            if not validate_version(args.version):
+                sys.exit(1)
+            tag_version = args.version.lstrip("v")
+        
+        tag_name = f"v{tag_version}"
         
         # Create tag
         if not confirm_step(
-            f"\n🏷️  Create git tag {tag_name} on {args.release_branch} branch?",
+            f"\n🏷️  Create git tag {tag_name} on release branch?",
             default=True,
             non_interactive=args.non_interactive or args.dry_run,
         ):
@@ -1072,7 +1040,7 @@ Examples:
             if not args.non_interactive:
                 sys.exit(0)
         else:
-            if not create_git_tag(new_version, args.tag_message, dry_run=args.dry_run):
+            if not create_git_tag(tag_version, args.tag_message, dry_run=args.dry_run):
                 if not args.dry_run:
                     sys.exit(1)
             
@@ -1085,26 +1053,322 @@ Examples:
                 print(f"\n⚠️  Tag {tag_name} created locally but not pushed")
                 print(f"   Push manually with: git push origin {tag_name}")
             else:
-                if not push_tag(new_version, dry_run=args.dry_run):
+                if not push_tag(tag_version, dry_run=args.dry_run):
                     sys.exit(1)
+        
+        print("\n✅ Tag creation complete!")
+        return
     
-    print("\n✅ Release process complete!")
+    # Handle version based on workflow type
+    new_version = current_version
+    
+    # Version bumping happens in dev_to_main workflow (because main is protected)
+    if workflow_type == "dev_to_main":
+        if args.version:
+            if not validate_version(args.version):
+                sys.exit(1)
+            
+            # Normalize version (remove 'v' prefix for internal use)
+            new_version = args.version.lstrip("v")
+            
+            if new_version == current_version:
+                print(f"⚠️  Version {new_version} is already the current version")
+                response = input("Continue anyway? (y/N): ")
+                if response.lower() != "y":
+                    sys.exit(0)
+        else:
+            # No version specified - prompt for bump type
+            bump_type = prompt_version_bump(
+                current_version,
+                non_interactive=args.non_interactive,
+            )
+            
+            if bump_type is None:
+                if args.non_interactive:
+                    print("❌ Version bump cancelled (non-interactive mode requires --version)")
+                    sys.exit(1)
+                else:
+                    print("❌ Version bump cancelled")
+                    sys.exit(0)
+            
+            # Show what the new version would be (dry run)
+            if args.dry_run:
+                print(f"\n[DRY RUN] Would bump version using: {bump_type}")
+                # Get the new version from a dry run
+                new_version = bump_version(bump_type, dry_run=True)
+            else:
+                # Actually bump the version
+                new_version = bump_version(bump_type, dry_run=False)
+            
+            print(f"New version: {new_version}")
+    elif workflow_type == "main_to_release":
+        # No version bump for main→release workflow (version already set in dev→main)
+        print("ℹ️  Main→Release workflow: Version already set from dev→main merge")
+    elif workflow_type == "release_tag":
+        print("ℹ️  Release tag workflow: Use --tag flag to create tags")
+        sys.exit(0)
+    else:
+        print(f"⚠️  Unknown workflow type: {workflow_type}")
+        print("   Expected: dev, main, or release branch")
+        sys.exit(1)
+    
+    # Check git status
+    if not args.dry_run and not check_git_status():
+        response = input("\nContinue with uncommitted changes? (y/N): ")
+        if response.lower() != "y":
+            sys.exit(0)
+    
+    # Run tests
+    if not args.skip_tests:
+        if not confirm_step(
+            "\n🧪 Proceed with running tests?",
+            default=True,
+            non_interactive=args.non_interactive or args.dry_run,
+        ):
+            print("⚠️  Skipping tests (user cancelled)")
+            if not args.non_interactive:
+                sys.exit(0)
+        else:
+            if not run_tests(dry_run=args.dry_run):
+                # Always exit on test failure, even in dry-run mode
+                print("❌ Tests failed - fix issues before proceeding")
+                sys.exit(1)
+    
+    # Run type checks
+    if not args.skip_type_check:
+        if not confirm_step(
+            "\n🔍 Proceed with type checking?",
+            default=True,
+            non_interactive=args.non_interactive or args.dry_run,
+        ):
+            print("⚠️  Skipping type checks (user cancelled)")
+            if not args.non_interactive:
+                sys.exit(0)
+        else:
+            if not run_type_check(dry_run=args.dry_run):
+                # Always exit on type check failure, even in dry-run mode
+                print("❌ Type checks failed - fix issues before proceeding")
+                sys.exit(1)
+    
+    # Update version and changelog (only for dev_to_main workflow, since main is protected)
+    if workflow_type == "dev_to_main" and new_version != current_version:
+        # Update version (if version was explicitly provided, not if it was bumped)
+        # When version is bumped, it's already updated, so we skip this step
+        if args.version:
+            if not confirm_step(
+                f"\n📝 Update version from {current_version} to {new_version}?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping version update (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                update_version_in_pyproject(new_version, dry_run=args.dry_run)
+        
+        # Update changelog
+        if not args.skip_changelog:
+            if not confirm_step(
+                f"\n📄 Update CHANGELOG.md for version {new_version}?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping changelog update (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                update_changelog(new_version, dry_run=args.dry_run)
+    
+    # Build package
+    if not args.skip_build:
+        if not confirm_step(
+            "\n📦 Proceed with building the package?",
+            default=True,
+            non_interactive=args.non_interactive or args.dry_run,
+        ):
+            print("⚠️  Skipping package build (user cancelled)")
+            if not args.non_interactive:
+                sys.exit(0)
+        else:
+                if not build_package(dry_run=args.dry_run):
+                    if not args.dry_run:
+                        sys.exit(1)
+    
+    # Commit and create PR based on workflow
+    should_commit = False
+    commit_message = ""
+    
+    if workflow_type == "dev_to_main" and new_version != current_version:
+        # Commit version and changelog changes (version bump happens here)
+        should_commit = True
+        commit_message = f"Bump version to v{new_version} and prepare merge to main"
+    elif workflow_type == "dev_to_main":
+        # Commit any changes (even if no version bump)
+        should_commit = True
+        commit_message = "Prepare merge to main"
+    elif workflow_type == "main_to_release":
+        # Commit any changes for release (version already set from dev→main)
+        should_commit = True
+        commit_message = "Prepare release"
+    
+    if should_commit and not args.skip_pr:
+        if workflow_type == "dev_to_main":
+            # For dev→main, commit version and changelog changes if version was bumped
+            if new_version != current_version:
+                if not confirm_step(
+                    f"\n💾 Commit version and changelog changes for v{new_version}?",
+                    default=True,
+                    non_interactive=args.non_interactive or args.dry_run,
+                ):
+                    print("⚠️  Skipping commit (user cancelled)")
+                    if not args.non_interactive:
+                        sys.exit(0)
+                else:
+                    if not commit_release_changes(new_version, dry_run=args.dry_run):
+                        if not args.dry_run:
+                            sys.exit(1)
+            else:
+                # No version bump, just commit any other changes
+                if not confirm_step(
+                    "\n💾 Commit changes for merge to main?",
+                    default=True,
+                    non_interactive=args.non_interactive or args.dry_run,
+                ):
+                    print("⚠️  Skipping commit (user cancelled)")
+                    if not args.non_interactive:
+                        sys.exit(0)
+                else:
+                    # Check if there are any changes to commit
+                    try:
+                        result = subprocess.run(
+                            ["git", "status", "--porcelain"],
+                            cwd=get_project_root(),
+                            capture_output=True,
+                            text=True,
+                            check=True,
+                        )
+                        if result.stdout.strip():
+                            subprocess.run(
+                                ["git", "add", "-A"],
+                                cwd=get_project_root(),
+                                check=True,
+                                capture_output=True,
+                            )
+                            subprocess.run(
+                                ["git", "commit", "-m", commit_message],
+                                cwd=get_project_root(),
+                                check=True,
+                                capture_output=True,
+                            )
+                            print(f"✅ Committed changes: {commit_message}")
+                        else:
+                            print("ℹ️  No changes to commit")
+                    except subprocess.CalledProcessError as e:
+                        print(f"❌ Failed to commit changes: {e}")
+                        if not args.dry_run:
+                            sys.exit(1)
+        elif workflow_type == "main_to_release":
+            # For main→release, commit any changes (version already set)
+            if not confirm_step(
+                "\n💾 Commit changes for release?",
+                default=True,
+                non_interactive=args.non_interactive or args.dry_run,
+            ):
+                print("⚠️  Skipping commit (user cancelled)")
+                if not args.non_interactive:
+                    sys.exit(0)
+            else:
+                # Check if there are any changes to commit
+                try:
+                    result = subprocess.run(
+                        ["git", "status", "--porcelain"],
+                        cwd=get_project_root(),
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                    )
+                    if result.stdout.strip():
+                        subprocess.run(
+                            ["git", "add", "-A"],
+                            cwd=get_project_root(),
+                            check=True,
+                            capture_output=True,
+                        )
+                        subprocess.run(
+                            ["git", "commit", "-m", commit_message],
+                            cwd=get_project_root(),
+                            check=True,
+                            capture_output=True,
+                        )
+                        print(f"✅ Committed changes: {commit_message}")
+                    else:
+                        print("ℹ️  No changes to commit")
+                except subprocess.CalledProcessError as e:
+                    print(f"❌ Failed to commit changes: {e}")
+                    if not args.dry_run:
+                        sys.exit(1)
+            
+            # Push the branch
+            current_branch = get_current_branch()
+            if current_branch:
+                if not confirm_step(
+                    f"\n📤 Push branch '{current_branch}' to remote?",
+                    default=True,
+                    non_interactive=args.non_interactive or args.dry_run,
+                ):
+                    print("⚠️  Skipping branch push (user cancelled)")
+                    if not args.non_interactive:
+                        sys.exit(0)
+                else:
+                    if not push_branch(current_branch, dry_run=args.dry_run):
+                        if not args.dry_run:
+                            sys.exit(1)
+                
+                # Create PR
+                if target_branch:
+                    if not confirm_step(
+                        f"\n🔀 Create pull request to merge into '{target_branch}' branch?",
+                        default=True,
+                        non_interactive=args.non_interactive or args.dry_run,
+                    ):
+                        print("⚠️  Skipping PR creation (user cancelled)")
+                        if not args.non_interactive:
+                            sys.exit(0)
+                    else:
+                        pr_version = new_version if workflow_type == "dev_to_main" else current_version
+                        pr_url = create_release_pr(
+                            pr_version,
+                            release_branch=target_branch,
+                            workflow_type=workflow_type,
+                            dry_run=args.dry_run,
+                        )
+                        if pr_url and not args.dry_run:
+                            print(f"\n📌 PR created: {pr_url}")
+                            if workflow_type == "dev_to_main":
+                                print("   After PR is merged to main, create a PR from main to release branch.")
+                            elif workflow_type == "main_to_release":
+                                print("   After PR is merged to release branch, use --tag to create version tag.")
+                            else:
+                                print("   Wait for the PR to be reviewed and merged.")
+    
+    print("\n✅ Process complete!")
     
     if args.dry_run:
         print("\n[DRY RUN] No changes were made. Run without --dry-run to execute.")
-    elif args.version:
-        if not args.skip_pr:
-            print(f"\n📌 Next steps:")
-            print(f"   1. Review and merge the pull request")
-            if not args.tag:
-                print(f"   2. After PR is merged, checkout release branch and create tag:")
-                print(f"      git checkout {args.release_branch}")
-                print(f"      python utilities/build_and_release.py --tag")
-        else:
-            if not args.tag:
-                print(f"\n💡 To create and push a tag, use:")
-                print(f"   python utilities/build_and_release.py --tag")
-                print(f"   (Must be on {args.release_branch} branch, uses version from pyproject.toml)")
+    else:
+        print(f"\n📌 Next steps:")
+        if workflow_type == "dev_to_main":
+            print(f"   1. Review and merge the PR from dev to main")
+            print(f"   2. After merge, checkout main and prepare release:")
+            print(f"      git checkout main")
+            print(f"      python utilities/build_and_release.py")
+        elif workflow_type == "main_to_release":
+            print(f"   1. Review and merge the PR from main to release branch")
+            print(f"   2. After merge, checkout release branch and create tag:")
+            print(f"      git checkout release")
+            print(f"      python utilities/build_and_release.py --tag")
+        elif workflow_type == "release_tag":
+            print(f"   Tag created! GitHub Actions should trigger automatically.")
 
 
 if __name__ == "__main__":
