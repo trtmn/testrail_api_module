@@ -122,7 +122,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Impact: Simplifies version management by automatically calculating next version based on semantic versioning rules
 
 
+
 ## [Unreleased]
+
+## [0.5.3] 2026-01-27
 
 ## [0.5.2] 2026-01-23
 
