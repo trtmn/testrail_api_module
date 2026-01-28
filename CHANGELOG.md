@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Runs tests and type checking before release
   - Automatically updates version in `pyproject.toml`
   - Automatically updates `CHANGELOG.md` (moves unreleased entries to new version)
-  - Builds the package using `python -m build`
+  - Builds the package using `uv build`
   - Creates git tags for releases
   - Optionally pushes tags to trigger GitHub Actions workflow
   - Supports dry-run mode for testing

@@ -13,12 +13,13 @@ api = TestRailAPI(
 
 mcp = create_mcp_server(api_instance=api)
 
+
 async def test():
     """Test schema generation."""
     try:
         # Get tools
         tools_dict = dict(await mcp.get_tools())
-        
+
         # Find runs tool
         runs_tool = None
         for name, tool in tools_dict.items():
@@ -26,12 +27,12 @@ async def test():
                 runs_tool = tool
                 print(f'Found tool: {name}')
                 break
-        
+
         if runs_tool:
             # Try to get MCP tool format
             try:
                 mcp_tool = runs_tool.to_mcp_tool()
-                print(f'\nMCP Tool format:')
+                print('\nMCP Tool format:')
                 print(f'Name: {mcp_tool.name}')
                 print(f'Description: {mcp_tool.description[:100]}...')
                 if hasattr(mcp_tool, 'inputSchema'):
@@ -40,7 +41,8 @@ async def test():
                     schema_str = json.dumps(mcp_tool.input, indent=2)
                 else:
                     # Try to serialize the whole tool
-                    schema_str = json.dumps(mcp_tool.model_dump() if hasattr(mcp_tool, 'model_dump') else str(mcp_tool), indent=2)
+                    schema_str = json.dumps(mcp_tool.model_dump() if hasattr(
+                        mcp_tool, 'model_dump') else str(mcp_tool), indent=2)
             except Exception as e:
                 print(f'Error getting MCP tool format: {e}')
                 import traceback
@@ -48,14 +50,14 @@ async def test():
                 return
             print(f'\nSchema length: {len(schema_str)}')
             print(f'\nFirst 200 chars:\n{schema_str[:200]}')
-            
+
             print(f'\nFull schema:\n{schema_str}')
-            
+
             # Try to parse it
             try:
-                parsed = json.loads(schema_str)
+                json.loads(schema_str)  # Validate JSON
                 print('\n✓ Schema is valid JSON')
-                
+
                 # Now try to actually call the tool
                 print('\nTesting tool call...')
                 result = await mcp.call_tool('testrail_runs', {
@@ -84,4 +86,3 @@ async def test():
 
 if __name__ == '__main__':
     asyncio.run(test())
-

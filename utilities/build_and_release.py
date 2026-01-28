@@ -39,7 +39,7 @@ def get_project_root() -> Path:
 def get_current_version() -> str:
     """Get the current version using uv."""
     project_root = get_project_root()
-    
+
     try:
         result = subprocess.run(
             ["uv", "version", "--short"],
@@ -60,20 +60,20 @@ def bump_version(
     dry_run: bool = False,
 ) -> str:
     """Bump the version using uv version --bump.
-    
+
     Args:
         bump_type: Type of bump (major, minor, patch, stable, alpha, beta, rc, post, dev)
         dry_run: If True, don't actually update the version
-    
+
     Returns:
         The new version string
     """
     project_root = get_project_root()
-    
+
     cmd = ["uv", "version", "--bump", bump_type]
     if dry_run:
         cmd.append("--dry-run")
-    
+
     try:
         result = subprocess.run(
             cmd,
@@ -82,7 +82,7 @@ def bump_version(
             text=True,
             check=True,
         )
-        
+
         # uv version --bump outputs: "package-name 0.5.2 => 0.5.3"
         # Extract the new version (after "=>")
         output = result.stdout.strip()
@@ -92,12 +92,12 @@ def bump_version(
         else:
             # Fallback: try to extract version from output
             new_version = output
-        
+
         if dry_run:
             print(f"[DRY RUN] Would bump version to: {new_version}")
         else:
             print(f"✅ Bumped version to: {new_version}")
-        
+
         return new_version
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"❌ Error bumping version with uv: {e}")
@@ -105,10 +105,12 @@ def bump_version(
         sys.exit(1)
 
 
-def update_version_in_pyproject(new_version: str, dry_run: bool = False) -> None:
+def update_version_in_pyproject(
+        new_version: str,
+        dry_run: bool = False) -> None:
     """Update version in pyproject.toml using uv."""
     project_root = get_project_root()
-    
+
     cmd = ["uv", "version", new_version]
     if dry_run:
         cmd.append("--dry-run")
@@ -122,7 +124,7 @@ def update_version_in_pyproject(new_version: str, dry_run: bool = False) -> None
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
             print(f"⚠️  Warning: Could not run uv version: {e}")
         return
-    
+
     try:
         subprocess.run(
             cmd,
@@ -141,14 +143,14 @@ def update_changelog(new_version: str, dry_run: bool = False) -> None:
     """Move unreleased entries to a new version section in CHANGELOG.md."""
     project_root = get_project_root()
     changelog_path = project_root / "CHANGELOG.md"
-    
+
     if not changelog_path.exists():
         print("⚠️  CHANGELOG.md not found, skipping changelog update")
         return
-    
+
     with open(changelog_path, "r", encoding="utf-8") as f:
         content = f.read()
-    
+
     # Check if there's an [Unreleased] section
     if "## [Unreleased]" not in content:
         print("⚠️  No [Unreleased] section found in CHANGELOG.md")
@@ -159,19 +161,19 @@ def update_changelog(new_version: str, dry_run: bool = False) -> None:
         else:
             print("  [DRY RUN] Would create new version section")
             return
-    
+
     # Get today's date
     today = datetime.now().strftime("%Y-%m-%d")
-    
+
     # Replace [Unreleased] with new version section
     new_section = f"## [{new_version}] {today}"
     new_content = content.replace("## [Unreleased]", new_section, 1)
-    
+
     # Add new [Unreleased] section after the version section
     # Find the end of the new version section (next ## or end of file)
     lines = new_content.split("\n")
     insert_index = None
-    
+
     for i, line in enumerate(lines):
         if line.startswith(f"## [{new_version}]"):
             # Find the next ## or end of file
@@ -182,22 +184,22 @@ def update_changelog(new_version: str, dry_run: bool = False) -> None:
             if insert_index is None:
                 insert_index = len(lines)
             break
-    
+
     if insert_index is not None:
         lines.insert(insert_index, "")
         lines.insert(insert_index + 1, "## [Unreleased]")
         lines.insert(insert_index + 2, "")
         new_content = "\n".join(lines)
-    
+
     if dry_run:
-        print(f"[DRY RUN] Would update CHANGELOG.md:")
+        print("[DRY RUN] Would update CHANGELOG.md:")
         print(f"  - Move [Unreleased] entries to [{new_version}] {today}")
-        print(f"  - Add new [Unreleased] section")
+        print("  - Add new [Unreleased] section")
         return
-    
+
     with open(changelog_path, "w", encoding="utf-8") as f:
         f.write(new_content)
-    
+
     print(f"✅ Updated CHANGELOG.md with version {new_version}")
 
 
@@ -211,7 +213,7 @@ def run_command(
     if dry_run:
         print(f"[DRY RUN] Would run: {' '.join(cmd)}")
         return subprocess.CompletedProcess(cmd, 0, b"", b"")
-    
+
     print(f"Running: {' '.join(cmd)}")
     result = subprocess.run(
         cmd,
@@ -224,14 +226,14 @@ def run_command(
 
 def run_tests(dry_run: bool = False) -> bool:
     """Run the test suite.
-    
+
     Note: Tests always run, even in dry-run mode, since they don't modify anything.
     """
     if dry_run:
         print("\n🧪 Running tests (dry-run mode - tests still execute)...")
     else:
         print("\n🧪 Running tests...")
-    
+
     try:
         # Always run tests, even in dry-run mode (they don't modify anything)
         run_command(
@@ -247,16 +249,17 @@ def run_tests(dry_run: bool = False) -> bool:
 
 def run_type_check(dry_run: bool = False) -> bool:
     """Run mypy type checking.
-    
+
     Note: Type checks always run, even in dry-run mode, since they don't modify anything.
     """
     if dry_run:
         print("\n🔍 Running type checks (dry-run mode - checks still execute)...")
     else:
         print("\n🔍 Running type checks...")
-    
+
     try:
-        # Always run type checks, even in dry-run mode (they don't modify anything)
+        # Always run type checks, even in dry-run mode (they don't modify
+        # anything)
         run_command(
             [sys.executable, "-m", "mypy", "src/testrail_api_module"],
             dry_run=False,  # Force actual execution
@@ -298,14 +301,17 @@ def check_tag_exists(version: str) -> bool:
         return False
 
 
-def create_git_tag(version: str, message: Optional[str] = None, dry_run: bool = False) -> bool:
+def create_git_tag(
+        version: str,
+        message: Optional[str] = None,
+        dry_run: bool = False) -> bool:
     """Create a git tag for the release."""
     if not is_git_repo():
         print("⚠️  Not in a git repository, skipping tag creation")
         return True  # Not an error, just skip
-    
+
     tag_name = f"v{version}" if not version.startswith("v") else version
-    
+
     # Check if tag already exists
     if not dry_run and check_tag_exists(version):
         print(f"⚠️  Tag {tag_name} already exists")
@@ -322,14 +328,14 @@ def create_git_tag(version: str, message: Optional[str] = None, dry_run: bool = 
                 print(f"❌ Failed to delete existing tag: {tag_name}")
                 return False
         else:
-            print(f"⚠️  Skipping tag creation (tag already exists)")
+            print("⚠️  Skipping tag creation (tag already exists)")
             return True
-    
+
     if message is None:
         message = f"Release {tag_name}"
-    
+
     print(f"\n🏷️  Creating git tag: {tag_name}")
-    
+
     try:
         run_command(
             ["git", "tag", "-a", tag_name, "-m", message],
@@ -348,11 +354,11 @@ def push_tag(version: str, dry_run: bool = False) -> bool:
     if not is_git_repo():
         print("⚠️  Not in a git repository, skipping tag push")
         return True  # Not an error, just skip
-    
+
     tag_name = f"v{version}" if not version.startswith("v") else version
-    
+
     print(f"\n📤 Pushing tag to remote: {tag_name}")
-    
+
     try:
         run_command(
             ["git", "push", "origin", tag_name],
@@ -372,7 +378,7 @@ def get_current_branch() -> Optional[str]:
     """Get the current git branch name."""
     if not is_git_repo():
         return None
-    
+
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
@@ -387,13 +393,13 @@ def get_current_branch() -> Optional[str]:
 
 def get_remote_repo_info() -> Optional[tuple[str, str]]:
     """Get the GitHub repository owner and name from remote URL.
-    
+
     Returns:
         Tuple of (owner, repo) or None if not available
     """
     if not is_git_repo():
         return None
-    
+
     try:
         result = subprocess.run(
             ["git", "remote", "get-url", "origin"],
@@ -402,7 +408,7 @@ def get_remote_repo_info() -> Optional[tuple[str, str]]:
             check=True,
         )
         remote_url = result.stdout.strip()
-        
+
         # Handle both SSH and HTTPS URLs
         # SSH: git@github.com:owner/repo.git
         # HTTPS: https://github.com/owner/repo.git
@@ -410,12 +416,12 @@ def get_remote_repo_info() -> Optional[tuple[str, str]]:
             r"git@github\.com:(.+?)/(.+?)(?:\.git)?$",
             r"https?://github\.com/(.+?)/(.+?)(?:\.git)?$",
         ]
-        
+
         for pattern in patterns:
             match = re.match(pattern, remote_url)
             if match:
                 return (match.group(1), match.group(2))
-        
+
         return None
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
@@ -431,9 +437,9 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
     if not is_git_repo():
         print("⚠️  Not in a git repository, skipping commit")
         return True  # Not an error, just skip
-    
+
     project_root = get_project_root()
-    
+
     # Check if there are changes to commit
     try:
         result = subprocess.run(
@@ -459,13 +465,13 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("⚠️  Could not check git status")
         return False
-    
+
     if dry_run:
         print("[DRY RUN] Would commit changes:")
         print("  - git add pyproject.toml CHANGELOG.md")
         print(f"  - git commit -m 'Prepare release v{version}'")
         return True
-    
+
     try:
         # Stage the files (this will include any existing uncommitted changes)
         subprocess.run(
@@ -474,7 +480,7 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
             check=True,
             capture_output=True,
         )
-        
+
         # Commit
         commit_message = f"Prepare release v{version}"
         subprocess.run(
@@ -483,7 +489,7 @@ def commit_release_changes(version: str, dry_run: bool = False) -> bool:
             check=True,
             capture_output=True,
         )
-        
+
         print(f"✅ Committed changes for release v{version}")
         print("   (Includes version update and changelog changes)")
         return True
@@ -497,13 +503,13 @@ def push_branch(branch_name: str, dry_run: bool = False) -> bool:
     if not is_git_repo():
         print("⚠️  Not in a git repository, skipping push")
         return True  # Not an error, just skip
-    
+
     project_root = get_project_root()
-    
+
     if dry_run:
         print(f"[DRY RUN] Would push branch {branch_name} to origin")
         return True
-    
+
     try:
         # Check if branch exists on remote
         result = subprocess.run(
@@ -513,9 +519,9 @@ def push_branch(branch_name: str, dry_run: bool = False) -> bool:
             text=True,
             check=True,
         )
-        
+
         branch_exists_remote = bool(result.stdout.strip())
-        
+
         if branch_exists_remote:
             # Branch exists, push updates
             subprocess.run(
@@ -530,7 +536,7 @@ def push_branch(branch_name: str, dry_run: bool = False) -> bool:
                 cwd=project_root,
                 check=True,
             )
-        
+
         print(f"✅ Pushed branch {branch_name} to origin")
         return True
     except subprocess.CalledProcessError as e:
@@ -552,27 +558,27 @@ def create_release_pr(
         release_branch: The target branch for the PR
         workflow_type: The workflow type (dev_to_main or main_to_release)
         dry_run: If True, don't actually create the PR
-    
+
     Returns:
         PR URL if created successfully, None otherwise
     """
     if not is_git_repo():
         print("⚠️  Not in a git repository, skipping PR creation")
         return None
-    
+
     # Get current branch
     current_branch = get_current_branch()
     if not current_branch:
         print("⚠️  Could not determine current branch, skipping PR creation")
         return None
-    
+
     # Get repository info
     repo_info = get_remote_repo_info()
     if not repo_info:
         print("⚠️  Could not determine repository info, skipping PR creation")
         print("   Make sure 'origin' remote is configured correctly")
         return None
-    
+
     owner, repo = repo_info
     
     # Determine PR title and body based on workflow
@@ -605,7 +611,7 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
 """
     
     if dry_run:
-        print(f"[DRY RUN] Would create PR:")
+        print("[DRY RUN] Would create PR:")
         print(f"  - From: {current_branch}")
         print(f"  - To: {release_branch}")
         print(f"  - Title: {pr_title}")
@@ -883,7 +889,7 @@ def check_git_status() -> bool:
     if not is_git_repo():
         print("⚠️  Warning: Not in a git repository")
         return True  # Continue anyway, might be building only
-    
+
     try:
         result = subprocess.run(
             ["git", "status", "--porcelain"],
@@ -891,12 +897,12 @@ def check_git_status() -> bool:
             text=True,
             check=True,
         )
-        
+
         if result.stdout.strip():
             print("⚠️  Warning: You have uncommitted changes:")
             print(result.stdout)
             return False
-        
+
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("⚠️  Warning: Could not check git status (git may not be available)")
@@ -907,39 +913,40 @@ def validate_version(version: str) -> bool:
     """Validate version format (semantic versioning)."""
     # Remove 'v' prefix if present for validation
     version_clean = version.lstrip("v")
-    
+
     # Basic semver pattern: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
     pattern = r"^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$"
-    
+
     if not re.match(pattern, version_clean):
         print(f"❌ Invalid version format: {version}")
         print("   Expected format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]")
         print("   Examples: 0.5.2, 1.0.0, 1.0.0-alpha.1, 1.0.0-beta.1+20240101")
         return False
-    
+
     return True
 
 
-def confirm_step(prompt: str, default: bool = False, non_interactive: bool = False) -> bool:
+def confirm_step(prompt: str, default: bool = False,
+                 non_interactive: bool = False) -> bool:
     """Prompt user to confirm a step.
-    
+
     Args:
         prompt: The prompt message to display
         default: Default value if user just presses Enter (True = yes, False = no)
         non_interactive: If True, skip prompt and return default value
-    
+
     Returns:
         True if user confirms, False otherwise
     """
     if non_interactive:
         return default
-    
+
     default_text = "Y/n" if default else "y/N"
     response = input(f"{prompt} ({default_text}): ").strip().lower()
-    
+
     if not response:
         return default
-    
+
     return response in ("y", "yes")
 
 
@@ -948,17 +955,17 @@ def prompt_version_bump(
     non_interactive: bool = False,
 ) -> Optional[str]:
     """Prompt user to select a version bump type.
-    
+
     Args:
         current_version: The current version string
         non_interactive: If True, skip prompt and return None
-    
+
     Returns:
         Bump type (major, minor, patch, etc.) or None if cancelled
     """
     if non_interactive:
         return None
-    
+
     print(f"\n📋 Current version: {current_version}")
     print("\nSelect version bump type:")
     print("  1. patch  - Bug fixes (0.5.2 → 0.5.3)")
@@ -971,7 +978,7 @@ def prompt_version_bump(
     print("  8. post   - Post-release")
     print("  9. dev    - Development version")
     print("  0. Cancel")
-    
+
     bump_map = {
         "1": "patch",
         "2": "minor",
@@ -983,16 +990,16 @@ def prompt_version_bump(
         "8": "post",
         "9": "dev",
     }
-    
+
     while True:
         choice = input("\nEnter your choice (1-9, or 0 to cancel): ").strip()
-        
+
         if choice == "0":
             return None
-        
+
         if choice in bump_map:
             return bump_map[choice]
-        
+
         print("❌ Invalid choice. Please enter 1-9 or 0 to cancel.")
 
 
@@ -1033,75 +1040,75 @@ GitFlow Workflow Examples:
   python utilities/build_and_release.py --build-only
         """,
     )
-    
+
     parser.add_argument(
         "--version",
         type=str,
         help="New version number (e.g., 0.5.3 or v0.5.3). If not provided, will prompt for bump type (major/minor/patch).",
     )
-    
+
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would be done without making changes",
     )
-    
+
     parser.add_argument(
         "--skip-tests",
         action="store_true",
         help="Skip running tests",
     )
-    
+
     parser.add_argument(
         "--skip-type-check",
         action="store_true",
         help="Skip type checking",
     )
-    
+
     parser.add_argument(
         "--skip-build",
         action="store_true",
         help="Skip building the package",
     )
-    
+
     parser.add_argument(
         "--build-only",
         action="store_true",
         help="Only build the package (skip version updates, changelog, and tagging)",
     )
-    
+
     parser.add_argument(
         "--tag-message",
         type=str,
         help="Custom message for the git tag",
     )
-    
+
     parser.add_argument(
         "--skip-changelog",
         action="store_true",
         help="Skip updating CHANGELOG.md",
     )
-    
+
     parser.add_argument(
         "--non-interactive",
         action="store_true",
         help="Skip all interactive prompts (useful for automation)",
     )
-    
+
     parser.add_argument(
         "--skip-pr",
         action="store_true",
         help="Skip creating a pull request",
     )
-    
+
     parser.add_argument(
         "--tag",
         action="store_true",
         help="Create and push a git tag using current version from pyproject.toml (only works on release branch)",
     )
-    
+
     args = parser.parse_args()
-    
+
     project_root = get_project_root()
     os.chdir(project_root)
     

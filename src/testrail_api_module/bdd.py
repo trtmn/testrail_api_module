@@ -6,6 +6,7 @@ It allows you to import and export BDD scenarios as .feature files.
 from typing import Dict, Any, Optional
 from .base import BaseAPI
 
+
 class BDDAPI(BaseAPI):
     """API for managing BDD scenarios in TestRail."""
 
@@ -21,7 +22,8 @@ class BDDAPI(BaseAPI):
         """
         return self._api_request('GET', f'get_bdd/{case_id}')
 
-    def add_bdd(self, section_id: int, feature_file: str, description: Optional[str] = None) -> Dict[str, Any]:
+    def add_bdd(self, section_id: int, feature_file: str,
+                description: Optional[str] = None) -> Dict[str, Any]:
         """
         Import/upload a BDD scenario from a .feature file into a section.
 

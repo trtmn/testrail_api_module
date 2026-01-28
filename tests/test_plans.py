@@ -13,7 +13,7 @@ from testrail_api_module.plans import PlansAPI
 from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
+    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestPlansAPI:
@@ -43,9 +43,9 @@ class TestPlansAPI:
         """Test get_plan method."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "Test Plan"}
-            
+
             result = plans_api.get_plan(plan_id=1)
-            
+
             mock_request.assert_called_once_with('GET', 'get_plan/1')
             assert result == {"id": 1, "name": "Test Plan"}
 
@@ -56,9 +56,9 @@ class TestPlansAPI:
                 {"id": 1, "name": "Plan 1"},
                 {"id": 2, "name": "Plan 2"}
             ]
-            
+
             result = plans_api.get_plans(project_id=1)
-            
+
             mock_request.assert_called_once_with('GET', 'get_plans/1')
             assert len(result) == 2
 
@@ -66,18 +66,19 @@ class TestPlansAPI:
         """Test add_plan with minimal required parameters."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Plan"}
-            
+
             result = plans_api.add_plan(project_id=1, name="New Plan")
-            
+
             expected_data = {"name": "New Plan"}
-            mock_request.assert_called_once_with('POST', 'add_plan/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_plan/1', data=expected_data)
             assert result == {"id": 1, "name": "New Plan"}
 
     def test_add_plan_with_all_parameters(self, plans_api: PlansAPI) -> None:
         """Test add_plan with all optional parameters."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Plan"}
-            
+
             entries = [
                 {
                     "suite_id": 1,
@@ -85,63 +86,66 @@ class TestPlansAPI:
                     "include_all": True
                 }
             ]
-            
-            result = plans_api.add_plan(
+
+            plans_api.add_plan(
                 project_id=1,
                 name="New Plan",
                 description="Plan description",
                 milestone_id=2,
                 entries=entries
             )
-            
+
             expected_data = {
                 "name": "New Plan",
                 "description": "Plan description",
                 "milestone_id": 2,
                 "entries": entries
             }
-            mock_request.assert_called_once_with('POST', 'add_plan/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_plan/1', data=expected_data)
 
     def test_add_plan_with_none_values(self, plans_api: PlansAPI) -> None:
         """Test add_plan with None values."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Plan"}
-            
-            result = plans_api.add_plan(
+
+            plans_api.add_plan(
                 project_id=1,
                 name="New Plan",
                 description=None,
                 milestone_id=None,
                 entries=None
             )
-            
+
             expected_data = {"name": "New Plan"}
-            mock_request.assert_called_once_with('POST', 'add_plan/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'add_plan/1', data=expected_data)
 
     def test_update_plan(self, plans_api: PlansAPI) -> None:
         """Test update_plan method."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.return_value = {"id": 1, "name": "Updated Plan"}
-            
-            result = plans_api.update_plan(
+
+            plans_api.update_plan(
                 plan_id=1,
                 name="Updated Plan",
                 description="Updated description"
             )
-            
+
             expected_data = {
                 "name": "Updated Plan",
                 "description": "Updated description"
             }
-            mock_request.assert_called_once_with('POST', 'update_plan/1', data=expected_data)
+            mock_request.assert_called_once_with(
+                'POST', 'update_plan/1', data=expected_data)
 
     def test_close_plan(self, plans_api: PlansAPI) -> None:
         """Test close_plan method."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.return_value = {}
-            
+
             result = plans_api.close_plan(plan_id=1)
-            
+
             mock_request.assert_called_once_with('POST', 'close_plan/1')
             assert result == {}
 
@@ -149,9 +153,9 @@ class TestPlansAPI:
         """Test delete_plan method."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.return_value = {}
-            
+
             result = plans_api.delete_plan(plan_id=1)
-            
+
             mock_request.assert_called_once_with('POST', 'delete_plan/1')
             assert result == {}
 
@@ -163,9 +167,9 @@ class TestPlansAPI:
                 "passed": 40,
                 "failed": 10
             }
-            
+
             result = plans_api.get_plan_stats(plan_id=1)
-            
+
             mock_request.assert_called_once_with('GET', 'get_plan_stats/1')
             assert result["total"] == 50
 
@@ -173,28 +177,24 @@ class TestPlansAPI:
         """Test behavior when API request fails."""
         with patch.object(plans_api, '_api_request') as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
-            
+
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 plans_api.get_plan(plan_id=1)
 
     def test_authentication_error(self, plans_api: PlansAPI) -> None:
         """Test behavior when authentication fails."""
         with patch.object(plans_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError("Authentication failed")
-            
+            mock_request.side_effect = TestRailAuthenticationError(
+                "Authentication failed")
+
             with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
                 plans_api.get_plan(plan_id=1)
 
     def test_rate_limit_error(self, plans_api: PlansAPI) -> None:
         """Test behavior when rate limit is exceeded."""
         with patch.object(plans_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailRateLimitError("Rate limit exceeded")
-            
+            mock_request.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded")
+
             with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
                 plans_api.get_plan(plan_id=1)
-
-
-
-
-
-

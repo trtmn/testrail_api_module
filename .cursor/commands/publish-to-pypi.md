@@ -137,7 +137,7 @@ git push origin v0.5.2
 
 ## Best Practices
 
-1. **Test locally first**: Run `python -m build` before tagging
+1. **Test locally first**: Run `uv build` before tagging
 2. **Use annotated tags**: Include descriptive messages
 3. **Keep versions in sync**: Tag must match `pyproject.toml` version
 4. **Update changelog**: Document changes before releasing

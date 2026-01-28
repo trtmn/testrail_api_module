@@ -6,6 +6,7 @@ It allows you to retrieve custom fields for test results.
 from typing import Dict, Any, List
 from .base import BaseAPI
 
+
 class ResultFieldsAPI(BaseAPI):
     """API for managing custom result fields in TestRail."""
 
