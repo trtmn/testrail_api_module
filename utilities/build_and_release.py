@@ -1225,6 +1225,19 @@ GitFlow Workflow Examples:
         print("   Expected: dev, main, or release branch")
         sys.exit(1)
     
+    # Update changelog BEFORE checking for commits (for dev_to_main workflow with version bump)
+    if workflow_type == "dev_to_main" and new_version != current_version and not args.skip_changelog:
+        if not confirm_step(
+            f"\n📄 Update CHANGELOG.md for version {new_version}?",
+            default=True,
+            non_interactive=args.non_interactive or args.dry_run,
+        ):
+            print("⚠️  Skipping changelog update (user cancelled)")
+            if not args.non_interactive:
+                sys.exit(0)
+        else:
+            update_changelog(new_version, dry_run=args.dry_run)
+    
     # Check git status and auto-commit version changes if that's all that's changed
     if not args.dry_run:
         # For dev_to_main workflow, check if we can auto-commit version changes
@@ -1272,34 +1285,19 @@ GitFlow Workflow Examples:
                 print("❌ Type checks failed - fix issues before proceeding")
                 sys.exit(1)
     
-    # Update version and changelog (only for dev_to_main workflow, since main is protected)
-    if workflow_type == "dev_to_main" and new_version != current_version:
-        # Update version (if version was explicitly provided, not if it was bumped)
-        # When version is bumped, it's already updated, so we skip this step
-        if args.version:
-            if not confirm_step(
-                f"\n📝 Update version from {current_version} to {new_version}?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping version update (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                update_version_in_pyproject(new_version, dry_run=args.dry_run)
-        
-        # Update changelog
-        if not args.skip_changelog:
-            if not confirm_step(
-                f"\n📄 Update CHANGELOG.md for version {new_version}?",
-                default=True,
-                non_interactive=args.non_interactive or args.dry_run,
-            ):
-                print("⚠️  Skipping changelog update (user cancelled)")
-                if not args.non_interactive:
-                    sys.exit(0)
-            else:
-                update_changelog(new_version, dry_run=args.dry_run)
+    # Update version (only if explicitly provided, not if it was bumped - bump already updated it)
+    if workflow_type == "dev_to_main" and new_version != current_version and args.version:
+        # Version was explicitly provided, update it (bump already handled it)
+        if not confirm_step(
+            f"\n📝 Update version from {current_version} to {new_version}?",
+            default=True,
+            non_interactive=args.non_interactive or args.dry_run,
+        ):
+            print("⚠️  Skipping version update (user cancelled)")
+            if not args.non_interactive:
+                sys.exit(0)
+        else:
+            update_version_in_pyproject(new_version, dry_run=args.dry_run)
     
     # Build package
     if not args.skip_build:
