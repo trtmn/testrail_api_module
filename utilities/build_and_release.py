@@ -24,6 +24,7 @@ This script automates:
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -617,6 +618,16 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         print(f"  - Title: {pr_title}")
         return None
     
+    # Check if gh CLI is available
+    if not is_gh_available():
+        print("⚠️  GitHub CLI (gh) not available in PATH")
+        print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
+        print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
+        print(f"   2. Title: {pr_title}")
+        print(f"   3. Description: {pr_body}")
+        print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
+        return None
+    
     # Try using gh CLI (creates full PR, not draft by default)
     try:
         result = subprocess.run(
@@ -635,9 +646,19 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         pr_url = result.stdout.strip()
         print(f"✅ Created pull request: {pr_url}")
         return pr_url
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        # gh CLI not available - provide manual instructions
-        print("⚠️  GitHub CLI (gh) not available")
+    except subprocess.CalledProcessError as e:
+        # gh CLI failed (authentication, network, etc.)
+        error_msg = e.stderr.strip() if e.stderr else str(e)
+        print(f"❌ Failed to create PR with gh CLI: {error_msg}")
+        print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
+        print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
+        print(f"   2. Title: {pr_title}")
+        print(f"   3. Description: {pr_body}")
+        print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
+        return None
+    except FileNotFoundError:
+        # This shouldn't happen if is_gh_available() worked, but handle it anyway
+        print("⚠️  GitHub CLI (gh) not found")
         print(f"\n📝 To create the PR manually (make sure to create it fully, NOT as draft):")
         print(f"   1. Go to: https://github.com/{owner}/{repo}/compare/{release_branch}...{current_branch}")
         print(f"   2. Title: {pr_title}")
@@ -645,7 +666,7 @@ After this PR is merged to release branch, use `--tag` flag to create and push t
         print(f"   4. Click 'Create pull request' (NOT 'Create draft pull request')")
         return None
     except Exception as e:
-        print(f"❌ Failed to create PR: {e}")
+        print(f"❌ Unexpected error creating PR: {e}")
         return None
 
 
@@ -660,6 +681,11 @@ def is_git_repo() -> bool:
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
+
+
+def is_gh_available() -> bool:
+    """Check if GitHub CLI (gh) is available in PATH."""
+    return shutil.which("gh") is not None
 
 
 def is_protected_branch(branch_name: Optional[str] = None) -> bool:
@@ -950,6 +976,39 @@ def confirm_step(prompt: str, default: bool = False,
     return response in ("y", "yes")
 
 
+def get_next_version_preview(current_version: str, bump_type: str) -> str:
+    """Get a preview of what the next version would be for a given bump type.
+    
+    Args:
+        current_version: The current version string
+        bump_type: The bump type (patch, minor, major, etc.)
+    
+    Returns:
+        The next version string, or "?" if calculation fails
+    """
+    project_root = get_project_root()
+    
+    try:
+        result = subprocess.run(
+            ["uv", "version", "--bump", bump_type, "--dry-run"],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        # uv version --bump outputs: "package-name 0.5.3 => 0.5.4"
+        output = result.stdout.strip()
+        if "=>" in output:
+            # Extract version after "=>"
+            next_version = output.split("=>")[-1].strip()
+            return next_version
+        else:
+            return "?"
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "?"
+
+
 def prompt_version_bump(
     current_version: str,
     non_interactive: bool = False,
@@ -966,17 +1025,28 @@ def prompt_version_bump(
     if non_interactive:
         return None
 
+    # Calculate next versions for display
+    next_patch = get_next_version_preview(current_version, "patch")
+    next_minor = get_next_version_preview(current_version, "minor")
+    next_major = get_next_version_preview(current_version, "major")
+    next_alpha = get_next_version_preview(current_version, "alpha")
+    next_beta = get_next_version_preview(current_version, "beta")
+    next_rc = get_next_version_preview(current_version, "rc")
+    next_stable = get_next_version_preview(current_version, "stable")
+    next_post = get_next_version_preview(current_version, "post")
+    next_dev = get_next_version_preview(current_version, "dev")
+
     print(f"\n📋 Current version: {current_version}")
     print("\nSelect version bump type:")
-    print("  1. patch  - Bug fixes (0.5.2 → 0.5.3)")
-    print("  2. minor  - New features (0.5.2 → 0.6.0)")
-    print("  3. major  - Breaking changes (0.5.2 → 1.0.0)")
-    print("  4. alpha  - Alpha pre-release")
-    print("  5. beta   - Beta pre-release")
-    print("  6. rc     - Release candidate")
-    print("  7. stable - Remove pre-release suffix")
-    print("  8. post   - Post-release")
-    print("  9. dev    - Development version")
+    print(f"  1. patch  - Bug fixes ({current_version} → {next_patch})")
+    print(f"  2. minor  - New features ({current_version} → {next_minor})")
+    print(f"  3. major  - Breaking changes ({current_version} → {next_major})")
+    print(f"  4. alpha  - Alpha pre-release ({current_version} → {next_alpha})")
+    print(f"  5. beta   - Beta pre-release ({current_version} → {next_beta})")
+    print(f"  6. rc     - Release candidate ({current_version} → {next_rc})")
+    print(f"  7. stable - Remove pre-release suffix ({current_version} → {next_stable})")
+    print(f"  8. post   - Post-release ({current_version} → {next_post})")
+    print(f"  9. dev    - Development version ({current_version} → {next_dev})")
     print("  0. Cancel")
 
     bump_map = {
