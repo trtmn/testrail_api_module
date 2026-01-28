@@ -2,13 +2,12 @@ name: Publish to PyPI
 
 on:
   push:
-    # Only run when pushing a tag that matches AND the branch is "release"
+    # Trigger this workflow when a tag matching the version pattern is pushed.
     tags:
-      # Matches tags like v0.1.0, v1.2.3, 0.1.0, 1.2.3, etc.
       - 'v[0-9]+.[0-9]+.[0-9]+*'
       - '[0-9]+.[0-9]+.[0-9]+*'
-    branches:
-      - release
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,7 +32,11 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          uv pip install --upgrade build twine
+          uv pip install --system --upgrade build twine
+
+      - name: Clean previous builds
+        run: |
+          rm -rf dist/ build/ *.egg-info
 
       - name: Build package
         run: |
@@ -44,4 +47,4 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          uv run twine upload dist/*
+          twine upload dist/*
