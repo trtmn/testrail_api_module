@@ -795,9 +795,12 @@ def check_and_commit_version_changes(version: str, workflow_type: str, dry_run: 
         if not result.stdout.strip():
             return True  # No uncommitted changes
         
+        # Version-related files that can be auto-committed
+        version_files = ["pyproject.toml", "CHANGELOG.md", "uv.lock"]
+        
         # Check if only version-related files are changed
         version_files_result = subprocess.run(
-            ["git", "status", "--porcelain", "pyproject.toml", "CHANGELOG.md"],
+            ["git", "status", "--porcelain"] + version_files,
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -812,10 +815,27 @@ def check_and_commit_version_changes(version: str, workflow_type: str, dry_run: 
         all_changes = [c for c in all_changes if c.strip()]
         version_changes = [c for c in version_changes if c.strip()]
         
-        # Check if only version files are changed
-        if len(all_changes) == len(version_changes) and len(version_changes) > 0:
+        # Extract just the filenames from git status output (format: " M filename" or "M  filename")
+        all_changed_files = []
+        for change in all_changes:
+            parts = change.split()
+            if len(parts) >= 2:
+                # Get the filename (last part after status codes)
+                filename = parts[-1]
+                all_changed_files.append(filename)
+        
+        version_changed_files = []
+        for change in version_changes:
+            parts = change.split()
+            if len(parts) >= 2:
+                filename = parts[-1]
+                version_changed_files.append(filename)
+        
+        # Check if only version files are changed (all changed files are in version files list)
+        if len(all_changed_files) > 0 and all(filename in version_files for filename in all_changed_files):
             # Only version files are changed - auto-commit them
-            print(f"📝 Found uncommitted version changes (pyproject.toml, CHANGELOG.md)")
+            changed_files_list = ", ".join(all_changed_files)
+            print(f"📝 Found uncommitted version changes ({changed_files_list})")
             
             if workflow_type == "dev_to_main":
                 commit_msg = f"Bump version to v{version}"
@@ -828,8 +848,10 @@ def check_and_commit_version_changes(version: str, workflow_type: str, dry_run: 
             
             # Commit the version changes
             try:
+                # Add all version files that were changed
+                files_to_add = [f for f in version_files if f in all_changed_files]
                 subprocess.run(
-                    ["git", "add", "pyproject.toml", "CHANGELOG.md"],
+                    ["git", "add"] + files_to_add,
                     cwd=project_root,
                     check=True,
                     capture_output=True,
