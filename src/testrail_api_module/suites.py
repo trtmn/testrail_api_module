@@ -90,39 +90,3 @@ class SuitesAPI(BaseAPI):
             dict: The response data if successful, None otherwise.
         """
         return self._api_request("POST", f"delete_suite/{suite_id}")
-
-    def get_suite_cases(self, suite_id: int) -> list[dict[str, Any]] | None:
-        """
-        Get all test cases in a test suite.
-
-        Args:
-            suite_id (int): The ID of the test suite to get test cases for.
-
-        Returns:
-            list: List of test cases if successful, None otherwise.
-        """
-        return self._api_request("GET", f"get_suite_cases/{suite_id}")
-
-    def get_suite_stats(self, suite_id: int) -> dict[str, Any] | None:
-        """
-        Get statistics for a test suite.
-
-        Args:
-            suite_id (int): The ID of the test suite to get statistics for.
-
-        Returns:
-            dict: The test suite statistics if successful, None otherwise.
-        """
-        return self._api_request("GET", f"get_suite_stats/{suite_id}")
-
-    def get_suite_runs(self, suite_id: int) -> list[dict[str, Any]] | None:
-        """
-        Get all test runs for a test suite.
-
-        Args:
-            suite_id (int): The ID of the test suite to get test runs for.
-
-        Returns:
-            list: List of test runs if successful, None otherwise.
-        """
-        return self._api_request("GET", f"get_suite_runs/{suite_id}")

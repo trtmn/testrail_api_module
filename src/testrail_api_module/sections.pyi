@@ -133,38 +133,3 @@ class SectionsAPI(BaseAPI):
         Example:
             >>> result = api.sections.delete_section(123)
         """
-    def get_section_cases(self, section_id: int) -> list[dict[str, Any]]:
-        """
-        Get all test cases in a section.
-
-        Args:
-            section_id: The ID of the section to get test cases for.
-
-        Returns:
-            List of dictionaries containing test case data.
-
-        Raises:
-            TestRailAPIError: If the API request fails.
-
-        Example:
-            >>> cases = api.sections.get_section_cases(section_id=123)
-            >>> for case in cases:
-            ...     print(f"Case: {case[\'title\']}")
-        """
-    def get_section_stats(self, section_id: int) -> dict[str, Any]:
-        """
-        Get statistics for a section.
-
-        Args:
-            section_id: The ID of the section to get statistics for.
-
-        Returns:
-            Dict containing the section statistics.
-
-        Raises:
-            TestRailAPIError: If the API request fails.
-
-        Example:
-            >>> stats = api.sections.get_section_stats(123)
-            >>> print(f"Total cases: {stats[\'total\']}")
-        """

@@ -44,26 +44,6 @@ class TestResultFieldsAPI:
         assert api.client == mock_client
         assert hasattr(api, "logger")
 
-    def test_get_result_field(
-        self, result_fields_api: ResultFieldsAPI
-    ) -> None:
-        """Test get_result_field method."""
-        with patch.object(result_fields_api, "_api_request") as mock_request:
-            mock_request.return_value = {
-                "id": 1,
-                "name": "Custom Field",
-                "type": "string",
-            }
-
-            result = result_fields_api.get_result_field(field_id=1)
-
-            mock_request.assert_called_once_with("GET", "get_result_field/1")
-            assert result == {
-                "id": 1,
-                "name": "Custom Field",
-                "type": "string",
-            }
-
     def test_get_result_fields(
         self, result_fields_api: ResultFieldsAPI
     ) -> None:
@@ -88,7 +68,7 @@ class TestResultFieldsAPI:
             mock_request.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
-                result_fields_api.get_result_field(field_id=1)
+                result_fields_api.get_result_fields()
 
     def test_authentication_error(
         self, result_fields_api: ResultFieldsAPI
@@ -102,7 +82,7 @@ class TestResultFieldsAPI:
             with pytest.raises(
                 TestRailAuthenticationError, match="Authentication failed"
             ):
-                result_fields_api.get_result_field(field_id=1)
+                result_fields_api.get_result_fields()
 
     def test_rate_limit_error(
         self, result_fields_api: ResultFieldsAPI
@@ -116,4 +96,4 @@ class TestResultFieldsAPI:
             with pytest.raises(
                 TestRailRateLimitError, match="Rate limit exceeded"
             ):
-                result_fields_api.get_result_field(field_id=1)
+                result_fields_api.get_result_fields()

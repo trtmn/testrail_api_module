@@ -58,13 +58,3 @@ class AttachmentsAPI(BaseAPI):
         Returns:
             Dict containing the response data.
         """
-    def get_attachment_content(self, attachment_id: int) -> bytes | None:
-        """
-        Get the content of an attachment.
-
-        Args:
-            attachment_id: The ID of the attachment to get content for.
-
-        Returns:
-            Bytes containing the attachment content.
-        """

@@ -72,13 +72,3 @@ class MilestonesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-    def get_milestone_stats(self, milestone_id: int) -> dict[str, Any] | None:
-        """
-        Get statistics for a milestone.
-
-        Args:
-            milestone_id (int): The ID of the milestone to get statistics for.
-
-        Returns:
-            dict: The milestone statistics if successful, None otherwise.
-        """

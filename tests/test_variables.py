@@ -44,19 +44,6 @@ class TestVariablesAPI:
         assert api.client == mock_client
         assert hasattr(api, "logger")
 
-    def test_get_variable(self, variables_api: VariablesAPI) -> None:
-        """Test get_variable method."""
-        with patch.object(variables_api, "_api_request") as mock_request:
-            mock_request.return_value = {
-                "id": 1,
-                "name": "var1",
-                "value": "value1",
-            }
-
-            result = result = variables_api.get_variable(variable_id=1)
-            mock_request.assert_called_once_with("GET", "get_variable/1")
-            assert result == {"id": 1, "name": "var1", "value": "value1"}
-
     def test_get_variables(self, variables_api: VariablesAPI) -> None:
         """Test get_variables method."""
         with patch.object(variables_api, "_api_request") as mock_request:
@@ -138,90 +125,13 @@ class TestVariablesAPI:
             mock_request.assert_called_once_with("POST", "delete_variable/1")
             assert result == {}
 
-    def test_get_variable_groups(self, variables_api: VariablesAPI) -> None:
-        """Test get_variable_groups method."""
-        with patch.object(variables_api, "_api_request") as mock_request:
-            mock_request.return_value = [
-                {"id": 1, "name": "Group 1"},
-                {"id": 2, "name": "Group 2"},
-            ]
-
-            result = variables_api.get_variable_groups(project_id=1)
-
-            mock_request.assert_called_once_with(
-                "GET", "get_variable_groups/1"
-            )
-            assert len(result) == 2
-
-    def test_add_variable_group_minimal(
-        self, variables_api: VariablesAPI
-    ) -> None:
-        """Test add_variable_group with minimal required parameters."""
-        with patch.object(variables_api, "_api_request") as mock_request:
-            mock_request.return_value = {"id": 1, "name": "New Group"}
-
-            result = variables_api.add_variable_group(
-                project_id=1, name="New Group"
-            )
-
-            expected_data = {"name": "New Group"}
-            mock_request.assert_called_once_with(
-                "POST", "add_variable_group/1", data=expected_data
-            )
-            assert result == {"id": 1, "name": "New Group"}
-
-    def test_add_variable_group_with_description(
-        self, variables_api: VariablesAPI
-    ) -> None:
-        """Test add_variable_group with description."""
-        with patch.object(variables_api, "_api_request") as mock_request:
-            mock_request.return_value = {"id": 1, "name": "New Group"}
-
-            variables_api.add_variable_group(
-                project_id=1, name="New Group", description="Group description"
-            )
-
-            expected_data = {
-                "name": "New Group",
-                "description": "Group description",
-            }
-            mock_request.assert_called_once_with(
-                "POST", "add_variable_group/1", data=expected_data
-            )
-
-    def test_update_variable_group(self, variables_api: VariablesAPI) -> None:
-        """Test update_variable_group method."""
-        with patch.object(variables_api, "_api_request") as mock_request:
-            mock_request.return_value = {"id": 1, "name": "Updated Group"}
-
-            variables_api.update_variable_group(
-                group_id=1, name="Updated Group"
-            )
-
-            expected_data = {"name": "Updated Group"}
-            mock_request.assert_called_once_with(
-                "POST", "update_variable_group/1", data=expected_data
-            )
-
-    def test_delete_variable_group(self, variables_api: VariablesAPI) -> None:
-        """Test delete_variable_group method."""
-        with patch.object(variables_api, "_api_request") as mock_request:
-            mock_request.return_value = {}
-
-            result = variables_api.delete_variable_group(group_id=1)
-
-            mock_request.assert_called_once_with(
-                "POST", "delete_variable_group/1"
-            )
-            assert result == {}
-
     def test_api_request_failure(self, variables_api: VariablesAPI) -> None:
         """Test behavior when API request fails."""
         with patch.object(variables_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
-                variables_api.get_variable(variable_id=1)
+                variables_api.get_variables(project_id=1)
 
     def test_authentication_error(self, variables_api: VariablesAPI) -> None:
         """Test behavior when authentication fails."""
@@ -233,7 +143,7 @@ class TestVariablesAPI:
             with pytest.raises(
                 TestRailAuthenticationError, match="Authentication failed"
             ):
-                variables_api.get_variable(variable_id=1)
+                variables_api.get_variables(project_id=1)
 
     def test_rate_limit_error(self, variables_api: VariablesAPI) -> None:
         """Test behavior when rate limit is exceeded."""
@@ -245,4 +155,4 @@ class TestVariablesAPI:
             with pytest.raises(
                 TestRailRateLimitError, match="Rate limit exceeded"
             ):
-                variables_api.get_variable(variable_id=1)
+                variables_api.get_variables(project_id=1)

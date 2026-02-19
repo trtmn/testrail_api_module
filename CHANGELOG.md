@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🚨 Breaking Changes
+
+- Removed 63 fabricated API methods across 18 submodules that do not exist in the official TestRail API:
+  - **attachments**: removed `get_attachment_content`
+  - **groups**: removed `add_group_to_suite`, `remove_group_from_suite`, `get_group_cases`, `get_group_suites`
+  - **milestones**: removed `get_milestone_stats`
+  - **priorities**: removed `get_priority`, `add_priority`, `update_priority`, `delete_priority`, `get_priority_counts`, `get_priority_stats`
+  - **projects**: removed `get_project_stats`, `get_project_activity`, `get_project_attachments`, `add_project_attachment`
+  - **reports**: removed `get_report`, `add_report`, `update_report`, `delete_report`, `get_report_results`
+  - **result_fields**: removed `get_result_field`
+  - **roles**: removed `get_role`, `add_role`, `update_role`, `delete_role`
+  - **runs**: removed `get_run_stats`
+  - **sections**: removed `get_section_cases`, `get_section_stats`
+  - **statuses**: removed `get_status`, `add_status`, `update_status`, `delete_status`, `get_status_counts`, `get_status_history`
+  - **suites**: removed `get_suite_cases`, `get_suite_stats`, `get_suite_runs`
+  - **templates**: removed `get_template`, `add_template`, `update_template`, `delete_template`, `get_template_fields`, `add_template_field`, `update_template_field`, `delete_template_field`
+  - **tests**: removed `get_test_results`, `add_test_result`, `add_test_results`
+  - **users**: removed `add_user`, `update_user`, `delete_user`, `get_user_activity`, `get_user_projects`, `get_user_roles`
+  - **variables**: removed `get_variable`, `get_variable_groups`, `add_variable_group`, `update_variable_group`, `delete_variable_group`
+
 ### 🔄 Maintenance
 
 - Adopted git-flow branching strategy: `development` as integration branch, `main` for releases only
