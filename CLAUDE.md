@@ -6,6 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Python wrapper for the TestRail REST API (`testrail-api-module` on PyPI). Requires Python 3.11+. Uses `uv` as the package/venv manager.
 
+## Branching Strategy
+
+This project uses a git-flow workflow:
+
+- **`main`** — production releases only, protected branch
+- **`development`** — integration branch, all feature work merges here
+- **Feature/fix branches** — branch from `development`, PR back to `development`
+- **Releases** — PR from `development` → `main` (merge triggers automatic tagging + PyPI publish)
+
+Always work on `development` or a feature branch. Never commit directly to `main`.
+
 ## Commands
 
 ```bash

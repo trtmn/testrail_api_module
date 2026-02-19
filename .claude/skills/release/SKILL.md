@@ -13,8 +13,8 @@ This skill handles the full release pipeline for `testrail_api_module`.
 
 ## Prerequisites
 
-- All code changes for the release are already committed or staged
-- You are on a feature branch (not `main`)
+- All code changes for the release are already merged into `development`
+- You are on the `development` branch
 - The `[Unreleased]` section in `CHANGELOG.md` has content
 
 ## Arguments
@@ -31,7 +31,14 @@ If no argument is given, default to `patch`.
 
 ## Steps
 
-### 1. Determine the new version
+### 1. Ensure you are on `development`
+
+```bash
+git checkout development
+git pull origin development
+```
+
+### 2. Determine the new version
 
 ```bash
 # Check current version
@@ -45,7 +52,7 @@ uv version <version>
 
 Store the new version number for use in later steps.
 
-### 2. Update CHANGELOG.md
+### 3. Update CHANGELOG.md
 
 - Read `CHANGELOG.md`
 - Replace `## [Unreleased]` with `## [<version>] - <YYYY-MM-DD>`
@@ -55,7 +62,7 @@ Store the new version number for use in later steps.
 - Do NOT add a new empty `[Unreleased]` section — that will be
   done in the next development cycle
 
-### 3. Commit all changes
+### 4. Commit all changes on `development`
 
 - Stage all changes: `git add -A`
 - Commit with a descriptive message summarizing the release
@@ -66,12 +73,13 @@ Store the new version number for use in later steps.
     bandit config errors, mypy duplicate module), use `--no-verify`
   - Never use `--no-verify` to skip fixable issues like ruff errors
 
-### 4. Push and create PR
+### 5. Push `development` and create PR to `main`
 
 ```bash
-git push -u origin <branch-name>
+git push origin development
 
-gh pr create --title "<summary> v<version>" --body "$(cat <<'EOF'
+gh pr create --base main --head development \
+  --title "<summary> v<version>" --body "$(cat <<'EOF'
 ## Summary
 <bullet points summarizing changes>
 
@@ -84,7 +92,7 @@ EOF
 )"
 ```
 
-### 5. Wait for CI and merge
+### 6. Wait for CI and merge
 
 ```bash
 # Watch CI checks (timeout 5 minutes)
@@ -96,21 +104,30 @@ gh pr merge <pr-number> --admin --merge
 
 Note: This repo does not allow squash merges. Always use `--merge`.
 
-### 6. Confirm
+### 7. Sync `development` with merged state
+
+```bash
+git checkout development
+git pull origin development
+```
+
+### 8. Confirm
 
 Report to the user:
 
 - PR URL
 - That the merge is complete
 - Tagging and PyPI publishing are handled automatically by
-  GitHub Actions after merge
+  GitHub Actions after merge to `main`
 
 ## Important Notes
 
 - GitHub Actions handles tagging and PyPI publishing automatically
-  after the PR is merged — do NOT manually create tags
+  after the PR is merged to `main` — do NOT manually create tags
 - You cannot re-publish the same version to PyPI — if a version was
   already published, you must bump to a new version
 - Branch protection on `main` requires PRs; use `gh pr merge --admin`
   to bypass the review requirement
 - Always use `--merge` (not `--squash`) when merging PRs
+- Feature branches should be merged into `development` first, then
+  `development` is merged into `main` for releases
