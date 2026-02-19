@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adopted git-flow branching strategy: `development` as integration branch, `main` for releases only
 - Added `development` branch to CI test triggers
 - Updated release skill to follow dev→main PR workflow
+- Require GitHub issue before starting work; branch names must include issue number (e.g., `81-description`)
 
 ## [0.6.6] - 2026-02-19
 
