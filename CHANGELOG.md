@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `development` branch to CI test triggers
 - Updated release skill to follow dev→main PR workflow
 - Require GitHub issue before starting work; branch names must include issue number (e.g., `81-description`)
+- Require updating GitHub issues with progress comments throughout work
 
 ## [0.6.6] - 2026-02-19
 
