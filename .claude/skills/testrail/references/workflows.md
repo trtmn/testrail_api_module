@@ -28,15 +28,20 @@ import os
 from dotenv import load_dotenv
 load_dotenv()  # Loads .env from project root
 
-from testrail_api_module.mcp_utils import create_api_from_env
 from testrail_api_module import (
+    TestRailAPI,
     TestRailAPIError,
     TestRailAuthenticationError,
     TestRailRateLimitError,
     TestRailAPIException
 )
 
-api = create_api_from_env()
+api = TestRailAPI(
+    base_url=os.environ["TESTRAIL_BASE_URL"],
+    username=os.environ["TESTRAIL_USERNAME"],
+    api_key=os.environ.get("TESTRAIL_API_KEY"),
+    password=os.environ.get("TESTRAIL_PASSWORD"),
+)
 ```
 
 ## Explore Project Structure

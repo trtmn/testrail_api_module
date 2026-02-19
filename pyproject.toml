@@ -15,7 +15,6 @@ license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
 dependencies = [
-    "fastmcp>=0.9.0",
     "mypy[dev]>=1.19.1",
     "requests>=2.32.0",
 ]
@@ -41,21 +40,12 @@ docs = [
     "pdoc>=14.0.0",
 ]
 
-# Optional MCP extra for backward compatibility (MCP is now in base dependencies)
-# This extra is kept for compatibility but is no longer needed
-mcp = [
-    "python-dotenv>=1.0.0",
-]
-
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [project.urls]
 Homepage = "https://github.com/trtmn/testrail_api_module"
 Docs = 'https://trtmn.github.io/testrail_api_module/'
-
-[project.scripts]
-testrail-mcp-server = "testrail_api_module.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

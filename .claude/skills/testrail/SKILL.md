@@ -41,8 +41,13 @@ import os
 from dotenv import load_dotenv
 load_dotenv()  # Loads TESTRAIL_BASE_URL, TESTRAIL_USERNAME, TESTRAIL_API_KEY
 
-from testrail_api_module.mcp_utils import create_api_from_env
-api = create_api_from_env()
+from testrail_api_module import TestRailAPI
+api = TestRailAPI(
+    base_url=os.environ["TESTRAIL_BASE_URL"],
+    username=os.environ["TESTRAIL_USERNAME"],
+    api_key=os.environ.get("TESTRAIL_API_KEY"),
+    password=os.environ.get("TESTRAIL_PASSWORD"),
+)
 ```
 
 Required `.env` variables:

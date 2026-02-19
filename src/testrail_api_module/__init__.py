@@ -250,12 +250,3 @@ __all__ = [
     'users',
     'variables',
 ]
-
-# Optional MCP exports (only if fastmcp is available)
-try:
-    from .mcp_server import create_mcp_server  # noqa: F401
-    from .mcp_utils import create_api_from_env  # noqa: F401
-    __all__.extend(['create_mcp_server', 'create_api_from_env'])
-except ImportError:
-    # fastmcp not installed, MCP functionality not available
-    pass

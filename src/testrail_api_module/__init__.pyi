@@ -1,9 +1,7 @@
 from .base import TestRailAPIError as TestRailAPIError, TestRailAPIException as TestRailAPIException, TestRailAuthenticationError as TestRailAuthenticationError, TestRailRateLimitError as TestRailRateLimitError
-from .mcp_server import create_mcp_server as create_mcp_server
-from .mcp_utils import create_api_from_env as create_api_from_env
 from typing import Any, Optional, Dict, List
 
-__all__ = ['TestRailAPI', 'TestRailAPIError', 'TestRailAuthenticationError', 'TestRailRateLimitError', 'TestRailAPIException', 'attachments', 'bdd', 'cases', 'configurations', 'datasets', 'groups', 'milestones', 'plans', 'priorities', 'projects', 'reports', 'result_fields', 'results', 'roles', 'runs', 'sections', 'shared_steps', 'statuses', 'suites', 'templates', 'tests', 'users', 'variables', 'create_mcp_server', 'create_api_from_env']
+__all__ = ['TestRailAPI', 'TestRailAPIError', 'TestRailAuthenticationError', 'TestRailRateLimitError', 'TestRailAPIException', 'attachments', 'bdd', 'cases', 'configurations', 'datasets', 'groups', 'milestones', 'plans', 'priorities', 'projects', 'reports', 'result_fields', 'results', 'roles', 'runs', 'sections', 'shared_steps', 'statuses', 'suites', 'templates', 'tests', 'users', 'variables']
 
 class TestRailAPI:
     """

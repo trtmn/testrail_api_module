@@ -86,11 +86,11 @@ When you're ready to release a new version:
 
 ### Good Entry (Bug Fix)
 ```markdown
-- **MCP Parameter Parsing**: Fixed JSON parsing errors when calling MCP tools
-  - Changed `params` parameter type from `Union[Dict[str, Any], str, None]` to `Optional[Dict[str, Any]]`
-  - Generates cleaner JSON schema that FastMCP can properly serialize
-  - Resolves "Expected ',' or '}' after property value in JSON" errors
-  - Impact: MCP tools can now be called successfully from Cursor and other MCP clients
+- **Empty Response Handling**: Fixed "Invalid JSON response" error on delete operations
+  - Updated `_handle_response` method to gracefully handle empty responses
+  - Empty responses now return `{}` instead of raising JSON decode error
+  - Resolves "Expecting value: line 1 column 1 (char 0)" errors
+  - Impact: All delete operations now work correctly
 ```
 
 ### Good Entry (Breaking Change)
