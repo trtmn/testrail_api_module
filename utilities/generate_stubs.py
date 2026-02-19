@@ -8,9 +8,10 @@ run because there is no Python code object available. The `stubgen` console
 script still works, so we use that.
 Library stubs (.pyi files) provide type information for better IDE support and static type checking.
 """
+
+import shutil
 import subprocess
 import sys
-import shutil
 from pathlib import Path
 
 
@@ -52,6 +53,7 @@ def generate_stubs(project_root: Path) -> None:
             # Try to import mypy to verify it's available
             try:
                 import mypy.stubgen  # noqa: F401  # pyright: ignore[reportMissingImports]
+
                 stubgen_executable = python_executable
                 stubgen_args = ["-m", "mypy.stubgen"]
             except ImportError:
@@ -69,13 +71,17 @@ def generate_stubs(project_root: Path) -> None:
         temp_dir.mkdir(exist_ok=True)
 
         # Build the command
-        cmd = [stubgen_executable] + stubgen_args + [
-            "--output",
-            str(temp_dir),
-            str(src_dir),
-            "--include-docstrings",
-            "--include-private",
-        ]
+        cmd = (
+            [stubgen_executable]
+            + stubgen_args
+            + [
+                "--output",
+                str(temp_dir),
+                str(src_dir),
+                "--include-docstrings",
+                "--include-private",
+            ]
+        )
 
         # Generate stubs for the entire package
         subprocess.run(
@@ -153,7 +159,7 @@ def improve_stubs(project_root: Path) -> None:
 def improve_single_stub(stub_file: Path) -> None:
     """Improve a single stub file with better type annotations."""
     try:
-        with open(stub_file, "r", encoding="utf-8") as f:
+        with open(stub_file, encoding="utf-8") as f:
             content = f.read()
 
         # Replace common issues in stubs
@@ -166,13 +172,11 @@ def improve_single_stub(stub_file: Path) -> None:
             (": Incomplete", ": Any"),
             ("client: Incomplete", "client: Any"),
             ("logger: Incomplete", "logger: Any"),
-
             # Fix common method signatures
             (
                 "def __init__(self, client) -> None:",
                 "def __init__(self, client: Any) -> None:",
             ),
-
             # Add proper type annotations for common API methods
             (
                 "def _api_request(self, method, endpoint, data=None, **kwargs):",
@@ -180,7 +184,6 @@ def improve_single_stub(stub_file: Path) -> None:
                 "data: Optional[Dict[str, Any]] = None, **kwargs: Any) -> "
                 "Optional[Dict[str, Any]]:",
             ),
-
             # Add proper return types for other API methods
             (
                 "def _api_request(self, method: str, endpoint: str, "
@@ -232,7 +235,9 @@ def main() -> None:
     print("   1. Review generated .pyi files in src/testrail_api_module/")
     print("   2. Manually improve type annotations if needed")
     print("   3. Run 'mypy src/testrail_api_module' to check types")
-    print("   4. Run 'python utilities/generate_stubs.py' to regenerate stubs after code changes")
+    print(
+        "   4. Run 'python utilities/generate_stubs.py' to regenerate stubs after code changes"
+    )
     print("   5. Commit the .pyi files and py.typed to version control")
 
 

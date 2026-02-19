@@ -2,7 +2,9 @@
 This module provides functionality for managing variables in TestRail.
 Variables are used to store and manage test parameters and configuration values.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class VariablesAPI(BaseAPI):
     API for managing TestRail variables.
     """
 
-    def get_variable(self, variable_id: int) -> Optional[Dict[str, Any]]:
+    def get_variable(self, variable_id: int) -> dict[str, Any] | None:
         """
         Get a variable by ID.
 
@@ -21,9 +23,9 @@ class VariablesAPI(BaseAPI):
         Returns:
             dict: The variable data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_variable/{variable_id}')
+        return self._api_request("GET", f"get_variable/{variable_id}")
 
-    def get_variables(self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_variables(self, project_id: int) -> list[dict[str, Any]] | None:
         """
         Get all variables for a project.
 
@@ -33,10 +35,15 @@ class VariablesAPI(BaseAPI):
         Returns:
             list: List of variables if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_variables/{project_id}')
+        return self._api_request("GET", f"get_variables/{project_id}")
 
-    def add_variable(self, project_id: int, name: str, value: str,
-                     description: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def add_variable(
+        self,
+        project_id: int,
+        name: str,
+        value: str,
+        description: str | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a new variable.
 
@@ -49,19 +56,17 @@ class VariablesAPI(BaseAPI):
         Returns:
             dict: The created variable data if successful, None otherwise.
         """
-        data = {
-            'name': name,
-            'value': value
-        }
+        data = {"name": name, "value": value}
         if description:
-            data['description'] = description
+            data["description"] = description
 
         return self._api_request(
-            'POST', f'add_variable/{project_id}', data=data)
+            "POST", f"add_variable/{project_id}", data=data
+        )
 
     def update_variable(
-            self, variable_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+        self, variable_id: int, **kwargs
+    ) -> dict[str, Any] | None:
         """
         Update a variable.
 
@@ -73,11 +78,10 @@ class VariablesAPI(BaseAPI):
             dict: The updated variable data if successful, None otherwise.
         """
         return self._api_request(
-            'POST',
-            f'update_variable/{variable_id}',
-            data=kwargs)
+            "POST", f"update_variable/{variable_id}", data=kwargs
+        )
 
-    def delete_variable(self, variable_id: int) -> Optional[Dict[str, Any]]:
+    def delete_variable(self, variable_id: int) -> dict[str, Any] | None:
         """
         Delete a variable.
 
@@ -87,10 +91,11 @@ class VariablesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_variable/{variable_id}')
+        return self._api_request("POST", f"delete_variable/{variable_id}")
 
     def get_variable_groups(
-            self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+        self, project_id: int
+    ) -> list[dict[str, Any]] | None:
         """
         Get all variable groups for a project.
 
@@ -100,10 +105,11 @@ class VariablesAPI(BaseAPI):
         Returns:
             list: List of variable groups if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_variable_groups/{project_id}')
+        return self._api_request("GET", f"get_variable_groups/{project_id}")
 
-    def add_variable_group(self, project_id: int, name: str,
-                           description: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def add_variable_group(
+        self, project_id: int, name: str, description: str | None = None
+    ) -> dict[str, Any] | None:
         """
         Add a new variable group.
 
@@ -115,18 +121,17 @@ class VariablesAPI(BaseAPI):
         Returns:
             dict: The created variable group data if successful, None otherwise.
         """
-        data = {
-            'name': name
-        }
+        data = {"name": name}
         if description:
-            data['description'] = description
+            data["description"] = description
 
         return self._api_request(
-            'POST', f'add_variable_group/{project_id}', data=data)
+            "POST", f"add_variable_group/{project_id}", data=data
+        )
 
     def update_variable_group(
-            self, group_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+        self, group_id: int, **kwargs
+    ) -> dict[str, Any] | None:
         """
         Update a variable group.
 
@@ -138,11 +143,10 @@ class VariablesAPI(BaseAPI):
             dict: The updated variable group data if successful, None otherwise.
         """
         return self._api_request(
-            'POST',
-            f'update_variable_group/{group_id}',
-            data=kwargs)
+            "POST", f"update_variable_group/{group_id}", data=kwargs
+        )
 
-    def delete_variable_group(self, group_id: int) -> Optional[Dict[str, Any]]:
+    def delete_variable_group(self, group_id: int) -> dict[str, Any] | None:
         """
         Delete a variable group.
 
@@ -152,4 +156,4 @@ class VariablesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_variable_group/{group_id}')
+        return self._api_request("POST", f"delete_variable_group/{group_id}")

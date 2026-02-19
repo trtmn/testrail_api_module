@@ -15,9 +15,15 @@ Attributes:
     __version__ (str): The version of the module.
     __author__ (str): The authors of the module.
 """
-from .base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError, TestRailAPIException
+
 import os
-from typing import Optional
+
+from .base import (
+    TestRailAPIError,
+    TestRailAPIException,
+    TestRailAuthenticationError,
+    TestRailRateLimitError,
+)
 
 
 def _get_version() -> str:
@@ -36,6 +42,7 @@ def _get_version() -> str:
     # Try importlib.metadata first (works for installed packages)
     try:
         from importlib.metadata import version
+
         return version("testrail-api-module")
     except Exception:
         pass
@@ -46,10 +53,10 @@ def _get_version() -> str:
     # Go up 3 levels: __init__.py -> testrail_api_module -> src -> project_root
     pyproject_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-        "pyproject.toml"
+        "pyproject.toml",
     )
     try:
-        with open(pyproject_path, "r", encoding="utf-8") as f:
+        with open(pyproject_path, encoding="utf-8") as f:
             content = f.read()
             match = re.search(
                 r'^version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE
@@ -65,7 +72,7 @@ def _get_version() -> str:
 
 __version__ = _get_version()
 """The version of the module, used for compatibility checks and logging."""
-__author__ = 'Matt Troutman, Christian Thompson, Andrew Tipper'
+__author__ = "Matt Troutman, Christian Thompson, Andrew Tipper"
 
 # Update the docstring with the current version
 __doc__ = __doc__.format(version=__version__)
@@ -78,12 +85,13 @@ class TestRailAPI:
     """
 
     def __init__(
-            self,
-            base_url: str,
-            username: str,
-            api_key: Optional[str] = None,
-            password: Optional[str] = None,
-            timeout: int = 30):
+        self,
+        base_url: str,
+        username: str,
+        api_key: str | None = None,
+        password: str | None = None,
+        timeout: int = 30,
+    ):
         """
         Initialize the TestRail API client.
 
@@ -100,13 +108,14 @@ class TestRailAPI:
         """
         if not api_key and not password:
             raise ValueError(
-                "Either api_key or password must be provided for authentication")
+                "Either api_key or password must be provided for authentication"
+            )
 
-        if not base_url or not base_url.startswith(('http://', 'https://')):
+        if not base_url or not base_url.startswith(("http://", "https://")):
             raise ValueError("base_url must be a valid HTTP/HTTPS URL")
 
         # Normalize base_url (remove trailing slash)
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         """The base URL of your TestRail instance."""
 
         self.username = username
@@ -122,29 +131,32 @@ class TestRailAPI:
         """Request timeout in seconds."""
 
         # Initialize all submodules
-        from . import attachments
-        from . import bdd
-        from . import cases
-        from . import configurations
-        from . import datasets
-        from . import groups
-        from . import milestones
-        from . import plans
-        from . import priorities
-        from . import projects
-        from . import reports
-        from . import result_fields
-        from . import results
-        from . import roles
-        from . import runs
-        from . import sections
-        from . import shared_steps
-        from . import statuses
-        from . import suites
-        from . import templates
-        from . import tests
-        from . import users
-        from . import variables
+        from . import (
+            attachments,
+            bdd,
+            cases,
+            configurations,
+            datasets,
+            groups,
+            labels,
+            milestones,
+            plans,
+            priorities,
+            projects,
+            reports,
+            result_fields,
+            results,
+            roles,
+            runs,
+            sections,
+            shared_steps,
+            statuses,
+            suites,
+            templates,
+            tests,
+            users,
+            variables,
+        )
 
         # Create instances of each submodule
         self.attachments = attachments.AttachmentsAPI(self)
@@ -164,6 +176,9 @@ class TestRailAPI:
 
         self.groups = groups.GroupsAPI(self)
         """API for managing user groups in TestRail. See [GroupsAPI](testrail_api_module/groups.html) for details."""
+
+        self.labels = labels.LabelsAPI(self)
+        """API for managing labels in TestRail. See [LabelsAPI](testrail_api_module/labels.html) for details."""
 
         self.milestones = milestones.MilestonesAPI(self)
         """API for managing milestones in TestRail. See [MilestonesAPI](testrail_api_module/milestones.html) for details."""
@@ -221,32 +236,33 @@ class TestRailAPI:
 
 # Export the main class, exception classes, and all submodules
 __all__ = [
-    'TestRailAPI',
-    'TestRailAPIError',
-    'TestRailAuthenticationError',
-    'TestRailRateLimitError',
-    'TestRailAPIException',
-    'attachments',
-    'bdd',
-    'cases',
-    'configurations',
-    'datasets',
-    'groups',
-    'milestones',
-    'plans',
-    'priorities',
-    'projects',
-    'reports',
-    'result_fields',
-    'results',
-    'roles',
-    'runs',
-    'sections',
-    'shared_steps',
-    'statuses',
-    'suites',
-    'templates',
-    'tests',
-    'users',
-    'variables',
+    "TestRailAPI",
+    "TestRailAPIError",
+    "TestRailAuthenticationError",
+    "TestRailRateLimitError",
+    "TestRailAPIException",
+    "attachments",
+    "bdd",
+    "cases",
+    "configurations",
+    "datasets",
+    "groups",
+    "labels",
+    "milestones",
+    "plans",
+    "priorities",
+    "projects",
+    "reports",
+    "result_fields",
+    "results",
+    "roles",
+    "runs",
+    "sections",
+    "shared_steps",
+    "statuses",
+    "suites",
+    "templates",
+    "tests",
+    "users",
+    "variables",
 ]

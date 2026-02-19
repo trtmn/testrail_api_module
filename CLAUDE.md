@@ -52,6 +52,7 @@ api.results.add_result(...)    # ResultsAPI
 ### BaseAPI (`base.py`)
 
 All 23 submodules inherit from `BaseAPI`, which provides:
+
 - `_get(endpoint, params)` / `_post(endpoint, data)` — HTTP helpers with Basic Auth
 - `requests.Session` with connection pooling and retry on 429/5xx (3 retries, backoff=1)
 - URL construction: `<base_url>/index.php?/api/v2/<endpoint>`
@@ -73,6 +74,7 @@ Methods never return `None` — they raise on failure.
 ### Submodule Pattern
 
 Every submodule follows this structure:
+
 - Class inherits `BaseAPI`, accepts client in `__init__`
 - GET methods call `self._get(endpoint, params={})`
 - POST methods build a `data` dict (excluding `None` values) and call `self._post(endpoint, data=data)`
@@ -95,6 +97,27 @@ Tests live in `tests/` with one file per module. The authoritative reference is 
 - **Required tests per method**: init, minimal params, all params, None values, error handling (APIError, AuthError, RateLimitError).
 - **Type annotations**: All test methods must have `-> None` and docstrings.
 - **Fixtures**: Every class needs `mock_client`, `<module>_api`, and optionally `sample_<entity>_data`.
+
+## Versioning
+
+Use `uv version` for all version operations:
+
+```bash
+# Check current version
+uv version --short
+
+# Bump version (patch, minor, major)
+uv version --bump patch   # 0.6.1 → 0.6.2
+uv version --bump minor   # 0.6.1 → 0.7.0
+uv version --bump major   # 0.6.1 → 1.0.0
+
+# Set explicit version
+uv version 0.7.0
+```
+
+## Changelog
+
+`CHANGELOG.md` must be updated whenever code changes are made. Add entries under `## [Unreleased]` at the top of the file. Use [Keep a Changelog](https://keepachangelog.com/) categories: `### ✨ Added`, `### 🔧 Changed`, `### 🐛 Fixed`, `### 🚨 Breaking Changes`, `### 🔄 Maintenance`. Entries are ordered newest version first. When releasing, the `[Unreleased]` section gets renamed to the version number.
 
 ## Code Style
 

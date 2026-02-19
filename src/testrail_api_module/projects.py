@@ -2,7 +2,9 @@
 This module provides functionality for managing projects in TestRail.
 Projects are the top-level containers for test cases, suites, and other test management entities.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class ProjectsAPI(BaseAPI):
     API for managing TestRail projects.
     """
 
-    def get_project(self, project_id: int) -> Optional[Dict[str, Any]]:
+    def get_project(self, project_id: int) -> dict[str, Any] | None:
         """
         Get a project by ID.
 
@@ -21,23 +23,24 @@ class ProjectsAPI(BaseAPI):
         Returns:
             dict: The project data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_project/{project_id}')
+        return self._api_request("GET", f"get_project/{project_id}")
 
-    def get_projects(self) -> Optional[List[Dict[str, Any]]]:
+    def get_projects(self) -> list[dict[str, Any]] | None:
         """
         Get all projects.
 
         Returns:
             list: List of projects if successful, None otherwise.
         """
-        return self._api_request('GET', 'get_projects')
+        return self._api_request("GET", "get_projects")
 
-    def add_project(self,
-                    name: str,
-                    announcement: Optional[str] = None,
-                    show_announcement: bool = False,
-                    is_completed: bool = False) -> Optional[Dict[str,
-                                                                 Any]]:
+    def add_project(
+        self,
+        name: str,
+        announcement: str | None = None,
+        show_announcement: bool = False,
+        is_completed: bool = False,
+    ) -> dict[str, Any] | None:
         """
         Add a new project.
 
@@ -51,18 +54,18 @@ class ProjectsAPI(BaseAPI):
             dict: The created project data if successful, None otherwise.
         """
         data = {
-            'name': name,
-            'show_announcement': show_announcement,
-            'is_completed': is_completed
+            "name": name,
+            "show_announcement": show_announcement,
+            "is_completed": is_completed,
         }
         if announcement:
-            data['announcement'] = announcement
+            data["announcement"] = announcement
 
-        return self._api_request('POST', 'add_project', data=data)
+        return self._api_request("POST", "add_project", data=data)
 
     def update_project(
-            self, project_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+        self, project_id: int, **kwargs
+    ) -> dict[str, Any] | None:
         """
         Update a project.
 
@@ -74,11 +77,10 @@ class ProjectsAPI(BaseAPI):
             dict: The updated project data if successful, None otherwise.
         """
         return self._api_request(
-            'POST',
-            f'update_project/{project_id}',
-            data=kwargs)
+            "POST", f"update_project/{project_id}", data=kwargs
+        )
 
-    def delete_project(self, project_id: int) -> Optional[Dict[str, Any]]:
+    def delete_project(self, project_id: int) -> dict[str, Any] | None:
         """
         Delete a project.
 
@@ -88,9 +90,9 @@ class ProjectsAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_project/{project_id}')
+        return self._api_request("POST", f"delete_project/{project_id}")
 
-    def get_project_stats(self, project_id: int) -> Optional[Dict[str, Any]]:
+    def get_project_stats(self, project_id: int) -> dict[str, Any] | None:
         """
         Get statistics for a project.
 
@@ -100,10 +102,11 @@ class ProjectsAPI(BaseAPI):
         Returns:
             dict: The project statistics if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_project_stats/{project_id}')
+        return self._api_request("GET", f"get_project_stats/{project_id}")
 
     def get_project_activity(
-            self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+        self, project_id: int
+    ) -> list[dict[str, Any]] | None:
         """
         Get the activity log for a project.
 
@@ -113,10 +116,11 @@ class ProjectsAPI(BaseAPI):
         Returns:
             list: List of activity entries if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_project_activity/{project_id}')
+        return self._api_request("GET", f"get_project_activity/{project_id}")
 
     def get_project_attachments(
-            self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+        self, project_id: int
+    ) -> list[dict[str, Any]] | None:
         """
         Get all attachments for a project.
 
@@ -127,10 +131,12 @@ class ProjectsAPI(BaseAPI):
             list: List of attachments if successful, None otherwise.
         """
         return self._api_request(
-            'GET', f'get_project_attachments/{project_id}')
+            "GET", f"get_project_attachments/{project_id}"
+        )
 
-    def add_project_attachment(self, project_id: int, file_path: str,
-                               description: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    def add_project_attachment(
+        self, project_id: int, file_path: str, description: str | None = None
+    ) -> dict[str, Any] | None:
         """
         Add an attachment to a project.
 
@@ -142,13 +148,10 @@ class ProjectsAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        data = {
-            'file': file_path
-        }
+        data = {"file": file_path}
         if description:
-            data['description'] = description
+            data["description"] = description
 
         return self._api_request(
-            'POST',
-            f'add_project_attachment/{project_id}',
-            data=data)
+            "POST", f"add_project_attachment/{project_id}", data=data
+        )

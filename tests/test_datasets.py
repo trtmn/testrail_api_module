@@ -6,16 +6,17 @@ DatasetsAPI class, including edge cases, error handling, and proper
 API request formatting.
 """
 
-import pytest
-from unittest.mock import Mock, patch
 from typing import TYPE_CHECKING
+from unittest.mock import Mock, patch
 
-from testrail_api_module.datasets import DatasetsAPI
+import pytest
+
 from testrail_api_module.base import (
     TestRailAPIError,
     TestRailAuthenticationError,
-    TestRailRateLimitError
+    TestRailRateLimitError,
 )
+from testrail_api_module.datasets import DatasetsAPI
 
 if TYPE_CHECKING:
     from pytest_mock.plugin import MockerFixture  # noqa: F401
@@ -42,23 +43,23 @@ class TestDatasetsAPI:
         """Test DatasetsAPI initialization."""
         api = DatasetsAPI(mock_client)
         assert api.client == mock_client
-        assert hasattr(api, 'logger')
+        assert hasattr(api, "logger")
 
     def test_get_dataset(self, datasets_api: DatasetsAPI) -> None:
         """Test get_dataset method."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.return_value = {
                 "id": 1,
                 "name": "Test Dataset",
                 "variables": [
                     {"id": 1, "name": "var1", "value": "value1"},
-                    {"id": 2, "name": "var2", "value": "value2"}
-                ]
+                    {"id": 2, "name": "var2", "value": "value2"},
+                ],
             }
 
             result = datasets_api.get_dataset(dataset_id=1)
 
-            mock_request.assert_called_once_with('GET', 'get_dataset/1')
+            mock_request.assert_called_once_with("GET", "get_dataset/1")
             assert result is not None
             assert result["id"] == 1
             assert result["name"] == "Test Dataset"
@@ -67,27 +68,27 @@ class TestDatasetsAPI:
 
     def test_get_datasets(self, datasets_api: DatasetsAPI) -> None:
         """Test get_datasets method."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.return_value = [
                 {
                     "id": 1,
                     "name": "Dataset 1",
                     "variables": [
                         {"id": 1, "name": "var1", "value": "value1"}
-                    ]
+                    ],
                 },
                 {
                     "id": 2,
                     "name": "Dataset 2",
                     "variables": [
                         {"id": 2, "name": "var2", "value": "value2"}
-                    ]
-                }
+                    ],
+                },
             ]
 
             result = datasets_api.get_datasets(project_id=1)
 
-            mock_request.assert_called_once_with('GET', 'get_datasets/1')
+            mock_request.assert_called_once_with("GET", "get_datasets/1")
             assert result is not None
             assert len(result) == 2
             assert result[0]["id"] == 1
@@ -97,31 +98,32 @@ class TestDatasetsAPI:
 
     def test_get_datasets_empty_list(self, datasets_api: DatasetsAPI) -> None:
         """Test get_datasets with empty result."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.return_value = []
 
             result = datasets_api.get_datasets(project_id=1)
 
-            mock_request.assert_called_once_with('GET', 'get_datasets/1')
+            mock_request.assert_called_once_with("GET", "get_datasets/1")
             assert result == []
 
     def test_get_dataset_with_variables(
-            self, datasets_api: DatasetsAPI) -> None:
+        self, datasets_api: DatasetsAPI
+    ) -> None:
         """Test get_dataset with multiple variables."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.return_value = {
                 "id": 5,
                 "name": "Complex Dataset",
                 "variables": [
                     {"id": 10, "name": "username", "value": "testuser"},
                     {"id": 11, "name": "password", "value": "testpass"},
-                    {"id": 12, "name": "environment", "value": "staging"}
-                ]
+                    {"id": 12, "name": "environment", "value": "staging"},
+                ],
             }
 
             result = datasets_api.get_dataset(dataset_id=5)
 
-            mock_request.assert_called_once_with('GET', 'get_dataset/5')
+            mock_request.assert_called_once_with("GET", "get_dataset/5")
             assert result is not None
             assert len(result["variables"]) == 3
             assert result["variables"][0]["name"] == "username"
@@ -132,15 +134,15 @@ class TestDatasetsAPI:
         self, datasets_api: DatasetsAPI
     ) -> None:
         """Test get_datasets with different project IDs."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.return_value = [{"id": 1, "name": "Dataset 1"}]
 
             result1 = datasets_api.get_datasets(project_id=1)
             result2 = datasets_api.get_datasets(project_id=2)
 
             assert mock_request.call_count == 2
-            mock_request.assert_any_call('GET', 'get_datasets/1')
-            mock_request.assert_any_call('GET', 'get_datasets/2')
+            mock_request.assert_any_call("GET", "get_datasets/1")
+            mock_request.assert_any_call("GET", "get_datasets/2")
             assert result1 is not None
             assert result2 is not None
 
@@ -148,31 +150,29 @@ class TestDatasetsAPI:
         self, datasets_api: DatasetsAPI
     ) -> None:
         """Test get_dataset with different dataset IDs."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.return_value = {"id": 1, "name": "Dataset"}
 
             result1 = datasets_api.get_dataset(dataset_id=1)
             result2 = datasets_api.get_dataset(dataset_id=100)
 
             assert mock_request.call_count == 2
-            mock_request.assert_any_call('GET', 'get_dataset/1')
-            mock_request.assert_any_call('GET', 'get_dataset/100')
+            mock_request.assert_any_call("GET", "get_dataset/1")
+            mock_request.assert_any_call("GET", "get_dataset/100")
             assert result1 is not None
             assert result2 is not None
 
     def test_api_request_failure(self, datasets_api: DatasetsAPI) -> None:
         """Test behavior when API request fails."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 datasets_api.get_dataset(dataset_id=1)
 
-    def test_authentication_error(
-        self, datasets_api: DatasetsAPI
-    ) -> None:
+    def test_authentication_error(self, datasets_api: DatasetsAPI) -> None:
         """Test behavior when authentication fails."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
@@ -182,11 +182,9 @@ class TestDatasetsAPI:
             ):
                 datasets_api.get_dataset(dataset_id=1)
 
-    def test_rate_limit_error(
-        self, datasets_api: DatasetsAPI
-    ) -> None:
+    def test_rate_limit_error(self, datasets_api: DatasetsAPI) -> None:
         """Test behavior when rate limit is exceeded."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
@@ -200,21 +198,17 @@ class TestDatasetsAPI:
         self, datasets_api: DatasetsAPI
     ) -> None:
         """Test get_datasets behavior when API request fails."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailAPIError(
-                "API request failed"
-            )
+        with patch.object(datasets_api, "_api_request") as mock_request:
+            mock_request.side_effect = TestRailAPIError("API request failed")
 
-            with pytest.raises(
-                TestRailAPIError, match="API request failed"
-            ):
+            with pytest.raises(TestRailAPIError, match="API request failed"):
                 datasets_api.get_datasets(project_id=1)
 
     def test_get_datasets_authentication_error(
         self, datasets_api: DatasetsAPI
     ) -> None:
         """Test get_datasets behavior when authentication fails."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
@@ -228,7 +222,7 @@ class TestDatasetsAPI:
         self, datasets_api: DatasetsAPI
     ) -> None:
         """Test get_datasets behavior when rate limit is exceeded."""
-        with patch.object(datasets_api, '_api_request') as mock_request:
+        with patch.object(datasets_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )

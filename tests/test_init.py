@@ -5,15 +5,16 @@ This module contains comprehensive tests for the TestRailAPI class,
 including initialization, validation, and submodule setup.
 """
 
-import pytest
 from typing import TYPE_CHECKING
+
+import pytest
 
 from testrail_api_module import (
     TestRailAPI,
     TestRailAPIError,
+    TestRailAPIException,
     TestRailAuthenticationError,
     TestRailRateLimitError,
-    TestRailAPIException
 )
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ class TestTestRailAPI:
         api = TestRailAPI(
             base_url="https://testrail.example.com",
             username="testuser@example.com",
-            api_key="test_api_key"
+            api_key="test_api_key",
         )
 
         assert api.base_url == "https://testrail.example.com"
@@ -42,7 +43,7 @@ class TestTestRailAPI:
         api = TestRailAPI(
             base_url="https://testrail.example.com",
             username="testuser@example.com",
-            password="test_password"
+            password="test_password",
         )
 
         assert api.base_url == "https://testrail.example.com"
@@ -57,7 +58,7 @@ class TestTestRailAPI:
             base_url="https://testrail.example.com",
             username="testuser@example.com",
             api_key="test_api_key",
-            timeout=60
+            timeout=60,
         )
 
         assert api.timeout == 60
@@ -68,7 +69,7 @@ class TestTestRailAPI:
             base_url="https://testrail.example.com",
             username="testuser@example.com",
             api_key="test_api_key",
-            password="test_password"
+            password="test_password",
         )
 
         assert api.api_key == "test_api_key"
@@ -79,7 +80,7 @@ class TestTestRailAPI:
         api = TestRailAPI(
             base_url="https://testrail.example.com/",
             username="testuser@example.com",
-            api_key="test_api_key"
+            api_key="test_api_key",
         )
 
         assert api.base_url == "https://testrail.example.com"
@@ -89,53 +90,63 @@ class TestTestRailAPI:
         api = TestRailAPI(
             base_url="https://testrail.example.com///",
             username="testuser@example.com",
-            api_key="test_api_key"
+            api_key="test_api_key",
         )
 
         assert api.base_url == "https://testrail.example.com"
 
     def test_init_raises_error_no_credentials(self) -> None:
         """Test TestRailAPI raises ValueError when neither api_key nor password provided."""
-        with pytest.raises(ValueError, match="Either api_key or password must be provided"):
+        with pytest.raises(
+            ValueError, match="Either api_key or password must be provided"
+        ):
             TestRailAPI(
                 base_url="https://testrail.example.com",
-                username="testuser@example.com"
+                username="testuser@example.com",
             )
 
     def test_init_raises_error_empty_base_url(self) -> None:
         """Test TestRailAPI raises ValueError when base_url is empty."""
-        with pytest.raises(ValueError, match="base_url must be a valid HTTP/HTTPS URL"):
+        with pytest.raises(
+            ValueError, match="base_url must be a valid HTTP/HTTPS URL"
+        ):
             TestRailAPI(
                 base_url="",
                 username="testuser@example.com",
-                api_key="test_api_key"
+                api_key="test_api_key",
             )
 
     def test_init_raises_error_none_base_url(self) -> None:
         """Test TestRailAPI raises ValueError when base_url is None."""
-        with pytest.raises(ValueError, match="base_url must be a valid HTTP/HTTPS URL"):
+        with pytest.raises(
+            ValueError, match="base_url must be a valid HTTP/HTTPS URL"
+        ):
             TestRailAPI(
                 base_url=None,  # type: ignore
                 username="testuser@example.com",
-                api_key="test_api_key"
+                api_key="test_api_key",
             )
 
     def test_init_raises_error_invalid_url_scheme(self) -> None:
         """Test TestRailAPI raises ValueError when base_url doesn't start with http:// or https://."""
-        with pytest.raises(ValueError, match="base_url must be a valid HTTP/HTTPS URL"):
+        with pytest.raises(
+            ValueError, match="base_url must be a valid HTTP/HTTPS URL"
+        ):
             TestRailAPI(
                 base_url="ftp://testrail.example.com",
                 username="testuser@example.com",
-                api_key="test_api_key"
+                api_key="test_api_key",
             )
 
     def test_init_raises_error_invalid_url_no_scheme(self) -> None:
         """Test TestRailAPI raises ValueError when base_url has no scheme."""
-        with pytest.raises(ValueError, match="base_url must be a valid HTTP/HTTPS URL"):
+        with pytest.raises(
+            ValueError, match="base_url must be a valid HTTP/HTTPS URL"
+        ):
             TestRailAPI(
                 base_url="testrail.example.com",
                 username="testuser@example.com",
-                api_key="test_api_key"
+                api_key="test_api_key",
             )
 
     def test_init_accepts_http_url(self) -> None:
@@ -143,7 +154,7 @@ class TestTestRailAPI:
         api = TestRailAPI(
             base_url="http://testrail.example.com",
             username="testuser@example.com",
-            api_key="test_api_key"
+            api_key="test_api_key",
         )
 
         assert api.base_url == "http://testrail.example.com"
@@ -153,40 +164,40 @@ class TestTestRailAPI:
         api = TestRailAPI(
             base_url="https://testrail.example.com",
             username="testuser@example.com",
-            api_key="test_api_key"
+            api_key="test_api_key",
         )
 
         # Check that all submodules are initialized
-        assert hasattr(api, 'attachments')
-        assert hasattr(api, 'bdd')
-        assert hasattr(api, 'cases')
-        assert hasattr(api, 'configurations')
-        assert hasattr(api, 'datasets')
-        assert hasattr(api, 'groups')
-        assert hasattr(api, 'milestones')
-        assert hasattr(api, 'plans')
-        assert hasattr(api, 'priorities')
-        assert hasattr(api, 'projects')
-        assert hasattr(api, 'reports')
-        assert hasattr(api, 'result_fields')
-        assert hasattr(api, 'results')
-        assert hasattr(api, 'roles')
-        assert hasattr(api, 'runs')
-        assert hasattr(api, 'sections')
-        assert hasattr(api, 'shared_steps')
-        assert hasattr(api, 'statuses')
-        assert hasattr(api, 'suites')
-        assert hasattr(api, 'templates')
-        assert hasattr(api, 'tests')
-        assert hasattr(api, 'users')
-        assert hasattr(api, 'variables')
+        assert hasattr(api, "attachments")
+        assert hasattr(api, "bdd")
+        assert hasattr(api, "cases")
+        assert hasattr(api, "configurations")
+        assert hasattr(api, "datasets")
+        assert hasattr(api, "groups")
+        assert hasattr(api, "milestones")
+        assert hasattr(api, "plans")
+        assert hasattr(api, "priorities")
+        assert hasattr(api, "projects")
+        assert hasattr(api, "reports")
+        assert hasattr(api, "result_fields")
+        assert hasattr(api, "results")
+        assert hasattr(api, "roles")
+        assert hasattr(api, "runs")
+        assert hasattr(api, "sections")
+        assert hasattr(api, "shared_steps")
+        assert hasattr(api, "statuses")
+        assert hasattr(api, "suites")
+        assert hasattr(api, "templates")
+        assert hasattr(api, "tests")
+        assert hasattr(api, "users")
+        assert hasattr(api, "variables")
 
     def test_init_submodules_have_correct_client(self) -> None:
         """Test TestRailAPI submodules have the correct client reference."""
         api = TestRailAPI(
             base_url="https://testrail.example.com",
             username="testuser@example.com",
-            api_key="test_api_key"
+            api_key="test_api_key",
         )
 
         # Check that submodules have the client reference
@@ -199,9 +210,9 @@ class TestTestRailAPI:
         """Test exception classes are importable from main module."""
         from testrail_api_module import (
             TestRailAPIError,
+            TestRailAPIException,
             TestRailAuthenticationError,
             TestRailRateLimitError,
-            TestRailAPIException
         )
 
         assert TestRailAPIError is not None
@@ -221,7 +232,7 @@ class TestTestRailAPI:
             base_url="https://testrail.example.com",
             username="testuser@example.com",
             api_key="",
-            password="test_password"
+            password="test_password",
         )
 
         assert api.api_key == ""
@@ -233,7 +244,7 @@ class TestTestRailAPI:
             base_url="https://testrail.example.com",
             username="testuser@example.com",
             api_key="test_api_key",
-            password=""
+            password="",
         )
 
         assert api.api_key == "test_api_key"
@@ -241,20 +252,24 @@ class TestTestRailAPI:
 
     def test_init_with_both_empty_credentials_raises_error(self) -> None:
         """Test TestRailAPI raises error when both api_key and password are empty strings."""
-        with pytest.raises(ValueError, match="Either api_key or password must be provided"):
+        with pytest.raises(
+            ValueError, match="Either api_key or password must be provided"
+        ):
             TestRailAPI(
                 base_url="https://testrail.example.com",
                 username="testuser@example.com",
                 api_key="",
-                password=""
+                password="",
             )
 
     def test_init_with_none_api_key_and_password_raises_error(self) -> None:
         """Test TestRailAPI raises error when both api_key and password are None."""
-        with pytest.raises(ValueError, match="Either api_key or password must be provided"):
+        with pytest.raises(
+            ValueError, match="Either api_key or password must be provided"
+        ):
             TestRailAPI(
                 base_url="https://testrail.example.com",
                 username="testuser@example.com",
                 api_key=None,
-                password=None
+                password=None,
             )

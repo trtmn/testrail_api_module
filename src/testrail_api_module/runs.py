@@ -2,10 +2,12 @@
 This module provides functionality for managing test runs in TestRail.
 Test runs are used to execute test cases and track their results.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
-__all__ = ['RunsAPI']
+__all__ = ["RunsAPI"]
 
 
 class RunsAPI(BaseAPI):
@@ -16,7 +18,7 @@ class RunsAPI(BaseAPI):
     in TestRail, following the official TestRail API patterns.
     """
 
-    def get_run(self, run_id: int) -> Dict[str, Any]:
+    def get_run(self, run_id: int) -> dict[str, Any]:
         """
         Get a test run by ID.
 
@@ -33,15 +35,19 @@ class RunsAPI(BaseAPI):
             >>> run = api.runs.get_run(123)
             >>> print(f"Run: {run['name']}")
         """
-        return self._get(f'get_run/{run_id}')
+        return self._get(f"get_run/{run_id}")
 
-    def get_runs(self, project_id: int, suite_id: Optional[int] = None,
-                 created_after: Optional[int] = None,
-                 created_before: Optional[int] = None,
-                 created_by: Optional[int] = None,
-                 is_completed: Optional[bool] = None,
-                 limit: Optional[int] = None,
-                 offset: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_runs(
+        self,
+        project_id: int,
+        suite_id: int | None = None,
+        created_after: int | None = None,
+        created_before: int | None = None,
+        created_by: int | None = None,
+        is_completed: bool | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get all test runs for a project and optionally a specific suite.
 
@@ -68,32 +74,33 @@ class RunsAPI(BaseAPI):
         """
         params = {}
         if suite_id is not None:
-            params['suite_id'] = suite_id
+            params["suite_id"] = suite_id
         if created_after is not None:
-            params['created_after'] = created_after
+            params["created_after"] = created_after
         if created_before is not None:
-            params['created_before'] = created_before
+            params["created_before"] = created_before
         if created_by is not None:
-            params['created_by'] = created_by
+            params["created_by"] = created_by
         if is_completed is not None:
-            params['is_completed'] = is_completed
+            params["is_completed"] = is_completed
         if limit is not None:
-            params['limit'] = limit
+            params["limit"] = limit
         if offset is not None:
-            params['offset'] = offset
+            params["offset"] = offset
 
-        return self._get(f'get_runs/{project_id}', params=params)
+        return self._get(f"get_runs/{project_id}", params=params)
 
-    def add_run(self,
-                project_id: int,
-                name: str,
-                description: Optional[str] = None,
-                suite_id: Optional[int] = None,
-                milestone_id: Optional[int] = None,
-                assignedto_id: Optional[int] = None,
-                include_all: bool = True,
-                case_ids: Optional[List[int]] = None) -> Dict[str,
-                                                              Any]:
+    def add_run(
+        self,
+        project_id: int,
+        name: str,
+        description: str | None = None,
+        suite_id: int | None = None,
+        milestone_id: int | None = None,
+        assignedto_id: int | None = None,
+        include_all: bool = True,
+        case_ids: list[int] | None = None,
+    ) -> dict[str, Any]:
         """
         Add a new test run.
 
@@ -122,33 +129,31 @@ class RunsAPI(BaseAPI):
             ...     include_all=True
             ... )
         """
-        data = {
-            'name': name,
-            'include_all': include_all
-        }
+        data = {"name": name, "include_all": include_all}
 
         # Add optional fields only if they are provided
         optional_fields = {
-            'description': description,
-            'suite_id': suite_id,
-            'milestone_id': milestone_id,
-            'assignedto_id': assignedto_id,
-            'case_ids': case_ids
+            "description": description,
+            "suite_id": suite_id,
+            "milestone_id": milestone_id,
+            "assignedto_id": assignedto_id,
+            "case_ids": case_ids,
         }
 
         for field, value in optional_fields.items():
             if value is not None:
                 data[field] = value
 
-        return self._post(f'add_run/{project_id}', data=data)
+        return self._post(f"add_run/{project_id}", data=data)
 
-    def update_run(self,
-                   run_id: int,
-                   name: Optional[str] = None,
-                   description: Optional[str] = None,
-                   milestone_id: Optional[int] = None,
-                   assignedto_id: Optional[int] = None) -> Dict[str,
-                                                                Any]:
+    def update_run(
+        self,
+        run_id: int,
+        name: str | None = None,
+        description: str | None = None,
+        milestone_id: int | None = None,
+        assignedto_id: int | None = None,
+    ) -> dict[str, Any]:
         """
         Update a test run.
 
@@ -176,19 +181,19 @@ class RunsAPI(BaseAPI):
 
         # Add fields only if they are provided
         optional_fields = {
-            'name': name,
-            'description': description,
-            'milestone_id': milestone_id,
-            'assignedto_id': assignedto_id
+            "name": name,
+            "description": description,
+            "milestone_id": milestone_id,
+            "assignedto_id": assignedto_id,
         }
 
         for field, value in optional_fields.items():
             if value is not None:
                 data[field] = value
 
-        return self._post(f'update_run/{run_id}', data=data)
+        return self._post(f"update_run/{run_id}", data=data)
 
-    def close_run(self, run_id: int) -> Dict[str, Any]:
+    def close_run(self, run_id: int) -> dict[str, Any]:
         """
         Close a test run.
 
@@ -204,9 +209,9 @@ class RunsAPI(BaseAPI):
         Example:
             >>> result = api.runs.close_run(123)
         """
-        return self._post(f'close_run/{run_id}')
+        return self._post(f"close_run/{run_id}")
 
-    def delete_run(self, run_id: int) -> Dict[str, Any]:
+    def delete_run(self, run_id: int) -> dict[str, Any]:
         """
         Delete a test run.
 
@@ -222,9 +227,9 @@ class RunsAPI(BaseAPI):
         Example:
             >>> result = api.runs.delete_run(123)
         """
-        return self._post(f'delete_run/{run_id}')
+        return self._post(f"delete_run/{run_id}")
 
-    def get_run_stats(self, run_id: int) -> Dict[str, Any]:
+    def get_run_stats(self, run_id: int) -> dict[str, Any]:
         """
         Get statistics for a test run.
 
@@ -241,4 +246,4 @@ class RunsAPI(BaseAPI):
             >>> stats = api.runs.get_run_stats(123)
             >>> print(f"Passed: {stats['passed']}, Failed: {stats['failed']}")
         """
-        return self._get(f'get_run_stats/{run_id}')
+        return self._get(f"get_run_stats/{run_id}")

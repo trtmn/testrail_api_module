@@ -1,5 +1,6 @@
-from .base import BaseAPI as BaseAPI
 from typing import Any
+
+from .base import BaseAPI as BaseAPI
 
 class ResultFieldsAPI(BaseAPI):
     """API for managing custom result fields in TestRail."""

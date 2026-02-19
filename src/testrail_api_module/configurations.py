@@ -1,89 +1,129 @@
 """
 This module provides functionality for managing configurations in TestRail.
 Configurations are used to define different test environments and settings.
+The API distinguishes between configuration groups and individual configs.
+Requires TestRail 5.2+.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
+
+__all__ = ["ConfigurationsAPI"]
 
 
 class ConfigurationsAPI(BaseAPI):
     """
     API for managing TestRail configurations.
+
+    TestRail organizes configurations into groups (e.g., "Browsers",
+    "Operating Systems") that contain individual configs (e.g.,
+    "Chrome", "Firefox"). This class provides CRUD operations for
+    both groups and configs.
     """
 
-    def get_configuration(self, config_id: int) -> Optional[Dict[str, Any]]:
+    def get_configs(self, project_id: int) -> list[dict[str, Any]]:
         """
-        Get a configuration by ID.
+        Get all configuration groups and their configs for a project.
 
         Args:
-            config_id: The ID of the configuration to retrieve.
+            project_id: The ID of the project.
 
         Returns:
-            Dict containing the configuration data.
-        """
-        return self._api_request('GET', f'get_configuration/{config_id}')
+            List of configuration group dicts, each containing a
+            'configs' array of individual configurations.
 
-    def get_configurations(
-            self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
-        Get all configurations for a project.
+        return self._get(f"get_configs/{project_id}")
+
+    def add_config_group(self, project_id: int, name: str) -> dict[str, Any]:
+        """
+        Add a new configuration group to a project.
 
         Args:
-            project_id: The ID of the project to get configurations for.
+            project_id: The ID of the project.
+            name: The name of the configuration group.
 
         Returns:
-            List of dictionaries containing configuration data.
-        """
-        return self._api_request('GET', f'get_configurations/{project_id}')
+            Dict containing the created configuration group data.
 
-    def add_configuration(self,
-                          project_id: int,
-                          name: str,
-                          description: Optional[str] = None,
-                          group_id: Optional[int] = None) -> Optional[Dict[str,
-                                                                           Any]]:
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
-        Add a new configuration.
+        data = {"name": name}
+        return self._post(f"add_config_group/{project_id}", data=data)
+
+    def add_config(self, config_group_id: int, name: str) -> dict[str, Any]:
+        """
+        Add a new configuration to a configuration group.
 
         Args:
-            project_id: The ID of the project to add the configuration to.
+            config_group_id: The ID of the configuration group.
             name: The name of the configuration.
-            description: Optional description of the configuration.
-            group_id: Optional ID of the configuration group.
 
         Returns:
             Dict containing the created configuration data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
-        data = {
-            'name': name
-        }
-        if description:
-            data['description'] = description
-        if group_id:
-            data['group_id'] = group_id
+        data = {"name": name}
+        return self._post(f"add_config/{config_group_id}", data=data)
 
-        return self._api_request(
-            'POST', f'add_configuration/{project_id}', data=data)
+    def update_config_group(
+        self, config_group_id: int, name: str
+    ) -> dict[str, Any]:
+        """
+        Update a configuration group.
 
-    def update_configuration(
-            self, config_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+        Args:
+            config_group_id: The ID of the configuration group.
+            name: The new name for the configuration group.
+
+        Returns:
+            Dict containing the updated configuration group data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
+        """
+        data = {"name": name}
+        return self._post(f"update_config_group/{config_group_id}", data=data)
+
+    def update_config(self, config_id: int, name: str) -> dict[str, Any]:
         """
         Update a configuration.
 
         Args:
             config_id: The ID of the configuration to update.
-            **kwargs: The fields to update (name, description, group_id).
+            name: The new name for the configuration.
 
         Returns:
             Dict containing the updated configuration data.
-        """
-        return self._api_request(
-            'POST',
-            f'update_configuration/{config_id}',
-            data=kwargs)
 
-    def delete_configuration(self, config_id: int) -> Optional[Dict[str, Any]]:
+        Raises:
+            TestRailAPIError: If the API request fails.
+        """
+        data = {"name": name}
+        return self._post(f"update_config/{config_id}", data=data)
+
+    def delete_config_group(self, config_group_id: int) -> dict[str, Any]:
+        """
+        Delete a configuration group and all its configurations.
+
+        Args:
+            config_group_id: The ID of the configuration group.
+
+        Returns:
+            Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
+        """
+        return self._post(f"delete_config_group/{config_group_id}")
+
+    def delete_config(self, config_id: int) -> dict[str, Any]:
         """
         Delete a configuration.
 
@@ -92,5 +132,8 @@ class ConfigurationsAPI(BaseAPI):
 
         Returns:
             Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
-        return self._api_request('POST', f'delete_configuration/{config_id}')
+        return self._post(f"delete_config/{config_id}")

@@ -2,7 +2,9 @@
 This module provides functionality for managing reports in TestRail.
 Reports are used to analyze and visualize test results and metrics.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class ReportsAPI(BaseAPI):
     API for managing TestRail reports.
     """
 
-    def get_report(self, report_id: int) -> Optional[Dict[str, Any]]:
+    def get_report(self, report_id: int) -> dict[str, Any] | None:
         """
         Get a report by ID.
 
@@ -21,9 +23,9 @@ class ReportsAPI(BaseAPI):
         Returns:
             dict: The report data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_report/{report_id}')
+        return self._api_request("GET", f"get_report/{report_id}")
 
-    def get_reports(self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_reports(self, project_id: int) -> list[dict[str, Any]] | None:
         """
         Get all reports for a project.
 
@@ -33,16 +35,16 @@ class ReportsAPI(BaseAPI):
         Returns:
             list: List of reports if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_reports/{project_id}')
+        return self._api_request("GET", f"get_reports/{project_id}")
 
-    def add_report(self,
-                   project_id: int,
-                   name: str,
-                   description: Optional[str] = None,
-                   report_type: str = 'test_case',
-                   parameters: Optional[Dict[str,
-                                             Any]] = None) -> Optional[Dict[str,
-                                                                            Any]]:
+    def add_report(
+        self,
+        project_id: int,
+        name: str,
+        description: str | None = None,
+        report_type: str = "test_case",
+        parameters: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a new report.
 
@@ -73,20 +75,15 @@ class ReportsAPI(BaseAPI):
         Returns:
             dict: The created report data if successful, None otherwise.
         """
-        data = {
-            'name': name,
-            'report_type': report_type
-        }
+        data = {"name": name, "report_type": report_type}
         if description:
-            data['description'] = description
+            data["description"] = description
         if parameters:
-            data['parameters'] = parameters
+            data["parameters"] = parameters
 
-        return self._api_request('POST', f'add_report/{project_id}', data=data)
+        return self._api_request("POST", f"add_report/{project_id}", data=data)
 
-    def update_report(
-            self, report_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+    def update_report(self, report_id: int, **kwargs) -> dict[str, Any] | None:
         """
         Update a report.
 
@@ -98,9 +95,10 @@ class ReportsAPI(BaseAPI):
             dict: The updated report data if successful, None otherwise.
         """
         return self._api_request(
-            'POST', f'update_report/{report_id}', data=kwargs)
+            "POST", f"update_report/{report_id}", data=kwargs
+        )
 
-    def delete_report(self, report_id: int) -> Optional[Dict[str, Any]]:
+    def delete_report(self, report_id: int) -> dict[str, Any] | None:
         """
         Delete a report.
 
@@ -110,9 +108,9 @@ class ReportsAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_report/{report_id}')
+        return self._api_request("POST", f"delete_report/{report_id}")
 
-    def run_report(self, report_id: int) -> Optional[Dict[str, Any]]:
+    def run_report(self, report_id: int) -> dict[str, Any] | None:
         """
         Run a report to generate results.
 
@@ -122,9 +120,9 @@ class ReportsAPI(BaseAPI):
         Returns:
             dict: The report results if successful, None otherwise.
         """
-        return self._api_request('POST', f'run_report/{report_id}')
+        return self._api_request("POST", f"run_report/{report_id}")
 
-    def get_report_results(self, report_id: int) -> Optional[Dict[str, Any]]:
+    def get_report_results(self, report_id: int) -> dict[str, Any] | None:
         """
         Get the results of a report.
 
@@ -134,4 +132,4 @@ class ReportsAPI(BaseAPI):
         Returns:
             dict: The report results if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_report_results/{report_id}')
+        return self._api_request("GET", f"get_report_results/{report_id}")

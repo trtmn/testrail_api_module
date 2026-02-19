@@ -6,16 +6,17 @@ This script shows how to use the improved TestRail API module with proper
 error handling, type safety, and following official TestRail API patterns.
 """
 
+import os
+import sys
+
 from testrail_api_module import (
     TestRailAPI,
     TestRailAPIError,
     TestRailAuthenticationError,
 )
-import os
-import sys
 
 # Add the src directory to the path so we can import the module
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 def main() -> None:
@@ -32,7 +33,7 @@ def main() -> None:
             base_url=BASE_URL,
             username=USERNAME,
             api_key=API_KEY,
-            timeout=30  # Request timeout in seconds
+            timeout=30,  # Request timeout in seconds
         )
 
         print("✅ TestRail API client initialized successfully")
@@ -50,12 +51,12 @@ def main() -> None:
 
         # Example 2: Get test cases for a project (if projects exist)
         if projects:
-            project_id = projects[0]['id']
+            project_id = projects[0]["id"]
             print(f"\n🧪 Getting test cases for project {project_id}...")
             try:
                 cases = api.cases.get_cases(
                     project_id=project_id,
-                    limit=10  # Limit results for demo
+                    limit=10,  # Limit results for demo
                 )
                 print(f"Found {len(cases)} test cases:")
                 for case in cases[:5]:  # Show first 5 cases
@@ -65,17 +66,18 @@ def main() -> None:
 
         # Example 3: Create a test case (if we have a project and sections)
         if projects:
-            project_id = projects[0]['id']
+            project_id = projects[0]["id"]
             print(f"\n➕ Creating a test case in project {project_id}...")
             try:
                 # First, get suites to find a section
                 suites = api.suites.get_suites(project_id=project_id)
                 if suites:
-                    suite_id = suites[0]['id']
+                    suite_id = suites[0]["id"]
                     sections = api.sections.get_sections(
-                        project_id=project_id, suite_id=suite_id)
+                        project_id=project_id, suite_id=suite_id
+                    )
                     if sections:
-                        section_id = sections[0]['id']
+                        section_id = sections[0]["id"]
 
                         new_case = api.cases.add_case(
                             section_id=section_id,
@@ -84,12 +86,13 @@ def main() -> None:
                             priority_id=2,  # High priority
                             description="This test case was created using the refactored TestRail API module",
                             preconditions="TestRail API access is available",
-                            postconditions="Test case is created and visible in TestRail"
+                            postconditions="Test case is created and visible in TestRail",
                         )
                         print(
-                            f"✅ Created test case: {
-                                new_case['title']} (ID: {
-                                new_case['id']})")
+                            f"✅ Created test case: {new_case['title']} (ID: {
+                                new_case['id']
+                            })"
+                        )
                     else:
                         print("⚠️  No sections found in the first suite")
                 else:
@@ -105,7 +108,7 @@ def main() -> None:
             invalid_api = TestRailAPI(
                 base_url=BASE_URL,
                 username="invalid@example.com",
-                api_key="invalid-key"
+                api_key="invalid-key",
             )
             invalid_api.projects.get_projects()
         except TestRailAuthenticationError as e:
@@ -116,18 +119,20 @@ def main() -> None:
         # Example 5: Demonstrate bulk operations
         print("\n📦 Demonstrating bulk operations...")
         if projects:
-            project_id = projects[0]['id']
+            project_id = projects[0]["id"]
             try:
                 # Create a test run
                 test_run = api.runs.add_run(
                     project_id=project_id,
                     name="API Module Refactoring Demo Run",
                     description="Test run created by the refactored API module",
-                    include_all=True)
+                    include_all=True,
+                )
                 print(
-                    f"✅ Created test run: {
-                        test_run['name']} (ID: {
-                        test_run['id']})")
+                    f"✅ Created test run: {test_run['name']} (ID: {
+                        test_run['id']
+                    })"
+                )
 
                 # Add multiple results at once
                 # Note: This will only work if there are actual test cases in the run
