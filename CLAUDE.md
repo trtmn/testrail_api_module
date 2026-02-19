@@ -21,7 +21,7 @@ Keep the GitHub issue updated throughout the work:
 - Comment when starting work on the issue
 - Comment with progress on multi-step tasks (e.g., "Tests passing, working on docs")
 - Reference blockers or decisions made along the way
-- The PR description should include `Closes #<number>` to auto-close the issue on merge
+- Close the issue with `gh issue close <number>` once its PR merges to `development` with passing CI — don't wait for the release to `main`
 
 ### Branches
 
