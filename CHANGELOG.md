@@ -5,13 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2026-02-19
+
+### 🚨 Breaking Changes
+
+- Removed 63 fabricated API methods across 18 submodules that do not exist in the official TestRail API:
+  - **attachments**: removed `get_attachment_content`
+  - **groups**: removed `add_group_to_suite`, `remove_group_from_suite`, `get_group_cases`, `get_group_suites`
+  - **milestones**: removed `get_milestone_stats`
+  - **priorities**: removed `get_priority`, `add_priority`, `update_priority`, `delete_priority`, `get_priority_counts`, `get_priority_stats`
+  - **projects**: removed `get_project_stats`, `get_project_activity`, `get_project_attachments`, `add_project_attachment`
+  - **reports**: removed `get_report`, `add_report`, `update_report`, `delete_report`, `get_report_results`
+  - **result_fields**: removed `get_result_field`
+  - **roles**: removed `get_role`, `add_role`, `update_role`, `delete_role`
+  - **runs**: removed `get_run_stats`
+  - **sections**: removed `get_section_cases`, `get_section_stats`
+  - **statuses**: removed `get_status`, `add_status`, `update_status`, `delete_status`, `get_status_counts`, `get_status_history`
+  - **suites**: removed `get_suite_cases`, `get_suite_stats`, `get_suite_runs`
+  - **templates**: removed `get_template`, `add_template`, `update_template`, `delete_template`, `get_template_fields`, `add_template_field`, `update_template_field`, `delete_template_field`
+  - **tests**: removed `get_test_results`, `add_test_result`, `add_test_results`
+  - **users**: removed `add_user`, `update_user`, `delete_user`, `get_user_activity`, `get_user_projects`, `get_user_roles`
+  - **variables**: removed `get_variable`, `get_variable_groups`, `add_variable_group`, `update_variable_group`, `delete_variable_group`
 
 ### 🔄 Maintenance
 
 - Adopted git-flow branching strategy: `development` as integration branch, `main` for releases only
 - Added `development` branch to CI test triggers
 - Updated release skill to follow dev→main PR workflow
+- Require GitHub issue before starting work; branch names must include issue number (e.g., `81-description`)
+- Require updating GitHub issues with progress comments throughout work
+- Close issues when PR merges to `development` with passing CI
+- Changed default branch to `development` so `Closes #N` auto-closes issues
+
+### 🐛 Fixed
+
+- Fixed PyPI Stats badge broken link in README (trailing slash)
 
 ## [0.6.6] - 2026-02-19
 

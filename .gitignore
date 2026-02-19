@@ -139,3 +139,6 @@ bandit-report.html
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Git worktrees
+.worktrees/

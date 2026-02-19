@@ -155,20 +155,6 @@ class TestAttachmentsAPI:
             mock_request.assert_called_once_with("POST", "delete_attachment/1")
             assert result == {}
 
-    def test_get_attachment_content(
-        self, attachments_api: AttachmentsAPI
-    ) -> None:
-        """Test get_attachment_content method."""
-        with patch.object(attachments_api, "_api_request") as mock_request:
-            mock_request.return_value = b"file content"
-
-            result = attachments_api.get_attachment_content(attachment_id=1)
-
-            mock_request.assert_called_once_with(
-                "GET", "get_attachment_content/1"
-            )
-            assert result == b"file content"
-
     def test_api_request_failure(
         self, attachments_api: AttachmentsAPI
     ) -> None:

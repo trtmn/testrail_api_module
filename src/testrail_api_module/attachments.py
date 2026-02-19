@@ -80,17 +80,3 @@ class AttachmentsAPI(BaseAPI):
             Dict containing the response data.
         """
         return self._api_request("POST", f"delete_attachment/{attachment_id}")
-
-    def get_attachment_content(self, attachment_id: int) -> bytes | None:
-        """
-        Get the content of an attachment.
-
-        Args:
-            attachment_id: The ID of the attachment to get content for.
-
-        Returns:
-            Bytes containing the attachment content.
-        """
-        return self._api_request(
-            "GET", f"get_attachment_content/{attachment_id}"
-        )

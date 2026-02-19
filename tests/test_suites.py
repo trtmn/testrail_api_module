@@ -144,43 +144,6 @@ class TestSuitesAPI:
             mock_request.assert_called_once_with("POST", "delete_suite/1")
             assert result == {}
 
-    def test_get_suite_cases(self, suites_api: SuitesAPI) -> None:
-        """Test get_suite_cases method."""
-        with patch.object(suites_api, "_api_request") as mock_request:
-            mock_request.return_value = [
-                {"id": 1, "title": "Case 1"},
-                {"id": 2, "title": "Case 2"},
-            ]
-
-            result = suites_api.get_suite_cases(suite_id=1)
-            mock_request.assert_called_once_with("GET", "get_suite_cases/1")
-            assert len(result) == 2
-
-    def test_get_suite_stats(self, suites_api: SuitesAPI) -> None:
-        """Test get_suite_stats method."""
-        with patch.object(suites_api, "_api_request") as mock_request:
-            mock_request.return_value = {
-                "total": 50,
-                "passed": 40,
-                "failed": 10,
-            }
-
-            result = result = suites_api.get_suite_stats(suite_id=1)
-            mock_request.assert_called_once_with("GET", "get_suite_stats/1")
-            assert result["total"] == 50
-
-    def test_get_suite_runs(self, suites_api: SuitesAPI) -> None:
-        """Test get_suite_runs method."""
-        with patch.object(suites_api, "_api_request") as mock_request:
-            mock_request.return_value = [
-                {"id": 1, "name": "Run 1"},
-                {"id": 2, "name": "Run 2"},
-            ]
-
-            result = suites_api.get_suite_runs(suite_id=1)
-            mock_request.assert_called_once_with("GET", "get_suite_runs/1")
-            assert len(result) == 2
-
     def test_api_request_failure(self, suites_api: SuitesAPI) -> None:
         """Test behavior when API request fails."""
         with patch.object(suites_api, "_api_request") as mock_request:

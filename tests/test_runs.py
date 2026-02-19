@@ -242,20 +242,6 @@ class TestRunsAPI:
             mock_post.assert_called_once_with("delete_run/1")
             assert result == {}
 
-    def test_get_run_stats(self, runs_api: RunsAPI) -> None:
-        """Test get_run_stats method."""
-        with patch.object(runs_api, "_get") as mock_get:
-            mock_get.return_value = {
-                "passed": 10,
-                "failed": 2,
-                "blocked": 1,
-                "untested": 5,
-            }
-
-            result = runs_api.get_run_stats(run_id=1)
-            mock_get.assert_called_once_with("get_run_stats/1")
-            assert result["passed"] == 10
-
     def test_api_request_failure(self, runs_api: RunsAPI) -> None:
         """Test behavior when API request fails."""
         with patch.object(runs_api, "_get") as mock_get:

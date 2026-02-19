@@ -8,12 +8,35 @@ A Python wrapper for the TestRail REST API (`testrail-api-module` on PyPI). Requ
 
 ## Branching Strategy
 
-This project uses a git-flow workflow:
+This project uses a git-flow workflow with issue-linked branches.
+
+### Before starting work
+
+Every piece of work must have an associated GitHub issue. If one doesn't exist, create it first with `gh issue create`. This ensures all changes are tracked and linked.
+
+### Updating issues
+
+Keep the GitHub issue updated throughout the work:
+
+- Comment when starting work on the issue
+- Comment with progress on multi-step tasks (e.g., "Tests passing, working on docs")
+- Reference blockers or decisions made along the way
+- PR descriptions should include `Closes #<number>` — GitHub auto-closes the issue when the PR merges to `development` (the default branch)
+
+### Branches
 
 - **`main`** — production releases only, protected branch
-- **`development`** — integration branch, all feature work merges here
+- **`development`** — default branch, integration branch, all feature work merges here
 - **Feature/fix branches** — branch from `development`, PR back to `development`
 - **Releases** — PR from `development` → `main` (merge triggers automatic tagging + PyPI publish)
+
+Branch names must include the issue number so GitHub auto-links them:
+
+```
+<issue-number>-short-description
+```
+
+Examples: `81-require-issue-branch-naming`, `42-fix-auth-bug`, `15-add-milestones-api`
 
 Always work on `development` or a feature branch. Never commit directly to `main`.
 

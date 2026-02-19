@@ -200,29 +200,6 @@ class TestSectionsAPI:
             mock_post.assert_called_once_with("delete_section/1")
             assert result == {}
 
-    def test_get_section_cases(self, sections_api: SectionsAPI) -> None:
-        """Test get_section_cases method."""
-        with patch.object(sections_api, "_get") as mock_get:
-            mock_get.return_value = [
-                {"id": 1, "title": "Case 1"},
-                {"id": 2, "title": "Case 2"},
-            ]
-
-            result = sections_api.get_section_cases(section_id=1)
-
-            mock_get.assert_called_once_with("get_section_cases/1")
-            assert len(result) == 2
-            assert result[0]["id"] == 1
-
-    def test_get_section_stats(self, sections_api: SectionsAPI) -> None:
-        """Test get_section_stats method."""
-        with patch.object(sections_api, "_get") as mock_get:
-            mock_get.return_value = {"total": 10, "passed": 8, "failed": 2}
-
-            result = sections_api.get_section_stats(section_id=1)
-            mock_get.assert_called_once_with("get_section_stats/1")
-            assert result["total"] == 10
-
     def test_api_request_failure(self, sections_api: SectionsAPI) -> None:
         """Test behavior when API request fails."""
         with patch.object(sections_api, "_get") as mock_get:

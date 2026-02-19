@@ -159,22 +159,6 @@ class TestMilestonesAPI:
             mock_request.assert_called_once_with("POST", "delete_milestone/1")
             assert result == {}
 
-    def test_get_milestone_stats(self, milestones_api: MilestonesAPI) -> None:
-        """Test get_milestone_stats method."""
-        with patch.object(milestones_api, "_api_request") as mock_request:
-            mock_request.return_value = {
-                "total": 100,
-                "passed": 80,
-                "failed": 20,
-            }
-
-            result = milestones_api.get_milestone_stats(milestone_id=1)
-
-            mock_request.assert_called_once_with(
-                "GET", "get_milestone_stats/1"
-            )
-            assert result["total"] == 100
-
     def test_api_request_failure(self, milestones_api: MilestonesAPI) -> None:
         """Test behavior when API request fails."""
         with patch.object(milestones_api, "_api_request") as mock_request:
