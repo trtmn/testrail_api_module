@@ -170,8 +170,7 @@ class BaseAPI:
 
         else:
             raise TestRailAPIException(
-                f"Unexpected response status: {
-                    response.status_code}")
+                f"Unexpected response status: {response.status_code}")
 
     def _api_request(self,
                      method: str,
