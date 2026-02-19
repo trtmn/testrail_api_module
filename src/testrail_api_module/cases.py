@@ -48,7 +48,7 @@ class CasesAPI(BaseAPI):
             >>> case = api.cases.get_case(123)
             >>> print(case['title'])
         """
-        return self._get(f"get_case/{case_id}")
+        return self._get(f"get_case/{case_id}")  # type: ignore[return-value]
 
     def get_cases(
         self,
@@ -97,7 +97,7 @@ class CasesAPI(BaseAPI):
             >>> for case in cases:
             ...     print(f"Case {case['id']}: {case['title']}")
         """
-        params = {}
+        params: dict[str, Any] = {}
         if suite_id is not None:
             params["suite_id"] = suite_id
         if section_id is not None:
@@ -125,7 +125,7 @@ class CasesAPI(BaseAPI):
         if offset is not None:
             params["offset"] = offset
 
-        return self._get(f"get_cases/{project_id}", params=params)
+        return self._get(f"get_cases/{project_id}", params=params)  # type: ignore[return-value]
 
     def add_case(
         self,
@@ -549,7 +549,7 @@ class CasesAPI(BaseAPI):
                 )
                 raise ValueError(error_msg) from e
 
-        return self._post(f"add_case/{section_id}", data=data)
+        return self._post(f"add_case/{section_id}", data=data)  # type: ignore[return-value]
 
     def _is_missing_required_value(self, value: Any) -> bool:
         """
@@ -583,7 +583,7 @@ class CasesAPI(BaseAPI):
             return False
         for step in steps:
             if not isinstance(step, dict):
-                return False
+                return False  # type: ignore[unreachable]
             content = step.get("content")
             expected = step.get("expected")
             if not isinstance(content, str) or not content.strip():
@@ -642,7 +642,7 @@ class CasesAPI(BaseAPI):
             )
             return custom_fields
 
-        normalized = {}
+        normalized: dict[str, Any] = {}
         format_errors = []
 
         for field_name, field_value in custom_fields.items():
@@ -866,7 +866,7 @@ class CasesAPI(BaseAPI):
             if tmpl.get("is_default") is True and isinstance(
                 tmpl.get("id"), int
             ):
-                return tmpl["id"]
+                return int(tmpl["id"])
 
         # Fallback: use the first template if available.
         first_id = (
@@ -1242,7 +1242,7 @@ class CasesAPI(BaseAPI):
         if not isinstance(all_fields, list):
             # Defensive: older wrappers might return dicts; normalize to empty
             # list.
-            all_fields = []
+            all_fields = []  # type: ignore[unreachable]
         # Only cache non-empty results. Empty responses are usually an error state and
         # we want to allow retry.
         if all_fields:
@@ -1431,7 +1431,9 @@ class CasesAPI(BaseAPI):
         # Format the response
         formatted_fields = []
         for field in filtered_fields:
-            field_name = field.get("system_name") or field.get("name")
+            field_name = str(
+                field.get("system_name") or field.get("name") or ""
+            )
             type_id = field.get("type_id")
 
             # Extract config context info
@@ -1544,8 +1546,8 @@ class CasesAPI(BaseAPI):
                 break
 
         if target_field is None:
-            available = [
-                f.get("system_name") or f.get("name")
+            available: list[str] = [
+                f.get("system_name") or f.get("name") or ""
                 for f in all_fields
                 if (f.get("system_name") or f.get("name", "")).startswith(
                     "custom_"
@@ -1661,7 +1663,7 @@ class CasesAPI(BaseAPI):
             12: "array of IDs (numbers or strings)",
         }
 
-        hint = base_hints.get(type_id, "unknown")
+        hint = base_hints.get(type_id or 0, "unknown")
 
         # Try to extract valid options from field config
         if field_info:
@@ -1817,7 +1819,7 @@ class CasesAPI(BaseAPI):
             11: "Multi-select",
             12: "Stepped",
         }
-        return type_names.get(type_id, "Unknown")
+        return type_names.get(type_id or 0, "Unknown")
 
     def _get_field_format_example(
         self,
@@ -2011,7 +2013,7 @@ class CasesAPI(BaseAPI):
         if custom_fields:
             data.update(custom_fields)
 
-        return self._post(f"update_case/{case_id}", data=data)
+        return self._post(f"update_case/{case_id}", data=data)  # type: ignore[return-value]
 
     def delete_case(self, case_id: int) -> dict[str, Any]:
         """
@@ -2029,7 +2031,7 @@ class CasesAPI(BaseAPI):
         Example:
             >>> result = api.cases.delete_case(123)
         """
-        return self._post(f"delete_case/{case_id}")
+        return self._post(f"delete_case/{case_id}")  # type: ignore[return-value]
 
     def get_case_fields(self) -> list[dict[str, Any]]:
         """
@@ -2046,7 +2048,7 @@ class CasesAPI(BaseAPI):
             >>> for field in fields:
             ...     print(f"Field: {field['name']}, Type: {field['type']}")
         """
-        return self._get("get_case_fields")
+        return self._get("get_case_fields")  # type: ignore[return-value]
 
     def get_case_types(self) -> list[dict[str, Any]]:
         """
@@ -2063,7 +2065,7 @@ class CasesAPI(BaseAPI):
             >>> for case_type in types:
             ...     print(f"Type {case_type['id']}: {case_type['name']}")
         """
-        return self._get("get_case_types")
+        return self._get("get_case_types")  # type: ignore[return-value]
 
     def get_history_for_case(self, case_id: int) -> list[dict[str, Any]]:
         """
@@ -2083,9 +2085,9 @@ class CasesAPI(BaseAPI):
             >>> for change in history:
             ...     print(f"Changed by {change['user']} on {change['created_on']}")
         """
-        return self._get(f"get_history_for_case/{case_id}")
+        return self._get(f"get_history_for_case/{case_id}")  # type: ignore[return-value]
 
-    def add_case_field(self, **kwargs) -> dict[str, Any]:
+    def add_case_field(self, **kwargs: Any) -> dict[str, Any]:
         """
         Add a new test case custom field.
 
@@ -2107,10 +2109,10 @@ class CasesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._post("add_case_field", data=kwargs)
+        return self._post("add_case_field", data=kwargs)  # type: ignore[return-value]
 
     def update_cases(
-        self, suite_id: int, case_ids: list[int] | None = None, **kwargs
+        self, suite_id: int, case_ids: list[int] | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """
         Update multiple test cases at once (bulk update).
@@ -2131,7 +2133,7 @@ class CasesAPI(BaseAPI):
         data = dict(kwargs)
         if case_ids is not None:
             data["case_ids"] = case_ids
-        return self._post(f"update_cases/{suite_id}", data=data)
+        return self._post(f"update_cases/{suite_id}", data=data)  # type: ignore[return-value]
 
     def delete_cases(
         self, suite_id: int, case_ids: list[int], soft: int | None = None
@@ -2153,7 +2155,7 @@ class CasesAPI(BaseAPI):
         data: dict[str, Any] = {"case_ids": case_ids}
         if soft is not None:
             data["soft"] = soft
-        return self._post(f"delete_cases/{suite_id}", data=data)
+        return self._post(f"delete_cases/{suite_id}", data=data)  # type: ignore[return-value]
 
     def copy_cases_to_section(
         self, case_ids: list[int], section_id: int
@@ -2175,7 +2177,7 @@ class CasesAPI(BaseAPI):
             >>> copied_cases = api.cases.copy_cases_to_section([1, 2, 3], 5)
         """
         data = {"case_ids": case_ids}
-        return self._post(f"copy_cases_to_section/{section_id}", data=data)
+        return self._post(f"copy_cases_to_section/{section_id}", data=data)  # type: ignore[return-value]
 
     def move_cases_to_section(
         self, case_ids: list[int], section_id: int
@@ -2197,4 +2199,4 @@ class CasesAPI(BaseAPI):
             >>> moved_cases = api.cases.move_cases_to_section([1, 2, 3], 5)
         """
         data = {"case_ids": case_ids}
-        return self._post(f"move_cases_to_section/{section_id}", data=data)
+        return self._post(f"move_cases_to_section/{section_id}", data=data)  # type: ignore[return-value]
