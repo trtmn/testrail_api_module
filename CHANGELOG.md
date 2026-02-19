@@ -133,7 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.6] 2026-01-27
 
 
-## [Unreleased]
+## [0.6.0] 2026-02-19
 
 ### Removed
 
