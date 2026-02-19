@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail-api-module"
-version = "0.6.0"
+version = "0.6.1"
 description = "A comprehensive Python wrapper for the TestRail API with enhanced error handling and performance improvements"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
