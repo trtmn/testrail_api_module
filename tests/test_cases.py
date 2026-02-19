@@ -1167,7 +1167,7 @@ class TestGetRequiredCaseFields:
                 'type_hint'] == 'boolean (True/False)'
 
             assert fields_by_name['field_multiselect']['type_name'] == 'Multi-select'
-            assert fields_by_name['field_multiselect']['type_hint'] == 'array of IDs'
+            assert fields_by_name['field_multiselect']['type_hint'] == 'array of IDs (numbers or strings)'
 
             assert fields_by_name['custom_steps_separated']['type_name'] == 'Stepped'
             assert 'array of step objects' in fields_by_name['custom_steps_separated']['type_hint']
