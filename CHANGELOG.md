@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Close issues when PR merges to `development` with passing CI
 - Changed default branch to `development` so `Closes #N` auto-closes issues
 
+### 🐛 Fixed
+
+- Fixed PyPI Stats badge broken link in README (trailing slash)
+
 ## [0.6.6] - 2026-02-19
 
 ### 🐛 Fixed
