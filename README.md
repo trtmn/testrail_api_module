@@ -15,7 +15,7 @@ A comprehensive Python wrapper for the TestRail API that provides easy access to
 - Easy-to-use interface
 - Support for both API key and password authentication
 
-## 🚨 Breaking Changes in v0.7.0
+## 🚨 Breaking Changes in v0.6.3
 
 **API parity audit.** All endpoints were audited against the [official TestRail API reference](https://support.testrail.com/hc/en-us/sections/7077196685204-Reference). Several methods were renamed, restructured, or removed to match the real API. See details below.
 
