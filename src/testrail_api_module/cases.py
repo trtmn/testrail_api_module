@@ -160,7 +160,7 @@ class CasesAPI(BaseAPI):
 
                 Common custom field types and formats:
                 - Text fields: String values (e.g., custom_automation_type: "Automated")
-                - Dropdown/Multi-select: Arrays of string IDs (e.g., custom_module: ["3", "5"])
+                - Dropdown/Multi-select: Arrays of numeric IDs (e.g., custom_module: [3, 5])
                 - Checkboxes: Boolean values (e.g., custom_case_test_data_required: True)
                 - Separated steps: Array of objects with content/expected keys:
                     custom_steps_separated: [
@@ -194,12 +194,6 @@ class CasesAPI(BaseAPI):
         Note:
             Required fields vary by project configuration. Use get_case_fields() to see
             which fields are required and their expected data types for your project.
-            Common required custom fields include:
-            - custom_automation_type (string)
-            - custom_steps_separated (array of step objects)
-            - custom_case_test_data_required (boolean)
-            - custom_interface_type (array of string IDs)
-            - custom_module (array of string IDs)
 
         Example:
             >>> # Basic case with standard fields
@@ -216,14 +210,14 @@ class CasesAPI(BaseAPI):
             ...     section_id=1,
             ...     title="Automated Login Test",
             ...     custom_fields={
-            ...         'custom_automation_type': 'Automated',
+            ...         'custom_automation_type': 1,
             ...         'custom_steps_separated': [
             ...             {'content': 'Navigate to login page', 'expected': 'Login form visible'},
             ...             {'content': 'Enter credentials', 'expected': 'Login successful'}
             ...         ],
             ...         'custom_case_test_data_required': True,
-            ...         'custom_interface_type': ['3'],  # Array of IDs as strings
-            ...         'custom_module': ['5', '7']  # Array of IDs as strings
+            ...         'custom_interface_type': [3],  # Array of IDs as ints
+            ...         'custom_module': [5, 7]  # Array of IDs as ints
             ...     }
             ... )
 
@@ -262,21 +256,15 @@ class CasesAPI(BaseAPI):
         # Add custom fields - these should use system names as keys
         if custom_fields:
             self.logger.debug(
-                f"Adding {
-                    len(custom_fields)} custom fields to data: {
-                    list(
-                        custom_fields.keys())}")
+                f"Adding {len(custom_fields)} custom fields to data: {list(custom_fields.keys())}")
             # Normalize and validate custom fields before adding to data
             try:
                 normalized_custom_fields = self._normalize_and_validate_custom_fields(
                     custom_fields=custom_fields, section_id=section_id, template_id=template_id)
                 data.update(normalized_custom_fields)
                 self.logger.debug(
-                    f"Custom fields normalized and added. Sample values: {
-                        [
-                            (k, type(v).__name__, v) for k, v in list(
-                                normalized_custom_fields.items())[
-                                :3]]}")
+                    "Custom fields normalized and added. Sample values: %s",
+                    [(k, type(v).__name__, v) for k, v in list(normalized_custom_fields.items())[:3]])
             except ValueError:
                 # Re-raise validation errors
                 raise
@@ -447,15 +435,12 @@ class CasesAPI(BaseAPI):
                 if validate_only:
                     is_valid = len(missing_fields) == 0
                     if is_valid:
-                        message = f"✓ All {
-                            len(provided_fields)} required fields are present and valid."
+                        message = f"✓ All {len(provided_fields)} required fields are present and valid."
                     else:
-                        message = f"✗ Missing {
-                            len(missing_fields)} required field(s). Please provide all required fields."
+                        message = f"✗ Missing {len(missing_fields)} required field(s). Please provide all required fields."
 
                     self.logger.debug(
-                        f"Validation only mode: valid={is_valid}, missing={
-                            len(missing_fields)}")
+                        f"Validation only mode: valid={is_valid}, missing={len(missing_fields)}")
                     return {
                         "valid": is_valid,
                         "missing_fields": missing_fields,
@@ -464,7 +449,7 @@ class CasesAPI(BaseAPI):
                         "total_required": len(required_fields),
                         "field_type_guide": {
                             "text": "String values",
-                            "dropdown_multiselect": "Arrays of string IDs (e.g., ['3', '5'])",
+                            "dropdown_multiselect": "Arrays of numeric IDs (e.g., [3, 5])",
                             "checkbox": "Boolean values (True/False)",
                             "steps": "Array of objects with 'content' and 'expected' keys"},
                         "context": {
@@ -478,18 +463,16 @@ class CasesAPI(BaseAPI):
                 # fields missing
                 if missing_fields:
                     self.logger.debug(
-                        f"Validation failed: {
-                            len(missing_fields)} required fields are missing")
+                        f"Validation failed: {len(missing_fields)} required fields are missing")
                     # Build comprehensive error message
                     error_parts = [
-                        f"Missing required field(s): {
-                            ', '.join(missing_fields)}.",
+                        f"Missing required field(s): {', '.join(missing_fields)}.",
                         "",
                         f"Context used for validation: project_id={project_id}, suite_id={suite_id}, template_id={effective_template_id}.",
                         "",
                         "Field type guide:",
                         "  - Text fields: String values",
-                        "  - Dropdown/Multi-select: Arrays of string IDs (e.g., ['3', '5'])",
+                        "  - Dropdown/Multi-select: Arrays of numeric IDs (e.g., [3, 5])",
                         "  - Checkboxes: Boolean values (True/False)",
                         "  - Separated steps: Array of step objects with 'content' and 'expected' keys",
                         "    Example: [{'content': 'Step 1', 'expected': 'Result 1'}]",
@@ -578,7 +561,7 @@ class CasesAPI(BaseAPI):
 
         This method:
         - Converts single values to arrays for multi-select fields
-        - Converts integer IDs to string IDs for dropdown/multi-select fields
+        - Converts numeric IDs to string IDs for dropdown/multi-select fields (if needed by API)
         - Validates array fields are properly formatted
         - Provides clear error messages for format issues
 
@@ -631,13 +614,12 @@ class CasesAPI(BaseAPI):
 
             # Handle dropdown (6) and multi-select (11) fields
             if type_id in (6, 11):
-                # These fields require arrays of string IDs
+                # These fields require arrays of IDs (numbers or strings)
                 if isinstance(field_value, (int, str)):
                     # Single value - convert to array of string
                     normalized[field_name] = [str(field_value)]
                     self.logger.debug(
-                        f"Normalized {field_name}: single value {
-                            field_value!r} -> array ['{field_value}']")
+                        f"Normalized {field_name}: single value {field_value!r} -> array ['{field_value}']")
                 elif isinstance(field_value, list):
                     # Array - ensure all elements are strings
                     normalized_array = []
@@ -647,7 +629,7 @@ class CasesAPI(BaseAPI):
                         else:
                             format_errors.append(
                                 f"Field '{field_name}' (multi-select/dropdown) contains invalid item: {item!r}. "
-                                f"Expected array of string IDs (e.g., ['3', '5']), not {type(item).__name__}."
+                                f"Expected array of IDs (e.g., [3, 5]), not {type(item).__name__}."
                             )
                             # Try to convert anyway
                             normalized_array.append(str(item))
@@ -658,7 +640,7 @@ class CasesAPI(BaseAPI):
                 else:
                     format_errors.append(
                         f"Field '{field_name}' (multi-select/dropdown) has invalid type: {type(field_value).__name__}. "
-                        f"Expected array of string IDs (e.g., ['3', '5']) or single string/integer ID."
+                        f"Expected array of IDs (e.g., [3, 5]) or single ID."
                     )
                     # Try to convert to array anyway
                     normalized[field_name] = [str(field_value)]
@@ -680,8 +662,8 @@ class CasesAPI(BaseAPI):
                         normalized[field_name] = field_value
                     else:
                         format_errors.append(
-                            f"Field '{field_name}' (steps) has invalid type: {
-                                type(field_value).__name__}. " f"Expected array of step objects.")
+                            f"Field '{field_name}' (steps) has invalid type: {type(field_value).__name__}. "
+                            f"Expected array of step objects.")
                         normalized[field_name] = field_value
                 else:
                     # Regular stepped field - treat as array of IDs
@@ -692,8 +674,8 @@ class CasesAPI(BaseAPI):
                             str(item) for item in field_value]
                     else:
                         format_errors.append(
-                            f"Field '{field_name}' (stepped) has invalid type: {
-                                type(field_value).__name__}. " f"Expected array of string IDs.")
+                            f"Field '{field_name}' (stepped) has invalid type: {type(field_value).__name__}. "
+                            f"Expected array of IDs.")
                         normalized[field_name] = [str(field_value)]
 
             # Handle checkbox fields (5) - ensure boolean
@@ -716,8 +698,8 @@ class CasesAPI(BaseAPI):
                     normalized[field_name] = bool(field_value)
                 else:
                     format_errors.append(
-                        f"Field '{field_name}' (checkbox) has invalid type: {
-                            type(field_value).__name__}. " f"Expected boolean.")
+                        f"Field '{field_name}' (checkbox) has invalid type: {type(field_value).__name__}. "
+                        f"Expected boolean.")
                     normalized[field_name] = bool(field_value)
 
             # For all other field types, pass through as-is
@@ -732,8 +714,8 @@ class CasesAPI(BaseAPI):
                     f"  - {error}" for error in format_errors)
                 + "\n\n"
                 + "Field type guide:\n"
-                + "  - Dropdown/Multi-select: Arrays of STRING IDs (e.g., ['3', '5']) - NOT integers!\n"
-                + "  - Single values will be auto-converted to arrays: '3' -> ['3']\n"
+                + "  - Dropdown/Multi-select: Arrays of numeric IDs (e.g., [3, 5])\n"
+                + "  - Single values will be auto-converted to arrays: 3 -> [3]\n"
                 + "  - Checkboxes: Boolean values (True/False)\n"
                 + "  - Separated steps: Array of objects: [{'content': '...', 'expected': '...'}]\n"
                 + "\n"
@@ -1083,8 +1065,7 @@ class CasesAPI(BaseAPI):
         self.logger.debug("Fetching case fields from TestRail API")
         all_fields = self._get_case_fields_raw(use_cache=use_cache)
         self.logger.debug(
-            f"Retrieved {
-                len(all_fields)} total case fields from API")
+            f"Retrieved {len(all_fields)} total case fields from API")
 
         # Check if we got any fields at all
         if len(all_fields) == 0:
@@ -1153,20 +1134,17 @@ class CasesAPI(BaseAPI):
                 required_fields.append(enhanced_field)
 
         self.logger.debug(
-            f"Filtered to {
-                len(required_fields)} required fields")
+            f"Filtered to {len(required_fields)} required fields")
         for field in required_fields:
             field_name = field.get('system_name') or field.get('name')
             self.logger.debug(
-                f"  Required: {field_name} (type_id={
-                    field.get('type_id')})")
+                f"  Required: {field_name} (type_id={field.get('type_id')})")
 
         # Cache the results for future calls (even if empty - it's valid to
         # have no required fields)
         self._case_fields_cache = required_fields
         self.logger.debug(
-            f"Cached {
-                len(required_fields)} required fields for future use")
+            f"Cached {len(required_fields)} required fields for future use")
 
         return required_fields
 
@@ -1302,8 +1280,7 @@ class CasesAPI(BaseAPI):
         all_required_fields = self._get_required_case_fields(
             use_cache=use_cache)
         self.logger.debug(
-            f"Retrieved {
-                len(all_required_fields)} required fields from cache/API")
+            f"Retrieved {len(all_required_fields)} required fields from cache/API")
 
         # Filter by context if provided
         filtered_fields = []
@@ -1410,8 +1387,8 @@ class CasesAPI(BaseAPI):
         # Add summary with common format guide
         format_guide = {
             'text_fields': 'String values (e.g., "Automated")',
-            'dropdown_single': 'Single string ID (e.g., "3") - will be auto-converted to array ["3"]',
-            'dropdown_multi': 'Array of STRING IDs (e.g., ["3", "5"]) - NOT integers!',
+            'dropdown_single': 'Single numeric ID (e.g., 3). Strings like "3" also work.',
+            'dropdown_multi': 'Array of numeric IDs (e.g., [3, 5]). Strings like ["3", "5"] also work.',
             'checkbox': 'Boolean values (True/False)',
             'steps_separated': 'Array of step objects: [{"content": "Step 1", "expected": "Result 1"}]',
         }
@@ -1462,7 +1439,7 @@ class CasesAPI(BaseAPI):
                 ],
                 "is_required": True,
                 "default_value": "0",
-                "format_hint": "Use the 'id' value (e.g., '1' for 'Selenium C#')"
+                "format_hint": "Use the numeric 'id' value (e.g., 1 for 'Selenium C#')"
             }
 
         Raises:
@@ -1538,14 +1515,13 @@ class CasesAPI(BaseAPI):
         # Generate format hint based on type
         if type_id == 6:
             format_hint = (
-                "Single value: use the 'id' as a string " f"(e.g., '{
-                    parsed_options[0]['id']}' for '{
-                    parsed_options[0]['label']}')" if parsed_options else "Single string ID")
+                f"Single numeric ID (or string). (e.g., {parsed_options[0]['id']} for '{parsed_options[0]['label']}')"
+                if parsed_options else "Single numeric ID (or string)")
         elif type_id in (11, 12):
             format_hint = (
-                "Array of IDs: use 'id' values as integers in an array "
+                "Array of numeric IDs (or strings). "
                 f"(e.g., [{parsed_options[0]['id']}] for '{parsed_options[0]['label']}')"
-                if parsed_options else "Array of integer IDs"
+                if parsed_options else "Array of numeric IDs (or strings)"
             )
         elif type_id == 10:
             format_hint = (
@@ -1599,13 +1575,13 @@ class CasesAPI(BaseAPI):
             3: "text",
             4: "URL string",
             5: "boolean (True/False)",
-            6: "string ID",
+            6: "numeric ID (or string)",
             7: "user ID (integer)",
             8: "timestamp (Unix epoch)",
             9: "milestone ID (integer)",
             10: "array of step objects: [{'content': '...', 'expected': '...'}]",
-            11: "array of IDs",
-            12: "array of IDs",
+            11: "array of IDs (numbers or strings)",
+            12: "array of IDs (numbers or strings)",
         }
 
         hint = base_hints.get(type_id, "unknown")
@@ -1783,15 +1759,15 @@ class CasesAPI(BaseAPI):
                 example_id = options.split(',')[0].split(
                     '=')[0].strip() if '=' in options else "3"
                 return {
-                    'description': 'Single string ID (will be auto-converted to array)',
-                    'example': f'"{example_id}"',
-                    'example_array': f'["{example_id}"]',
-                    'note': 'Can provide single value or array. Single values are auto-converted.'}
+                    'description': 'Single numeric ID',
+                    'example': f'{example_id}',
+                    'example_array': f'[{example_id}]',
+                    'note': 'You can provide a number or a string. Single values are auto-converted.'}
             return {
-                'description': 'Single string ID',
-                'example': '"3"',
-                'example_array': '["3"]',
-                'note': 'Use string ID, not integer. Will be auto-converted to array.'}
+                'description': 'Single numeric ID',
+                'example': '3',
+                'example_array': '[3]',
+                'note': 'Use a numeric ID (or string). Single values are auto-converted to array.'}
 
         elif type_id == 11:  # Multi-select
             if options:
@@ -1803,15 +1779,13 @@ class CasesAPI(BaseAPI):
                     example_ids = option_ids[:2] if len(option_ids) >= 2 else [
                         option_ids[0], option_ids[0]]
                     return {
-                        'description': 'Array of STRING IDs',
-                        'example': f'["{
-                            example_ids[0]}", "{
-                            example_ids[1]}"]',
-                        'note': '⚠️ IMPORTANT: Must be array of STRING IDs, not integers! Use ["3", "5"], not [3, 5]'}
+                        'description': 'Array of numeric IDs',
+                        'example': f'[{example_ids[0]}, {example_ids[1]}]',
+                        'note': 'Use numeric IDs. Strings like ["3", "5"] also work.'}
             return {
-                'description': 'Array of STRING IDs',
-                'example': '["3", "5"]',
-                'note': '⚠️ IMPORTANT: Must be array of STRING IDs, not integers!'}
+                'description': 'Array of numeric IDs',
+                'example': '[3, 5]',
+                'note': 'Use numeric IDs. Strings like ["3", "5"] also work.'}
 
         elif type_id == 12:  # Stepped
             if 'steps_separated' in field_name.lower():
@@ -1827,9 +1801,9 @@ class CasesAPI(BaseAPI):
             else:
                 # Regular stepped field - array of IDs
                 return {
-                    'description': 'Array of STRING IDs',
-                    'example': '["3", "5"]',
-                    'note': 'Array of string IDs for stepped field options.'
+                    'description': 'Array of numeric IDs',
+                    'example': '[3, 5]',
+                    'note': 'Use numeric IDs. Strings like ["3", "5"] also work.'
                 }
 
         elif type_id == 5:  # Checkbox
