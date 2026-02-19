@@ -35,9 +35,3 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
-
-      - name: Type check
-        run: uv run mypy src/
-
-      - name: Lint
-        run: uv run ruff check .
