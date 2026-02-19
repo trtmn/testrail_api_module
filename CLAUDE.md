@@ -21,12 +21,12 @@ Keep the GitHub issue updated throughout the work:
 - Comment when starting work on the issue
 - Comment with progress on multi-step tasks (e.g., "Tests passing, working on docs")
 - Reference blockers or decisions made along the way
-- Close the issue with `gh issue close <number>` once its PR merges to `development` with passing CI — don't wait for the release to `main`
+- PR descriptions should include `Closes #<number>` — GitHub auto-closes the issue when the PR merges to `development` (the default branch)
 
 ### Branches
 
 - **`main`** — production releases only, protected branch
-- **`development`** — integration branch, all feature work merges here
+- **`development`** — default branch, integration branch, all feature work merges here
 - **Feature/fix branches** — branch from `development`, PR back to `development`
 - **Releases** — PR from `development` → `main` (merge triggers automatic tagging + PyPI publish)
 
