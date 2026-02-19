@@ -133,7 +133,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.6] 2026-01-27
 
 
-## [Unreleased]
+## [0.6.0] 2026-02-19
+
+### Removed
+
+- **MCP Server**: Removed all MCP (Model Context Protocol) server functionality
+  - Removed `mcp_server.py`, `mcp_tools.py`, `mcp_utils.py`, `mcp_prompts.py` and type stubs
+  - Removed `cli.py` and `__main__.py` entry points
+  - Removed `testrail-mcp-server` CLI script
+  - Removed `fastmcp` dependency
+  - Removed MCP-related tests and documentation
+  - Updated README and CHANGELOG to remove MCP references
+  - Impact: The package is now a pure Python API wrapper without MCP server capabilities
 
 ## [0.5.4] 2026-01-27
 
