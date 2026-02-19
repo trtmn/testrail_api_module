@@ -14,6 +14,15 @@ This project uses a git-flow workflow with issue-linked branches.
 
 Every piece of work must have an associated GitHub issue. If one doesn't exist, create it first with `gh issue create`. This ensures all changes are tracked and linked.
 
+### Updating issues
+
+Keep the GitHub issue updated throughout the work:
+
+- Comment when starting work on the issue
+- Comment with progress on multi-step tasks (e.g., "Tests passing, working on docs")
+- Reference blockers or decisions made along the way
+- The PR description should include `Closes #<number>` to auto-close the issue on merge
+
 ### Branches
 
 - **`main`** — production releases only, protected branch
