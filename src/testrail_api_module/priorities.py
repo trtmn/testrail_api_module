@@ -2,7 +2,9 @@
 This module provides functionality for managing priorities in TestRail.
 Priorities are used to indicate the importance of test cases.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class PrioritiesAPI(BaseAPI):
     API for managing TestRail priorities.
     """
 
-    def get_priority(self, priority_id: int) -> Optional[Dict[str, Any]]:
+    def get_priority(self, priority_id: int) -> dict[str, Any] | None:
         """
         Get a priority by ID.
 
@@ -21,19 +23,20 @@ class PrioritiesAPI(BaseAPI):
         Returns:
             dict: The priority data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_priority/{priority_id}')
+        return self._api_request("GET", f"get_priority/{priority_id}")
 
-    def get_priorities(self) -> Optional[List[Dict[str, Any]]]:
+    def get_priorities(self) -> list[dict[str, Any]] | None:
         """
         Get all available priorities.
 
         Returns:
             list: List of priorities if successful, None otherwise.
         """
-        return self._api_request('GET', 'get_priorities')
+        return self._api_request("GET", "get_priorities")
 
-    def add_priority(self, name: str, short_name: str, color: str,
-                     is_default: bool = False) -> Optional[Dict[str, Any]]:
+    def add_priority(
+        self, name: str, short_name: str, color: str, is_default: bool = False
+    ) -> dict[str, Any] | None:
         """
         Add a new priority.
 
@@ -47,17 +50,17 @@ class PrioritiesAPI(BaseAPI):
             dict: The created priority data if successful, None otherwise.
         """
         data = {
-            'name': name,
-            'short_name': short_name,
-            'color': color,
-            'is_default': is_default
+            "name": name,
+            "short_name": short_name,
+            "color": color,
+            "is_default": is_default,
         }
 
-        return self._api_request('POST', 'add_priority', data=data)
+        return self._api_request("POST", "add_priority", data=data)
 
     def update_priority(
-            self, priority_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+        self, priority_id: int, **kwargs
+    ) -> dict[str, Any] | None:
         """
         Update a priority.
 
@@ -69,11 +72,10 @@ class PrioritiesAPI(BaseAPI):
             dict: The updated priority data if successful, None otherwise.
         """
         return self._api_request(
-            'POST',
-            f'update_priority/{priority_id}',
-            data=kwargs)
+            "POST", f"update_priority/{priority_id}", data=kwargs
+        )
 
-    def delete_priority(self, priority_id: int) -> Optional[Dict[str, Any]]:
+    def delete_priority(self, priority_id: int) -> dict[str, Any] | None:
         """
         Delete a priority.
 
@@ -83,9 +85,9 @@ class PrioritiesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_priority/{priority_id}')
+        return self._api_request("POST", f"delete_priority/{priority_id}")
 
-    def get_priority_counts(self, project_id: int) -> Optional[Dict[str, int]]:
+    def get_priority_counts(self, project_id: int) -> dict[str, int] | None:
         """
         Get the count of test cases by priority for a project.
 
@@ -95,9 +97,9 @@ class PrioritiesAPI(BaseAPI):
         Returns:
             dict: Dictionary mapping priority IDs to counts if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_priority_counts/{project_id}')
+        return self._api_request("GET", f"get_priority_counts/{project_id}")
 
-    def get_priority_stats(self, project_id: int) -> Optional[Dict[str, Any]]:
+    def get_priority_stats(self, project_id: int) -> dict[str, Any] | None:
         """
         Get statistics about priorities in a project.
 
@@ -107,4 +109,4 @@ class PrioritiesAPI(BaseAPI):
         Returns:
             dict: The priority statistics if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_priority_stats/{project_id}')
+        return self._api_request("GET", f"get_priority_stats/{project_id}")

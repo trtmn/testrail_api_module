@@ -11,9 +11,10 @@ from pathlib import Path
 
 
 def run_tests(
-        verbose: bool = False,
-        coverage: bool = False,
-        specific_test: str | None = None) -> subprocess.CompletedProcess[bytes]:
+    verbose: bool = False,
+    coverage: bool = False,
+    specific_test: str | None = None,
+) -> subprocess.CompletedProcess[bytes]:
     """Run the test suite with the specified options."""
     # Get the project root directory (utilities/../)
     project_root = Path(__file__).parent.parent
@@ -24,8 +25,9 @@ def run_tests(
         cmd.append("-v")
 
     if coverage:
-        cmd.extend(["--cov=src/testrail_api_module",
-                   "--cov-report=term-missing"])
+        cmd.extend(
+            ["--cov=src/testrail_api_module", "--cov-report=term-missing"]
+        )
 
     if specific_test:
         cmd.append(specific_test)
@@ -38,22 +40,26 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Run tests for testrail_api_module")
+        description="Run tests for testrail_api_module"
+    )
     parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
-        help="Run tests in verbose mode")
+        help="Run tests in verbose mode",
+    )
     parser.add_argument(
         "-c",
         "--coverage",
         action="store_true",
-        help="Run tests with coverage report")
+        help="Run tests with coverage report",
+    )
     parser.add_argument(
         "-t",
         "--test",
         type=str,
-        help="Run a specific test file or test function")
+        help="Run a specific test file or test function",
+    )
 
     # If no arguments are provided, default to verbose mode
     if len(sys.argv) == 1:

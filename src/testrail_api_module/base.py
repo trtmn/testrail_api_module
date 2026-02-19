@@ -3,27 +3,32 @@ This module provides the base API class for the TestRail API package.
 The BaseAPI class serves as the foundation for all TestRail API modules and can be used
 to create custom API modules that extend the functionality of the package.
 """
-import requests
+
 import json
 import logging
-from typing import Dict, Any, Optional, Union, List
+from typing import Any
 from urllib.parse import urlencode
+
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
 class TestRailAPIError(Exception):
     """Base exception class for TestRail API errors."""
+
     pass
 
 
 class TestRailAuthenticationError(TestRailAPIError):
     """Raised when authentication fails."""
+
     pass
 
 
 class TestRailRateLimitError(TestRailAPIError):
     """Raised when rate limit is exceeded."""
+
     pass
 
 
@@ -31,10 +36,11 @@ class TestRailAPIException(TestRailAPIError):
     """Raised for general API errors."""
 
     def __init__(
-            self,
-            message: str,
-            status_code: Optional[int] = None,
-            response_text: Optional[str] = None):
+        self,
+        message: str,
+        status_code: int | None = None,
+        response_text: str | None = None,
+    ):
         super().__init__(message)
         self.status_code = status_code
         self.response_text = response_text
@@ -68,8 +74,9 @@ class BaseAPI:
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
 
-    def _build_url(self, endpoint: str,
-                   params: Optional[Dict[str, Any]] = None) -> str:
+    def _build_url(
+        self, endpoint: str, params: dict[str, Any] | None = None
+    ) -> str:
         """
         Build the complete URL for an API request.
 
@@ -84,8 +91,8 @@ class BaseAPI:
         if params:
             # Filter out None values and convert to strings
             filtered_params = {
-                k: str(v) for k,
-                v in params.items() if v is not None}
+                k: str(v) for k, v in params.items() if v is not None
+            }
             if filtered_params:
                 url += f"&{urlencode(filtered_params)}"
         return url
@@ -100,9 +107,9 @@ class BaseAPI:
         Raises:
             TestRailAuthenticationError: If no valid authentication is available
         """
-        if hasattr(self.client, 'api_key') and self.client.api_key:
+        if hasattr(self.client, "api_key") and self.client.api_key:
             return (self.client.username, self.client.api_key)
-        elif hasattr(self.client, 'password') and self.client.password:
+        elif hasattr(self.client, "password") and self.client.password:
             return (self.client.username, self.client.password)
         else:
             raise TestRailAuthenticationError(
@@ -110,7 +117,8 @@ class BaseAPI:
             )
 
     def _handle_response(
-            self, response: requests.Response) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+        self, response: requests.Response
+    ) -> dict[str, Any] | list[dict[str, Any]]:
         """
         Handle API response and raise appropriate exceptions.
 
@@ -136,18 +144,22 @@ class BaseAPI:
             try:
                 return response.json()
             except json.JSONDecodeError as e:
-                raise TestRailAPIException(f"Invalid JSON response: {e}")
+                raise TestRailAPIException(
+                    f"Invalid JSON response: {e}"
+                ) from e
 
         elif response.status_code == 401:
             raise TestRailAuthenticationError(
-                "Authentication failed. Please check your credentials.")
+                "Authentication failed. Please check your credentials."
+            )
 
         elif response.status_code == 429:
             # Rate limit exceeded
-            retry_after = response.headers.get('Retry-After')
+            retry_after = response.headers.get("Retry-After")
             if retry_after:
                 raise TestRailRateLimitError(
-                    f"Rate limit exceeded. Retry after {retry_after} seconds.")
+                    f"Rate limit exceeded. Retry after {retry_after} seconds."
+                )
             else:
                 raise TestRailRateLimitError("Rate limit exceeded.")
 
@@ -157,32 +169,30 @@ class BaseAPI:
             )
             try:
                 error_data = response.json()
-                if 'error' in error_data:
-                    error_message = error_data['error']
+                if "error" in error_data:
+                    error_message = error_data["error"]
             except json.JSONDecodeError:
                 error_message = response.text or error_message
 
             raise TestRailAPIException(
                 error_message,
                 status_code=response.status_code,
-                response_text=response.text
+                response_text=response.text,
             )
 
         else:
             raise TestRailAPIException(
-                f"Unexpected response status: {response.status_code}")
+                f"Unexpected response status: {response.status_code}"
+            )
 
-    def _api_request(self,
-                     method: str,
-                     endpoint: str,
-                     data: Optional[Dict[str,
-                                         Any]] = None,
-                     params: Optional[Dict[str,
-                                           Any]] = None,
-                     **kwargs) -> Union[Dict[str,
-                                             Any],
-                                        List[Dict[str,
-                                                  Any]]]:
+    def _api_request(
+        self,
+        method: str,
+        endpoint: str,
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        **kwargs,
+    ) -> dict[str, Any] | list[dict[str, Any]]:
         """
         Make an API request to TestRail following official patterns.
 
@@ -203,8 +213,8 @@ class BaseAPI:
         headers = {"Content-Type": "application/json"}
 
         # Update headers with any additional headers from kwargs
-        if 'headers' in kwargs:
-            headers.update(kwargs.pop('headers'))
+        if "headers" in kwargs:
+            headers.update(kwargs.pop("headers"))
 
         # Get authentication credentials
         auth = self._get_auth()
@@ -221,39 +231,30 @@ class BaseAPI:
                 headers=headers,
                 auth=auth,
                 json=json_data,
-                timeout=self.client.timeout if hasattr(
-                    self.client,
-                    'timeout') else 30,
-                **kwargs)
+                timeout=self.client.timeout
+                if hasattr(self.client, "timeout")
+                else 30,
+                **kwargs,
+            )
 
             return self._handle_response(response)
 
         except requests.exceptions.RequestException as e:
-            raise TestRailAPIException(f"Request failed: {e}")
+            raise TestRailAPIException(f"Request failed: {e}") from e
         except TestRailAPIError:
             # Re-raise our custom exceptions
             raise
         except Exception as e:
-            raise TestRailAPIException(f"Unexpected error: {e}")
+            raise TestRailAPIException(f"Unexpected error: {e}") from e
 
-    def _get(self,
-             endpoint: str,
-             params: Optional[Dict[str,
-                                   Any]] = None,
-             **kwargs) -> Union[Dict[str,
-                                     Any],
-                                List[Dict[str,
-                                          Any]]]:
+    def _get(
+        self, endpoint: str, params: dict[str, Any] | None = None, **kwargs
+    ) -> dict[str, Any] | list[dict[str, Any]]:
         """Make a GET request to the TestRail API."""
-        return self._api_request('GET', endpoint, params=params, **kwargs)
+        return self._api_request("GET", endpoint, params=params, **kwargs)
 
-    def _post(self,
-              endpoint: str,
-              data: Optional[Dict[str,
-                                  Any]] = None,
-              **kwargs) -> Union[Dict[str,
-                                      Any],
-                                 List[Dict[str,
-                                           Any]]]:
+    def _post(
+        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs
+    ) -> dict[str, Any] | list[dict[str, Any]]:
         """Make a POST request to the TestRail API."""
-        return self._api_request('POST', endpoint, data=data, **kwargs)
+        return self._api_request("POST", endpoint, data=data, **kwargs)

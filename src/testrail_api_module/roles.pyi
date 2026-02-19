@@ -1,5 +1,6 @@
-from .base import BaseAPI as BaseAPI
 from typing import Any
+
+from .base import BaseAPI as BaseAPI
 
 class RolesAPI(BaseAPI):
     """
@@ -8,24 +9,29 @@ class RolesAPI(BaseAPI):
     def get_role(self, role_id: int) -> dict[str, Any] | None:
         """
         Get a role by ID.
-        
+
         Args:
             role_id (int): The ID of the role to retrieve.
-            
+
         Returns:
             dict: The role data if successful, None otherwise.
         """
     def get_roles(self) -> list[dict[str, Any]] | None:
         """
         Get all roles.
-        
+
         Returns:
             list: List of roles if successful, None otherwise.
         """
-    def add_role(self, name: str, description: str | None = None, permissions: dict[str, bool] | None = None) -> dict[str, Any] | None:
+    def add_role(
+        self,
+        name: str,
+        description: str | None = None,
+        permissions: dict[str, bool] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a new role.
-        
+
         Args:
             name (str): The name of the role.
             description (str, optional): The description of the role.
@@ -56,28 +62,30 @@ class RolesAPI(BaseAPI):
                 - view_projects (bool): Can view projects
                 - edit_projects (bool): Can edit projects
                 - delete_projects (bool): Can delete projects
-                
+
         Returns:
             dict: The created role data if successful, None otherwise.
         """
-    def update_role(self, role_id: int, **kwargs: Any) -> dict[str, Any] | None:
+    def update_role(
+        self, role_id: int, **kwargs: Any
+    ) -> dict[str, Any] | None:
         """
         Update a role.
-        
+
         Args:
             role_id (int): The ID of the role to update.
             **kwargs: The fields to update (name, description, permissions).
-            
+
         Returns:
             dict: The updated role data if successful, None otherwise.
         """
     def delete_role(self, role_id: int) -> dict[str, Any] | None:
         """
         Delete a role.
-        
+
         Args:
             role_id (int): The ID of the role to delete.
-            
+
         Returns:
             dict: The response data if successful, None otherwise.
         """

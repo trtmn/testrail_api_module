@@ -1,5 +1,6 @@
-from .base import BaseAPI as BaseAPI
 from typing import Any
+
+from .base import BaseAPI as BaseAPI
 
 class BDDAPI(BaseAPI):
     """API for managing BDD scenarios in TestRail."""
@@ -13,7 +14,12 @@ class BDDAPI(BaseAPI):
         Returns:
             Dict containing the BDD scenario data in .feature file format.
         """
-    def add_bdd(self, section_id: int, feature_file: str, description: str | None = None) -> dict[str, Any]:
+    def add_bdd(
+        self,
+        section_id: int,
+        feature_file: str,
+        description: str | None = None,
+    ) -> dict[str, Any]:
         """
         Import/upload a BDD scenario from a .feature file into a section.
 

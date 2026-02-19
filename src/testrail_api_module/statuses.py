@@ -2,7 +2,9 @@
 This module provides functionality for managing statuses in TestRail.
 Statuses are used to track the state of test cases and test results.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class StatusesAPI(BaseAPI):
     API for managing TestRail statuses.
     """
 
-    def get_status(self, status_id: int) -> Optional[Dict[str, Any]]:
+    def get_status(self, status_id: int) -> dict[str, Any] | None:
         """
         Get a status by ID.
 
@@ -21,22 +23,41 @@ class StatusesAPI(BaseAPI):
         Returns:
             dict: The status data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_status/{status_id}')
+        return self._api_request("GET", f"get_status/{status_id}")
 
-    def get_statuses(self) -> Optional[List[Dict[str, Any]]]:
+    def get_statuses(self) -> list[dict[str, Any]] | None:
         """
         Get all available statuses.
 
         Returns:
             list: List of statuses if successful, None otherwise.
         """
-        return self._api_request('GET', 'get_statuses')
+        return self._api_request("GET", "get_statuses")
 
-    def add_status(self, name: str, short_name: str, color: str,
-                   is_system: bool = False, is_untested: bool = False,
-                   is_passed: bool = False, is_blocked: bool = False,
-                   is_retest: bool = False, is_failed: bool = False,
-                   is_custom: bool = True) -> Optional[Dict[str, Any]]:
+    def get_case_statuses(self) -> list[dict[str, Any]] | None:
+        """
+        Get all available case statuses.
+
+        Requires TestRail Enterprise 7.3+.
+
+        Returns:
+            List of case status dicts if successful, None otherwise.
+        """
+        return self._api_request("GET", "get_case_statuses")
+
+    def add_status(
+        self,
+        name: str,
+        short_name: str,
+        color: str,
+        is_system: bool = False,
+        is_untested: bool = False,
+        is_passed: bool = False,
+        is_blocked: bool = False,
+        is_retest: bool = False,
+        is_failed: bool = False,
+        is_custom: bool = True,
+    ) -> dict[str, Any] | None:
         """
         Add a new status.
 
@@ -56,23 +77,21 @@ class StatusesAPI(BaseAPI):
             dict: The created status data if successful, None otherwise.
         """
         data = {
-            'name': name,
-            'short_name': short_name,
-            'color': color,
-            'is_system': is_system,
-            'is_untested': is_untested,
-            'is_passed': is_passed,
-            'is_blocked': is_blocked,
-            'is_retest': is_retest,
-            'is_failed': is_failed,
-            'is_custom': is_custom
+            "name": name,
+            "short_name": short_name,
+            "color": color,
+            "is_system": is_system,
+            "is_untested": is_untested,
+            "is_passed": is_passed,
+            "is_blocked": is_blocked,
+            "is_retest": is_retest,
+            "is_failed": is_failed,
+            "is_custom": is_custom,
         }
 
-        return self._api_request('POST', 'add_status', data=data)
+        return self._api_request("POST", "add_status", data=data)
 
-    def update_status(
-            self, status_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+    def update_status(self, status_id: int, **kwargs) -> dict[str, Any] | None:
         """
         Update a status.
 
@@ -84,9 +103,10 @@ class StatusesAPI(BaseAPI):
             dict: The updated status data if successful, None otherwise.
         """
         return self._api_request(
-            'POST', f'update_status/{status_id}', data=kwargs)
+            "POST", f"update_status/{status_id}", data=kwargs
+        )
 
-    def delete_status(self, status_id: int) -> Optional[Dict[str, Any]]:
+    def delete_status(self, status_id: int) -> dict[str, Any] | None:
         """
         Delete a status.
 
@@ -96,9 +116,9 @@ class StatusesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_status/{status_id}')
+        return self._api_request("POST", f"delete_status/{status_id}")
 
-    def get_status_counts(self, run_id: int) -> Optional[Dict[str, int]]:
+    def get_status_counts(self, run_id: int) -> dict[str, int] | None:
         """
         Get the count of test results by status for a test run.
 
@@ -108,10 +128,11 @@ class StatusesAPI(BaseAPI):
         Returns:
             dict: Dictionary mapping status IDs to counts if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_status_counts/{run_id}')
+        return self._api_request("GET", f"get_status_counts/{run_id}")
 
     def get_status_history(
-            self, result_id: int) -> Optional[List[Dict[str, Any]]]:
+        self, result_id: int
+    ) -> list[dict[str, Any]] | None:
         """
         Get the history of status changes for a test result.
 
@@ -121,4 +142,4 @@ class StatusesAPI(BaseAPI):
         Returns:
             list: List of status history entries if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_status_history/{result_id}')
+        return self._api_request("GET", f"get_status_history/{result_id}")

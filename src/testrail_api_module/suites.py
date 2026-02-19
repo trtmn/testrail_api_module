@@ -2,7 +2,9 @@
 This module provides functionality for managing test suites in TestRail.
 Test suites are used to organize and group related test cases.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class SuitesAPI(BaseAPI):
     API for managing TestRail test suites.
     """
 
-    def get_suite(self, suite_id: int) -> Optional[Dict[str, Any]]:
+    def get_suite(self, suite_id: int) -> dict[str, Any] | None:
         """
         Get a test suite by ID.
 
@@ -21,9 +23,9 @@ class SuitesAPI(BaseAPI):
         Returns:
             dict: The test suite data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_suite/{suite_id}')
+        return self._api_request("GET", f"get_suite/{suite_id}")
 
-    def get_suites(self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_suites(self, project_id: int) -> list[dict[str, Any]] | None:
         """
         Get all test suites for a project.
 
@@ -33,14 +35,15 @@ class SuitesAPI(BaseAPI):
         Returns:
             list: List of test suites if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_suites/{project_id}')
+        return self._api_request("GET", f"get_suites/{project_id}")
 
-    def add_suite(self,
-                  project_id: int,
-                  name: str,
-                  description: Optional[str] = None,
-                  url: Optional[str] = None) -> Optional[Dict[str,
-                                                              Any]]:
+    def add_suite(
+        self,
+        project_id: int,
+        name: str,
+        description: str | None = None,
+        url: str | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a new test suite.
 
@@ -53,19 +56,15 @@ class SuitesAPI(BaseAPI):
         Returns:
             dict: The created test suite data if successful, None otherwise.
         """
-        data = {
-            'name': name
-        }
+        data = {"name": name}
         if description:
-            data['description'] = description
+            data["description"] = description
         if url:
-            data['url'] = url
+            data["url"] = url
 
-        return self._api_request('POST', f'add_suite/{project_id}', data=data)
+        return self._api_request("POST", f"add_suite/{project_id}", data=data)
 
-    def update_suite(
-            self, suite_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+    def update_suite(self, suite_id: int, **kwargs) -> dict[str, Any] | None:
         """
         Update a test suite.
 
@@ -77,9 +76,10 @@ class SuitesAPI(BaseAPI):
             dict: The updated test suite data if successful, None otherwise.
         """
         return self._api_request(
-            'POST', f'update_suite/{suite_id}', data=kwargs)
+            "POST", f"update_suite/{suite_id}", data=kwargs
+        )
 
-    def delete_suite(self, suite_id: int) -> Optional[Dict[str, Any]]:
+    def delete_suite(self, suite_id: int) -> dict[str, Any] | None:
         """
         Delete a test suite.
 
@@ -89,9 +89,9 @@ class SuitesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_suite/{suite_id}')
+        return self._api_request("POST", f"delete_suite/{suite_id}")
 
-    def get_suite_cases(self, suite_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_suite_cases(self, suite_id: int) -> list[dict[str, Any]] | None:
         """
         Get all test cases in a test suite.
 
@@ -101,9 +101,9 @@ class SuitesAPI(BaseAPI):
         Returns:
             list: List of test cases if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_suite_cases/{suite_id}')
+        return self._api_request("GET", f"get_suite_cases/{suite_id}")
 
-    def get_suite_stats(self, suite_id: int) -> Optional[Dict[str, Any]]:
+    def get_suite_stats(self, suite_id: int) -> dict[str, Any] | None:
         """
         Get statistics for a test suite.
 
@@ -113,9 +113,9 @@ class SuitesAPI(BaseAPI):
         Returns:
             dict: The test suite statistics if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_suite_stats/{suite_id}')
+        return self._api_request("GET", f"get_suite_stats/{suite_id}")
 
-    def get_suite_runs(self, suite_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_suite_runs(self, suite_id: int) -> list[dict[str, Any]] | None:
         """
         Get all test runs for a test suite.
 
@@ -125,4 +125,4 @@ class SuitesAPI(BaseAPI):
         Returns:
             list: List of test runs if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_suite_runs/{suite_id}')
+        return self._api_request("GET", f"get_suite_runs/{suite_id}")

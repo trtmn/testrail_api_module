@@ -2,6 +2,7 @@
 """
 Script to generate documentation for the TestRail API module using pdoc.
 """
+
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,7 @@ def get_version() -> str:
         sys.path.insert(0, str(src_path))
 
         from testrail_api_module import __version__
+
         return __version__
     except ImportError as e:
         print(f"❌ Error importing version: {e}")
@@ -54,7 +56,7 @@ The current version of the TestRail API module.
 """
 '''
 
-    with open(version_file, 'w') as f:
+    with open(version_file, "w") as f:
         f.write(version_content)
 
     print(f"📝 Created version file: {version_file}")
@@ -72,7 +74,9 @@ def main() -> None:
     """Generate documentation using pdoc."""
     # Check if pdoc is available
     if not check_pdoc_available():
-        print("❌ pdoc is not installed or not available in the current environment.")
+        print(
+            "❌ pdoc is not installed or not available in the current environment."
+        )
         print("\nTo install it, run one of the following:")
         print("  uv sync --extra dev")
         print("  uv pip install --extra dev")
@@ -128,7 +132,9 @@ def main() -> None:
         sys.exit(1)
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")
-        print("\n💡 Tip: Make sure pdoc is installed. Run: uv sync --extra dev")
+        print(
+            "\n💡 Tip: Make sure pdoc is installed. Run: uv sync --extra dev"
+        )
         sys.exit(1)
     finally:
         # Clean up the temporary version file

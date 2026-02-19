@@ -1,19 +1,21 @@
 """
 Tests for the ConfigurationsAPI module.
 
-This module contains comprehensive tests for all methods in the ConfigurationsAPI class,
-including edge cases, error handling, and proper API request formatting.
+This module contains comprehensive tests for all methods in the
+ConfigurationsAPI class, including error handling and proper API
+request formatting.
 """
 
-import pytest
 from unittest.mock import Mock, patch
-from typing import TYPE_CHECKING
 
+import pytest
+
+from testrail_api_module.base import (
+    TestRailAPIError,
+    TestRailAuthenticationError,
+    TestRailRateLimitError,
+)
 from testrail_api_module.configurations import ConfigurationsAPI
-from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
-
-if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture  # noqa: F401
 
 
 class TestConfigurationsAPI:
@@ -37,125 +39,414 @@ class TestConfigurationsAPI:
         """Test ConfigurationsAPI initialization."""
         api = ConfigurationsAPI(mock_client)
         assert api.client == mock_client
-        assert hasattr(api, 'logger')
+        assert hasattr(api, "logger")
 
-    def test_get_configuration(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test get_configuration method."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, "name": "Config 1"}
+    # --- get_configs ---
 
-            result = configurations_api.get_configuration(config_id=1)
-
-            mock_request.assert_called_once_with('GET', 'get_configuration/1')
-            assert result == {"id": 1, "name": "Config 1"}
-
-    def test_get_configurations(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test get_configurations method."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.return_value = [
-                {"id": 1, "name": "Config 1"},
-                {"id": 2, "name": "Config 2"}
+    def test_get_configs(self, configurations_api: ConfigurationsAPI) -> None:
+        """Test get_configs returns configuration groups for a project."""
+        with patch.object(configurations_api, "_get") as mock_get:
+            mock_get.return_value = [
+                {
+                    "id": 1,
+                    "name": "Browsers",
+                    "configs": [
+                        {"id": 10, "name": "Chrome"},
+                        {"id": 11, "name": "Firefox"},
+                    ],
+                }
             ]
 
-            result = configurations_api.get_configurations(project_id=1)
+            result = configurations_api.get_configs(project_id=1)
 
-            mock_request.assert_called_once_with('GET', 'get_configurations/1')
-            assert len(result) == 2
+            mock_get.assert_called_once_with("get_configs/1")
+            assert result == [
+                {
+                    "id": 1,
+                    "name": "Browsers",
+                    "configs": [
+                        {"id": 10, "name": "Chrome"},
+                        {"id": 11, "name": "Firefox"},
+                    ],
+                }
+            ]
 
-    def test_add_configuration_minimal(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test add_configuration with minimal required parameters."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, "name": "New Config"}
+    def test_get_configs_api_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test get_configs raises TestRailAPIError on failure."""
+        with patch.object(configurations_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API error")
 
-            result = configurations_api.add_configuration(
-                project_id=1, name="New Config")
+            with pytest.raises(TestRailAPIError, match="API error"):
+                configurations_api.get_configs(project_id=1)
 
-            expected_data = {"name": "New Config"}
-            mock_request.assert_called_once_with(
-                'POST', 'add_configuration/1', data=expected_data)
-            assert result == {"id": 1, "name": "New Config"}
-
-    def test_add_configuration_with_all_parameters(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test add_configuration with all optional parameters."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, "name": "New Config"}
-
-            configurations_api.add_configuration(
-                project_id=1,
-                name="New Config",
-                description="Config description",
-                group_id=2
+    def test_get_configs_auth_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test get_configs raises TestRailAuthenticationError on 401."""
+        with patch.object(configurations_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
             )
 
-            expected_data = {
-                "name": "New Config",
-                "description": "Config description",
-                "group_id": 2
-            }
-            mock_request.assert_called_once_with(
-                'POST', 'add_configuration/1', data=expected_data)
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                configurations_api.get_configs(project_id=1)
 
-    def test_update_configuration(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test update_configuration method."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.return_value = {"id": 1, "name": "Updated Config"}
-
-            configurations_api.update_configuration(
-                config_id=1,
-                name="Updated Config",
-                description="Updated description"
+    def test_get_configs_rate_limit_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test get_configs raises TestRailRateLimitError on 429."""
+        with patch.object(configurations_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
             )
 
-            expected_data = {
-                "name": "Updated Config",
-                "description": "Updated description"
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                configurations_api.get_configs(project_id=1)
+
+    # --- add_config_group ---
+
+    def test_add_config_group(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test add_config_group creates a new configuration group."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 5, "name": "Operating Systems"}
+
+            result = configurations_api.add_config_group(
+                project_id=1, name="Operating Systems"
+            )
+
+            mock_post.assert_called_once_with(
+                "add_config_group/1", data={"name": "Operating Systems"}
+            )
+            assert result == {"id": 5, "name": "Operating Systems"}
+
+    def test_add_config_group_api_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test add_config_group raises TestRailAPIError on failure."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
+
+            with pytest.raises(TestRailAPIError, match="API error"):
+                configurations_api.add_config_group(
+                    project_id=1, name="Browsers"
+                )
+
+    def test_add_config_group_auth_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test add_config_group raises TestRailAuthenticationError on 401."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
+
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                configurations_api.add_config_group(
+                    project_id=1, name="Browsers"
+                )
+
+    def test_add_config_group_rate_limit_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test add_config_group raises TestRailRateLimitError on 429."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
+
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                configurations_api.add_config_group(
+                    project_id=1, name="Browsers"
+                )
+
+    # --- add_config ---
+
+    def test_add_config(self, configurations_api: ConfigurationsAPI) -> None:
+        """Test add_config creates a new configuration in a group."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.return_value = {
+                "id": 20,
+                "name": "Chrome",
+                "group_id": 5,
             }
-            mock_request.assert_called_once_with(
-                'POST', 'update_configuration/1', data=expected_data)
 
-    def test_delete_configuration(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test delete_configuration method."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.return_value = {}
+            result = configurations_api.add_config(
+                config_group_id=5, name="Chrome"
+            )
 
-            result = configurations_api.delete_configuration(config_id=1)
+            mock_post.assert_called_once_with(
+                "add_config/5", data={"name": "Chrome"}
+            )
+            assert result == {"id": 20, "name": "Chrome", "group_id": 5}
 
-            mock_request.assert_called_once_with(
-                'POST', 'delete_configuration/1')
+    def test_add_config_api_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test add_config raises TestRailAPIError on failure."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
+
+            with pytest.raises(TestRailAPIError, match="API error"):
+                configurations_api.add_config(config_group_id=5, name="Chrome")
+
+    def test_add_config_auth_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test add_config raises TestRailAuthenticationError on 401."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
+
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                configurations_api.add_config(config_group_id=5, name="Chrome")
+
+    def test_add_config_rate_limit_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test add_config raises TestRailRateLimitError on 429."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
+
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                configurations_api.add_config(config_group_id=5, name="Chrome")
+
+    # --- update_config_group ---
+
+    def test_update_config_group(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config_group renames a configuration group."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 5, "name": "Web Browsers"}
+
+            result = configurations_api.update_config_group(
+                config_group_id=5, name="Web Browsers"
+            )
+
+            mock_post.assert_called_once_with(
+                "update_config_group/5", data={"name": "Web Browsers"}
+            )
+            assert result == {"id": 5, "name": "Web Browsers"}
+
+    def test_update_config_group_api_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config_group raises TestRailAPIError on failure."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
+
+            with pytest.raises(TestRailAPIError, match="API error"):
+                configurations_api.update_config_group(
+                    config_group_id=5, name="Web Browsers"
+                )
+
+    def test_update_config_group_auth_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config_group raises TestRailAuthenticationError."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
+
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                configurations_api.update_config_group(
+                    config_group_id=5, name="Web Browsers"
+                )
+
+    def test_update_config_group_rate_limit_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config_group raises TestRailRateLimitError on 429."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
+
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                configurations_api.update_config_group(
+                    config_group_id=5, name="Web Browsers"
+                )
+
+    # --- update_config ---
+
+    def test_update_config(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config renames an individual configuration."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 20, "name": "Chromium"}
+
+            result = configurations_api.update_config(
+                config_id=20, name="Chromium"
+            )
+
+            mock_post.assert_called_once_with(
+                "update_config/20", data={"name": "Chromium"}
+            )
+            assert result == {"id": 20, "name": "Chromium"}
+
+    def test_update_config_api_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config raises TestRailAPIError on failure."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
+
+            with pytest.raises(TestRailAPIError, match="API error"):
+                configurations_api.update_config(config_id=20, name="Chromium")
+
+    def test_update_config_auth_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config raises TestRailAuthenticationError on 401."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
+
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                configurations_api.update_config(config_id=20, name="Chromium")
+
+    def test_update_config_rate_limit_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test update_config raises TestRailRateLimitError on 429."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
+
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                configurations_api.update_config(config_id=20, name="Chromium")
+
+    # --- delete_config_group ---
+
+    def test_delete_config_group(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config_group removes a configuration group."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.return_value = {}
+
+            result = configurations_api.delete_config_group(config_group_id=5)
+
+            mock_post.assert_called_once_with("delete_config_group/5")
             assert result == {}
 
-    def test_api_request_failure(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test behavior when API request fails."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+    def test_delete_config_group_api_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config_group raises TestRailAPIError on failure."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
 
-            with pytest.raises(TestRailAPIError, match="API request failed"):
-                configurations_api.get_configuration(config_id=1)
+            with pytest.raises(TestRailAPIError, match="API error"):
+                configurations_api.delete_config_group(config_group_id=5)
 
-    def test_authentication_error(
-            self, configurations_api: ConfigurationsAPI) -> None:
-        """Test behavior when authentication fails."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
-                "Authentication failed")
+    def test_delete_config_group_auth_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config_group raises TestRailAuthenticationError."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
 
-            with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
-                configurations_api.get_configuration(config_id=1)
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                configurations_api.delete_config_group(config_group_id=5)
 
-    def test_rate_limit_error(
-            self,
-            configurations_api: ConfigurationsAPI) -> None:
-        """Test behavior when rate limit is exceeded."""
-        with patch.object(configurations_api, '_api_request') as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
-                "Rate limit exceeded")
+    def test_delete_config_group_rate_limit_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config_group raises TestRailRateLimitError on 429."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
 
-            with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
-                configurations_api.get_configuration(config_id=1)
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                configurations_api.delete_config_group(config_group_id=5)
+
+    # --- delete_config ---
+
+    def test_delete_config(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config removes an individual configuration."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.return_value = {}
+
+            result = configurations_api.delete_config(config_id=20)
+
+            mock_post.assert_called_once_with("delete_config/20")
+            assert result == {}
+
+    def test_delete_config_api_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config raises TestRailAPIError on failure."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
+
+            with pytest.raises(TestRailAPIError, match="API error"):
+                configurations_api.delete_config(config_id=20)
+
+    def test_delete_config_auth_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config raises TestRailAuthenticationError on 401."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
+
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                configurations_api.delete_config(config_id=20)
+
+    def test_delete_config_rate_limit_error(
+        self, configurations_api: ConfigurationsAPI
+    ) -> None:
+        """Test delete_config raises TestRailRateLimitError on 429."""
+        with patch.object(configurations_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
+
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                configurations_api.delete_config(config_id=20)

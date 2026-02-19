@@ -2,7 +2,9 @@
 This module provides functionality for managing roles in TestRail.
 Roles are used to define user permissions and access levels.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class RolesAPI(BaseAPI):
     API for managing TestRail roles.
     """
 
-    def get_role(self, role_id: int) -> Optional[Dict[str, Any]]:
+    def get_role(self, role_id: int) -> dict[str, Any] | None:
         """
         Get a role by ID.
 
@@ -21,23 +23,23 @@ class RolesAPI(BaseAPI):
         Returns:
             dict: The role data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_role/{role_id}')
+        return self._api_request("GET", f"get_role/{role_id}")
 
-    def get_roles(self) -> Optional[List[Dict[str, Any]]]:
+    def get_roles(self) -> list[dict[str, Any]] | None:
         """
         Get all roles.
 
         Returns:
             list: List of roles if successful, None otherwise.
         """
-        return self._api_request('GET', 'get_roles')
+        return self._api_request("GET", "get_roles")
 
-    def add_role(self,
-                 name: str,
-                 description: Optional[str] = None,
-                 permissions: Optional[Dict[str,
-                                            bool]] = None) -> Optional[Dict[str,
-                                                                            Any]]:
+    def add_role(
+        self,
+        name: str,
+        description: str | None = None,
+        permissions: dict[str, bool] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a new role.
 
@@ -75,17 +77,15 @@ class RolesAPI(BaseAPI):
         Returns:
             dict: The created role data if successful, None otherwise.
         """
-        data = {
-            'name': name
-        }
+        data = {"name": name}
         if description:
-            data['description'] = description
+            data["description"] = description
         if permissions:
-            data['permissions'] = permissions
+            data["permissions"] = permissions
 
-        return self._api_request('POST', 'add_role', data=data)
+        return self._api_request("POST", "add_role", data=data)
 
-    def update_role(self, role_id: int, **kwargs) -> Optional[Dict[str, Any]]:
+    def update_role(self, role_id: int, **kwargs) -> dict[str, Any] | None:
         """
         Update a role.
 
@@ -96,9 +96,9 @@ class RolesAPI(BaseAPI):
         Returns:
             dict: The updated role data if successful, None otherwise.
         """
-        return self._api_request('POST', f'update_role/{role_id}', data=kwargs)
+        return self._api_request("POST", f"update_role/{role_id}", data=kwargs)
 
-    def delete_role(self, role_id: int) -> Optional[Dict[str, Any]]:
+    def delete_role(self, role_id: int) -> dict[str, Any] | None:
         """
         Delete a role.
 
@@ -108,4 +108,4 @@ class RolesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_role/{role_id}')
+        return self._api_request("POST", f"delete_role/{role_id}")

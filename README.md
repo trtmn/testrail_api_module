@@ -15,11 +15,60 @@ A comprehensive Python wrapper for the TestRail API that provides easy access to
 - Easy-to-use interface
 - Support for both API key and password authentication
 
+## 🚨 Breaking Changes in v0.7.0
+
+**API parity audit.** All endpoints were audited against the [official TestRail API reference](https://support.testrail.com/hc/en-us/sections/7077196685204-Reference). Several methods were renamed, restructured, or removed to match the real API. See details below.
+
+### Configurations API (rewritten)
+
+The old single-level API has been replaced with the correct two-level group/config structure:
+
+| Removed | Replacement |
+|---|---|
+| `get_configuration(config_id)` | `get_configs(project_id)` |
+| `get_configurations(project_id)` | `get_configs(project_id)` |
+| `add_configuration(project_id, ...)` | `add_config_group(project_id, name)` / `add_config(config_group_id, name)` |
+| `update_configuration(config_id, ...)` | `update_config_group(config_group_id, name)` / `update_config(config_id, name)` |
+| `delete_configuration(config_id)` | `delete_config_group(config_group_id)` / `delete_config(config_id)` |
+
+### Results API (restructured)
+
+| Change | Old | New |
+|---|---|---|
+| Renamed | `add_result(run_id, case_id, ...)` | `add_result_for_case(run_id, case_id, ...)` |
+| New | — | `add_result(test_id, ...)` (adds result by test ID) |
+| New | — | `get_results(test_id, ...)` (gets results by test ID) |
+| Fixed | `add_results(...)` called `add_results_for_cases` endpoint | `add_results(...)` now correctly calls `add_results/{run_id}` |
+| Removed | `add_result_for_run(...)` | (not a real TestRail endpoint) |
+
+### Cases API
+
+| Change | Old | New |
+|---|---|---|
+| Renamed | `get_case_history(case_id)` | `get_history_for_case(case_id)` |
+| New | — | `add_case_field(...)`, `update_cases(...)`, `delete_cases(...)` |
+
+### Plans API
+
+| Change | Old | New |
+|---|---|---|
+| Removed | `get_plan_stats(plan_id)` | (not a real TestRail endpoint) |
+| New | — | `add_plan_entry(...)`, `update_plan_entry(...)`, `delete_plan_entry(...)` |
+
+### New modules and methods
+
+- **Labels API** (new module): `get_label`, `get_labels`, `add_label`, `update_label`, `delete_label`
+- **Sections**: `move_section(section_id, ...)`
+- **Users**: `get_current_user()`
+- **Statuses**: `get_case_statuses()`
+- **Datasets**: `add_dataset(...)`, `update_dataset(...)`, `delete_dataset(...)`
+
 ## 🚨 Breaking Changes in v0.4.x
 
 **This is a major version update with breaking changes.** Please read the [Migration Guide](MIGRATION_GUIDE.md) before upgrading from v0.3.x.
 
-### Key Changes:
+### Key Changes
+
 - **Enhanced Error Handling**: Methods now raise specific exceptions instead of returning `None`
 - **Consistent Return Types**: No more `Optional` wrappers - methods return data directly
 - **Better Type Safety**: Comprehensive type annotations throughout
@@ -80,7 +129,7 @@ try:
     # Get a list of projects
     projects = api.projects.get_projects()
     print(f"Found {len(projects)} projects")
-    
+
     # Create a new test case
     new_case = api.cases.add_case(
         section_id=123,
@@ -91,9 +140,9 @@ try:
         refs='JIRA-123'
     )
     print(f"Created case: {new_case['title']}")
-    
-    # Add a test result
-    result = api.results.add_result(
+
+    # Add a test result for a case in a run
+    result = api.results.add_result_for_case(
         run_id=456,
         case_id=789,
         status_id=1,  # Passed
@@ -102,7 +151,7 @@ try:
         version='1.0.0'
     )
     print(f"Added result: {result['id']}")
-    
+
 except TestRailAuthenticationError as e:
     print(f"Authentication failed: {e}")
 except TestRailRateLimitError as e:
@@ -122,7 +171,7 @@ try:
     # Get all test cases in a project
     cases = api.cases.get_cases(project_id=1)
     print(f"Found {len(cases)} cases")
-    
+
     # Update a test case
     updated_case = api.cases.update_case(
         case_id=123,
@@ -131,11 +180,11 @@ try:
         priority_id=1  # Critical priority
     )
     print(f"Updated case: {updated_case['title']}")
-    
+
     # Delete a test case
     result = api.cases.delete_case(case_id=123)
     print("Case deleted successfully")
-    
+
 except TestRailAPIError as e:
     print(f"Error managing test cases: {e}")
 ```
@@ -251,6 +300,7 @@ This project includes automated credential detection to prevent secrets from bei
 ### Pre-commit Hooks
 
 The repository uses [pre-commit](https://pre-commit.com/) hooks that automatically:
+
 - **Detect secrets**: Scans for API keys, passwords, tokens, private keys, and other credentials using detect-secrets
 - **Block commits**: Prevents commits containing detected secrets
 - **Run on all git clients**: Works with command line, GUI clients, and IDEs
@@ -258,16 +308,19 @@ The repository uses [pre-commit](https://pre-commit.com/) hooks that automatical
 ### Setting Up Pre-commit Hooks
 
 1. **Install dependencies**:
+
    ```bash
    uv sync --extra dev
    ```
 
 2. **Install git hooks**:
+
    ```bash
    pre-commit install
    ```
 
 3. **Run hooks manually** (optional):
+
    ```bash
    pre-commit run --all-files
    ```
@@ -275,12 +328,14 @@ The repository uses [pre-commit](https://pre-commit.com/) hooks that automatical
 ### Credential Management Best Practices
 
 **✅ DO:**
+
 - Use environment variables for credentials (`TESTRAIL_API_KEY`, `TESTRAIL_PASSWORD`)
 - Store credentials in `.env` files (already in `.gitignore`)
 - Use GitHub Secrets for CI/CD pipelines
 - Use test credentials in test files (they're excluded from secret detection)
 
 **❌ DON'T:**
+
 - Commit `.env` files or any files containing real credentials
 - Hardcode API keys or passwords in source code
 - Commit files with `.key`, `.pem`, or other credential file extensions
@@ -289,6 +344,7 @@ The repository uses [pre-commit](https://pre-commit.com/) hooks that automatical
 ### What Gets Detected
 
 The secret detection scans for:
+
 - API keys and tokens (TestRail, GitHub, AWS, etc.)
 - Passwords and authentication credentials
 - Private keys (SSH, SSL certificates)
@@ -298,6 +354,7 @@ The secret detection scans for:
 ### If You Accidentally Commit Credentials
 
 If credentials are accidentally committed:
+
 1. **Immediately rotate/revoke** the exposed credentials
 2. **Remove from git history** using `git filter-branch` or BFG Repo-Cleaner
 3. **Force push** to update the remote repository (coordinate with team)

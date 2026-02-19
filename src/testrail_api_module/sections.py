@@ -2,10 +2,12 @@
 This module provides functionality for managing sections in TestRail.
 Sections are used to organize test cases into hierarchical structures.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
-__all__ = ['SectionsAPI']
+__all__ = ["SectionsAPI"]
 
 
 class SectionsAPI(BaseAPI):
@@ -16,7 +18,7 @@ class SectionsAPI(BaseAPI):
     in TestRail, following the official TestRail API patterns.
     """
 
-    def get_section(self, section_id: int) -> Dict[str, Any]:
+    def get_section(self, section_id: int) -> dict[str, Any]:
         """
         Get a section by ID.
 
@@ -33,10 +35,11 @@ class SectionsAPI(BaseAPI):
             >>> section = api.sections.get_section(123)
             >>> print(f"Section: {section['name']}")
         """
-        return self._get(f'get_section/{section_id}')
+        return self._get(f"get_section/{section_id}")
 
-    def get_sections(self, project_id: int,
-                     suite_id: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_sections(
+        self, project_id: int, suite_id: int | None = None
+    ) -> list[dict[str, Any]]:
         """
         Get all sections for a project and optionally a specific suite.
 
@@ -57,17 +60,18 @@ class SectionsAPI(BaseAPI):
         """
         params = {}
         if suite_id is not None:
-            params['suite_id'] = suite_id
+            params["suite_id"] = suite_id
 
-        return self._get(f'get_sections/{project_id}', params=params)
+        return self._get(f"get_sections/{project_id}", params=params)
 
-    def add_section(self,
-                    project_id: int,
-                    name: str,
-                    description: Optional[str] = None,
-                    suite_id: Optional[int] = None,
-                    parent_id: Optional[int] = None) -> Dict[str,
-                                                             Any]:
+    def add_section(
+        self,
+        project_id: int,
+        name: str,
+        description: str | None = None,
+        suite_id: int | None = None,
+        parent_id: int | None = None,
+    ) -> dict[str, Any]:
         """
         Add a new section.
 
@@ -93,27 +97,28 @@ class SectionsAPI(BaseAPI):
             ...     parent_id=5
             ... )
         """
-        data = {'name': name}
+        data = {"name": name}
 
         # Add optional fields only if they are provided
         optional_fields = {
-            'description': description,
-            'suite_id': suite_id,
-            'parent_id': parent_id
+            "description": description,
+            "suite_id": suite_id,
+            "parent_id": parent_id,
         }
 
         for field, value in optional_fields.items():
             if value is not None:
                 data[field] = value
 
-        return self._post(f'add_section/{project_id}', data=data)
+        return self._post(f"add_section/{project_id}", data=data)
 
-    def update_section(self,
-                       section_id: int,
-                       name: Optional[str] = None,
-                       description: Optional[str] = None,
-                       parent_id: Optional[int] = None) -> Dict[str,
-                                                                Any]:
+    def update_section(
+        self,
+        section_id: int,
+        name: str | None = None,
+        description: str | None = None,
+        parent_id: int | None = None,
+    ) -> dict[str, Any]:
         """
         Update a section.
 
@@ -139,18 +144,57 @@ class SectionsAPI(BaseAPI):
 
         # Add fields only if they are provided
         optional_fields = {
-            'name': name,
-            'description': description,
-            'parent_id': parent_id
+            "name": name,
+            "description": description,
+            "parent_id": parent_id,
         }
 
         for field, value in optional_fields.items():
             if value is not None:
                 data[field] = value
 
-        return self._post(f'update_section/{section_id}', data=data)
+        return self._post(f"update_section/{section_id}", data=data)
 
-    def delete_section(self, section_id: int) -> Dict[str, Any]:
+    def move_section(
+        self,
+        section_id: int,
+        parent_id: int | None = None,
+        after_id: int | None = None,
+    ) -> dict[str, Any]:
+        """
+        Move a section to a different parent or position.
+
+        Requires TestRail 6.5.2+.
+
+        Args:
+            section_id: The ID of the section to move.
+            parent_id: Optional new parent section ID. Use None or
+                omit for top-level.
+            after_id: Optional ID of the section to place this
+                section after. Use None to place first.
+
+        Returns:
+            Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> api.sections.move_section(
+            ...     section_id=10,
+            ...     parent_id=5,
+            ...     after_id=8
+            ... )
+        """
+        data: dict[str, Any] = {}
+        if parent_id is not None:
+            data["parent_id"] = parent_id
+        if after_id is not None:
+            data["after_id"] = after_id
+
+        return self._post(f"move_section/{section_id}", data=data)
+
+    def delete_section(self, section_id: int) -> dict[str, Any]:
         """
         Delete a section.
 
@@ -166,9 +210,9 @@ class SectionsAPI(BaseAPI):
         Example:
             >>> result = api.sections.delete_section(123)
         """
-        return self._post(f'delete_section/{section_id}')
+        return self._post(f"delete_section/{section_id}")
 
-    def get_section_cases(self, section_id: int) -> List[Dict[str, Any]]:
+    def get_section_cases(self, section_id: int) -> list[dict[str, Any]]:
         """
         Get all test cases in a section.
 
@@ -186,9 +230,9 @@ class SectionsAPI(BaseAPI):
             >>> for case in cases:
             ...     print(f"Case: {case['title']}")
         """
-        return self._get(f'get_section_cases/{section_id}')
+        return self._get(f"get_section_cases/{section_id}")
 
-    def get_section_stats(self, section_id: int) -> Dict[str, Any]:
+    def get_section_stats(self, section_id: int) -> dict[str, Any]:
         """
         Get statistics for a section.
 
@@ -205,4 +249,4 @@ class SectionsAPI(BaseAPI):
             >>> stats = api.sections.get_section_stats(123)
             >>> print(f"Total cases: {stats['total']}")
         """
-        return self._get(f'get_section_stats/{section_id}')
+        return self._get(f"get_section_stats/{section_id}")

@@ -5,12 +5,17 @@ This module contains comprehensive tests for all methods in the MilestonesAPI cl
 including edge cases, error handling, and proper API request formatting.
 """
 
-import pytest
-from unittest.mock import Mock, patch
 from typing import TYPE_CHECKING
+from unittest.mock import Mock, patch
 
+import pytest
+
+from testrail_api_module.base import (
+    TestRailAPIError,
+    TestRailAuthenticationError,
+    TestRailRateLimitError,
+)
 from testrail_api_module.milestones import MilestonesAPI
-from testrail_api_module.base import TestRailAPIError, TestRailAuthenticationError, TestRailRateLimitError
 
 if TYPE_CHECKING:
     from pytest_mock.plugin import MockerFixture  # noqa: F401
@@ -37,49 +42,53 @@ class TestMilestonesAPI:
         """Test MilestonesAPI initialization."""
         api = MilestonesAPI(mock_client)
         assert api.client == mock_client
-        assert hasattr(api, 'logger')
+        assert hasattr(api, "logger")
 
     def test_get_milestone(self, milestones_api: MilestonesAPI) -> None:
         """Test get_milestone method."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = {"id": 1, "name": "Milestone 1"}
 
             result = milestones_api.get_milestone(milestone_id=1)
 
-            mock_request.assert_called_once_with('GET', 'get_milestone/1')
+            mock_request.assert_called_once_with("GET", "get_milestone/1")
             assert result == {"id": 1, "name": "Milestone 1"}
 
     def test_get_milestones(self, milestones_api: MilestonesAPI) -> None:
         """Test get_milestones method."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = [
                 {"id": 1, "name": "Milestone 1"},
-                {"id": 2, "name": "Milestone 2"}
+                {"id": 2, "name": "Milestone 2"},
             ]
 
             result = milestones_api.get_milestones(project_id=1)
 
-            mock_request.assert_called_once_with('GET', 'get_milestones/1')
+            mock_request.assert_called_once_with("GET", "get_milestones/1")
             assert len(result) == 2
 
     def test_add_milestone_minimal(
-            self, milestones_api: MilestonesAPI) -> None:
+        self, milestones_api: MilestonesAPI
+    ) -> None:
         """Test add_milestone with minimal required parameters."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Milestone"}
 
             result = milestones_api.add_milestone(
-                project_id=1, name="New Milestone")
+                project_id=1, name="New Milestone"
+            )
 
             expected_data = {"name": "New Milestone"}
             mock_request.assert_called_once_with(
-                'POST', 'add_milestone/1', data=expected_data)
+                "POST", "add_milestone/1", data=expected_data
+            )
             assert result == {"id": 1, "name": "New Milestone"}
 
     def test_add_milestone_with_all_parameters(
-            self, milestones_api: MilestonesAPI) -> None:
+        self, milestones_api: MilestonesAPI
+    ) -> None:
         """Test add_milestone with all optional parameters."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Milestone"}
 
             milestones_api.add_milestone(
@@ -88,7 +97,7 @@ class TestMilestonesAPI:
                 description="Milestone description",
                 due_on="2024-12-31",
                 parent_id=2,
-                start_on="2024-01-01"
+                start_on="2024-01-01",
             )
 
             expected_data = {
@@ -96,15 +105,17 @@ class TestMilestonesAPI:
                 "description": "Milestone description",
                 "due_on": "2024-12-31",
                 "parent_id": 2,
-                "start_on": "2024-01-01"
+                "start_on": "2024-01-01",
             }
             mock_request.assert_called_once_with(
-                'POST', 'add_milestone/1', data=expected_data)
+                "POST", "add_milestone/1", data=expected_data
+            )
 
     def test_add_milestone_with_none_values(
-            self, milestones_api: MilestonesAPI) -> None:
+        self, milestones_api: MilestonesAPI
+    ) -> None:
         """Test add_milestone with None values."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = {"id": 1, "name": "New Milestone"}
 
             milestones_api.add_milestone(
@@ -113,59 +124,60 @@ class TestMilestonesAPI:
                 description=None,
                 due_on=None,
                 parent_id=None,
-                start_on=None
+                start_on=None,
             )
 
             expected_data = {"name": "New Milestone"}
             mock_request.assert_called_once_with(
-                'POST', 'add_milestone/1', data=expected_data)
+                "POST", "add_milestone/1", data=expected_data
+            )
 
     def test_update_milestone(self, milestones_api: MilestonesAPI) -> None:
         """Test update_milestone method."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = {"id": 1, "name": "Updated Milestone"}
 
             milestones_api.update_milestone(
-                milestone_id=1,
-                name="Updated Milestone",
-                due_on="2025-12-31"
+                milestone_id=1, name="Updated Milestone", due_on="2025-12-31"
             )
 
             expected_data = {
                 "name": "Updated Milestone",
-                "due_on": "2025-12-31"
+                "due_on": "2025-12-31",
             }
             mock_request.assert_called_once_with(
-                'POST', 'update_milestone/1', data=expected_data)
+                "POST", "update_milestone/1", data=expected_data
+            )
 
     def test_delete_milestone(self, milestones_api: MilestonesAPI) -> None:
         """Test delete_milestone method."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = {}
 
             result = milestones_api.delete_milestone(milestone_id=1)
 
-            mock_request.assert_called_once_with('POST', 'delete_milestone/1')
+            mock_request.assert_called_once_with("POST", "delete_milestone/1")
             assert result == {}
 
     def test_get_milestone_stats(self, milestones_api: MilestonesAPI) -> None:
         """Test get_milestone_stats method."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.return_value = {
                 "total": 100,
                 "passed": 80,
-                "failed": 20
+                "failed": 20,
             }
 
             result = milestones_api.get_milestone_stats(milestone_id=1)
 
             mock_request.assert_called_once_with(
-                'GET', 'get_milestone_stats/1')
+                "GET", "get_milestone_stats/1"
+            )
             assert result["total"] == 100
 
     def test_api_request_failure(self, milestones_api: MilestonesAPI) -> None:
         """Test behavior when API request fails."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
@@ -173,18 +185,24 @@ class TestMilestonesAPI:
 
     def test_authentication_error(self, milestones_api: MilestonesAPI) -> None:
         """Test behavior when authentication fails."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailAuthenticationError(
-                "Authentication failed")
+                "Authentication failed"
+            )
 
-            with pytest.raises(TestRailAuthenticationError, match="Authentication failed"):
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
                 milestones_api.get_milestone(milestone_id=1)
 
     def test_rate_limit_error(self, milestones_api: MilestonesAPI) -> None:
         """Test behavior when rate limit is exceeded."""
-        with patch.object(milestones_api, '_api_request') as mock_request:
+        with patch.object(milestones_api, "_api_request") as mock_request:
             mock_request.side_effect = TestRailRateLimitError(
-                "Rate limit exceeded")
+                "Rate limit exceeded"
+            )
 
-            with pytest.raises(TestRailRateLimitError, match="Rate limit exceeded"):
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
                 milestones_api.get_milestone(milestone_id=1)

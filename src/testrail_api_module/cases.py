@@ -2,12 +2,14 @@
 This module provides functionality for managing test cases in TestRail.
 Test cases are the fundamental building blocks for test management.
 """
+
 from __future__ import annotations
 
-from typing import Optional, Dict, Any, List, Union, Tuple
+from typing import Any
+
 from .base import BaseAPI
 
-__all__ = ['CasesAPI']
+__all__ = ["CasesAPI"]
 
 
 class CasesAPI(BaseAPI):
@@ -25,11 +27,11 @@ class CasesAPI(BaseAPI):
         # NOTE: Required-ness is context dependent (project/template/suite). This cache
         # stores fields that are required in *any* context, plus their configs so we
         # can re-evaluate required-ness for a specific context later.
-        self._case_fields_cache: Optional[List[Dict[str, Any]]] = None
+        self._case_fields_cache: list[dict[str, Any]] | None = None
         # Cache of raw get_case_fields() response (all fields).
-        self._case_fields_raw_cache: Optional[List[Dict[str, Any]]] = None
+        self._case_fields_raw_cache: list[dict[str, Any]] | None = None
 
-    def get_case(self, case_id: int) -> Dict[str, Any]:
+    def get_case(self, case_id: int) -> dict[str, Any]:
         """
         Get a test case by ID.
 
@@ -46,21 +48,25 @@ class CasesAPI(BaseAPI):
             >>> case = api.cases.get_case(123)
             >>> print(case['title'])
         """
-        return self._get(f'get_case/{case_id}')
+        return self._get(f"get_case/{case_id}")
 
-    def get_cases(self, project_id: int, suite_id: Optional[int] = None,
-                  section_id: Optional[int] = None,
-                  created_after: Optional[int] = None,
-                  created_before: Optional[int] = None,
-                  created_by: Optional[Union[int, List[int]]] = None,
-                  milestone_id: Optional[Union[int, List[int]]] = None,
-                  priority_id: Optional[Union[int, List[int]]] = None,
-                  type_id: Optional[Union[int, List[int]]] = None,
-                  updated_after: Optional[int] = None,
-                  updated_before: Optional[int] = None,
-                  updated_by: Optional[Union[int, List[int]]] = None,
-                  limit: Optional[int] = None,
-                  offset: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_cases(
+        self,
+        project_id: int,
+        suite_id: int | None = None,
+        section_id: int | None = None,
+        created_after: int | None = None,
+        created_before: int | None = None,
+        created_by: int | list[int] | None = None,
+        milestone_id: int | list[int] | None = None,
+        priority_id: int | list[int] | None = None,
+        type_id: int | list[int] | None = None,
+        updated_after: int | None = None,
+        updated_before: int | None = None,
+        updated_by: int | list[int] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get all test cases for a project and optionally a specific suite or section.
 
@@ -93,51 +99,51 @@ class CasesAPI(BaseAPI):
         """
         params = {}
         if suite_id is not None:
-            params['suite_id'] = suite_id
+            params["suite_id"] = suite_id
         if section_id is not None:
-            params['section_id'] = section_id
+            params["section_id"] = section_id
         if created_after is not None:
-            params['created_after'] = created_after
+            params["created_after"] = created_after
         if created_before is not None:
-            params['created_before'] = created_before
+            params["created_before"] = created_before
         if created_by is not None:
-            params['created_by'] = created_by
+            params["created_by"] = created_by
         if milestone_id is not None:
-            params['milestone_id'] = milestone_id
+            params["milestone_id"] = milestone_id
         if priority_id is not None:
-            params['priority_id'] = priority_id
+            params["priority_id"] = priority_id
         if type_id is not None:
-            params['type_id'] = type_id
+            params["type_id"] = type_id
         if updated_after is not None:
-            params['updated_after'] = updated_after
+            params["updated_after"] = updated_after
         if updated_before is not None:
-            params['updated_before'] = updated_before
+            params["updated_before"] = updated_before
         if updated_by is not None:
-            params['updated_by'] = updated_by
+            params["updated_by"] = updated_by
         if limit is not None:
-            params['limit'] = limit
+            params["limit"] = limit
         if offset is not None:
-            params['offset'] = offset
+            params["offset"] = offset
 
-        return self._get(f'get_cases/{project_id}', params=params)
+        return self._get(f"get_cases/{project_id}", params=params)
 
-    def add_case(self,
-                 section_id: int,
-                 title: str,
-                 template_id: Optional[int] = None,
-                 type_id: Optional[int] = None,
-                 priority_id: Optional[int] = None,
-                 estimate: Optional[str] = None,
-                 milestone_id: Optional[int] = None,
-                 refs: Optional[str] = None,
-                 description: Optional[str] = None,
-                 preconditions: Optional[str] = None,
-                 postconditions: Optional[str] = None,
-                 custom_fields: Optional[Dict[str,
-                                              Any]] = None,
-                 validate_required: bool = False,
-                 validate_only: bool = False) -> Dict[str,
-                                                      Any]:
+    def add_case(
+        self,
+        section_id: int,
+        title: str,
+        template_id: int | None = None,
+        type_id: int | None = None,
+        priority_id: int | None = None,
+        estimate: str | None = None,
+        milestone_id: int | None = None,
+        refs: str | None = None,
+        description: str | None = None,
+        preconditions: str | None = None,
+        postconditions: str | None = None,
+        custom_fields: dict[str, Any] | None = None,
+        validate_required: bool = False,
+        validate_only: bool = False,
+    ) -> dict[str, Any]:
         """
         Add a new test case.
 
@@ -233,20 +239,21 @@ class CasesAPI(BaseAPI):
         """
         # Build the data dictionary with standard fields
         self.logger.debug(
-            f"add_case called: section_id={section_id}, title={title}, validate_required={validate_required}")
-        data: Dict[str, Any] = {'title': title}
+            f"add_case called: section_id={section_id}, title={title}, validate_required={validate_required}"
+        )
+        data: dict[str, Any] = {"title": title}
 
         # Add optional fields only if they are provided
         optional_fields = {
-            'template_id': template_id,
-            'type_id': type_id,
-            'priority_id': priority_id,
-            'estimate': estimate,
-            'milestone_id': milestone_id,
-            'refs': refs,
-            'description': description,
-            'preconditions': preconditions,
-            'postconditions': postconditions
+            "template_id": template_id,
+            "type_id": type_id,
+            "priority_id": priority_id,
+            "estimate": estimate,
+            "milestone_id": milestone_id,
+            "refs": refs,
+            "description": description,
+            "preconditions": preconditions,
+            "postconditions": postconditions,
         }
 
         for field, value in optional_fields.items():
@@ -256,15 +263,25 @@ class CasesAPI(BaseAPI):
         # Add custom fields - these should use system names as keys
         if custom_fields:
             self.logger.debug(
-                f"Adding {len(custom_fields)} custom fields to data: {list(custom_fields.keys())}")
+                f"Adding {len(custom_fields)} custom fields to data: {list(custom_fields.keys())}"
+            )
             # Normalize and validate custom fields before adding to data
             try:
-                normalized_custom_fields = self._normalize_and_validate_custom_fields(
-                    custom_fields=custom_fields, section_id=section_id, template_id=template_id)
+                normalized_custom_fields = (
+                    self._normalize_and_validate_custom_fields(
+                        custom_fields=custom_fields,
+                        section_id=section_id,
+                        template_id=template_id,
+                    )
+                )
                 data.update(normalized_custom_fields)
                 self.logger.debug(
                     "Custom fields normalized and added. Sample values: %s",
-                    [(k, type(v).__name__, v) for k, v in list(normalized_custom_fields.items())[:3]])
+                    [
+                        (k, type(v).__name__, v)
+                        for k, v in list(normalized_custom_fields.items())[:3]
+                    ],
+                )
             except ValueError:
                 # Re-raise validation errors
                 raise
@@ -272,7 +289,8 @@ class CasesAPI(BaseAPI):
                 # For other errors during normalization, log but continue
                 # (field validation will catch issues later)
                 self.logger.warning(
-                    f"Error during custom field normalization: {e}. Continuing with original values.")
+                    f"Error during custom field normalization: {e}. Continuing with original values."
+                )
                 data.update(custom_fields)
         else:
             self.logger.debug("No custom fields provided")
@@ -283,12 +301,16 @@ class CasesAPI(BaseAPI):
         # Validate required fields if requested
         if validate_required or validate_only:
             self.logger.debug(
-                f"Validating required fields for add_case (validate_required={validate_required}, validate_only={validate_only})")
+                f"Validating required fields for add_case (validate_required={validate_required}, validate_only={validate_only})"
+            )
             try:
                 # Resolve context (project/suite/template) so we validate the right set of
                 # required fields for this section and template.
-                project_id, suite_id = self._resolve_project_and_suite_from_section(
-                    section_id=section_id)
+                project_id, suite_id = (
+                    self._resolve_project_and_suite_from_section(
+                        section_id=section_id
+                    )
+                )
                 effective_template_id = self._resolve_effective_template_id(
                     project_id=project_id,
                     template_id=template_id,
@@ -309,16 +331,16 @@ class CasesAPI(BaseAPI):
                 )
                 # Log all required field names for debugging
                 required_field_names = [
-                    f.get('system_name') or f.get('name') for f in required_fields if (
-                        f.get('system_name') or f.get('name')) and (
-                        f.get('system_name') or f.get('name')) != 'title']
+                    f.get("system_name") or f.get("name")
+                    for f in required_fields
+                    if (f.get("system_name") or f.get("name"))
+                    and (f.get("system_name") or f.get("name")) != "title"
+                ]
                 self.logger.debug(
-                    "Required field names to check: %s",
-                    required_field_names
+                    "Required field names to check: %s", required_field_names
                 )
                 self.logger.debug(
-                    "Fields available in data dict: %s",
-                    list(data.keys())
+                    "Fields available in data dict: %s", list(data.keys())
                 )
                 missing_fields = []
                 provided_fields = []
@@ -327,11 +349,16 @@ class CasesAPI(BaseAPI):
                 # a default_value for that field in this context.
                 for field_info in required_fields:
                     field_name = field_info.get(
-                        'system_name') or field_info.get('name')
-                    if not field_name or field_name == 'title':
+                        "system_name"
+                    ) or field_info.get("name")
+                    if not field_name or field_name == "title":
                         continue
-                    if field_name in data and not self._is_missing_required_value(
-                            data.get(field_name)):
+                    if (
+                        field_name in data
+                        and not self._is_missing_required_value(
+                            data.get(field_name)
+                        )
+                    ):
                         continue
                     default_value = self._extract_default_value(field_info)
                     if default_value is None:
@@ -350,15 +377,17 @@ class CasesAPI(BaseAPI):
 
                 for field_info in required_fields:
                     field_name = field_info.get(
-                        'system_name') or field_info.get('name')
+                        "system_name"
+                    ) or field_info.get("name")
                     if not field_name:
                         self.logger.debug(
-                            f"Skipping field with no name: {field_info}")
+                            f"Skipping field with no name: {field_info}"
+                        )
                         continue
 
                     # Standard fields that are always required (like title) are
                     # already handled
-                    if field_name == 'title':
+                    if field_name == "title":
                         continue
 
                     # Check for field value in data dict
@@ -367,15 +396,20 @@ class CasesAPI(BaseAPI):
                     # Fallback: if field not found in data and we have custom_fields parameter,
                     # check there as well (shouldn't be necessary after
                     # data.update, but helps debug)
-                    if field_value is None and custom_fields and field_name in custom_fields:
+                    if (
+                        field_value is None
+                        and custom_fields
+                        and field_name in custom_fields
+                    ):
                         field_value = custom_fields[field_name]
                         self.logger.debug(
                             "Field %s found in custom_fields parameter but not in data dict - using from custom_fields",
-                            field_name)
+                            field_name,
+                        )
                         # Add it to data for consistency
                         data[field_name] = field_value
 
-                    field_type = field_info.get('type_id')
+                    field_type = field_info.get("type_id")
 
                     # Build field description with type information (dynamic
                     # hints)
@@ -392,8 +426,11 @@ class CasesAPI(BaseAPI):
                         field_name,
                         field_type,
                         field_value,
-                        type(field_value).__name__ if field_value is not None else 'None',
-                        field_name in data)
+                        type(field_value).__name__
+                        if field_value is not None
+                        else "None",
+                        field_name in data,
+                    )
 
                     is_missing = self._is_missing_required_value(field_value)
 
@@ -402,7 +439,7 @@ class CasesAPI(BaseAPI):
                             "Field %s is missing (value=%s, in_data=%s)",
                             field_name,
                             field_value,
-                            field_name in data
+                            field_name in data,
                         )
                         # Only add the base field description for missing fields
                         # Do NOT append step validation text to non-step fields
@@ -440,7 +477,8 @@ class CasesAPI(BaseAPI):
                         message = f"✗ Missing {len(missing_fields)} required field(s). Please provide all required fields."
 
                     self.logger.debug(
-                        f"Validation only mode: valid={is_valid}, missing={len(missing_fields)}")
+                        f"Validation only mode: valid={is_valid}, missing={len(missing_fields)}"
+                    )
                     return {
                         "valid": is_valid,
                         "missing_fields": missing_fields,
@@ -451,7 +489,8 @@ class CasesAPI(BaseAPI):
                             "text": "String values",
                             "dropdown_multiselect": "Arrays of numeric IDs (e.g., [3, 5])",
                             "checkbox": "Boolean values (True/False)",
-                            "steps": "Array of objects with 'content' and 'expected' keys"},
+                            "steps": "Array of objects with 'content' and 'expected' keys",
+                        },
                         "context": {
                             "project_id": project_id,
                             "suite_id": suite_id,
@@ -463,7 +502,8 @@ class CasesAPI(BaseAPI):
                 # fields missing
                 if missing_fields:
                     self.logger.debug(
-                        f"Validation failed: {len(missing_fields)} required fields are missing")
+                        f"Validation failed: {len(missing_fields)} required fields are missing"
+                    )
                     # Build comprehensive error message
                     error_parts = [
                         f"Missing required field(s): {', '.join(missing_fields)}.",
@@ -480,11 +520,13 @@ class CasesAPI(BaseAPI):
                         "Use get_case_fields() to see complete field requirements and types for your project.",
                         "",
                         "Note: Custom fields must be nested in the 'custom_fields' parameter.",
-                        "      Use system names (e.g., 'custom_field_name') as keys, not display names."]
-                    raise ValueError('\n'.join(error_parts))
+                        "      Use system names (e.g., 'custom_field_name') as keys, not display names.",
+                    ]
+                    raise ValueError("\n".join(error_parts))
                 else:
                     self.logger.debug(
-                        "Validation passed: all required fields are present")
+                        "Validation passed: all required fields are present"
+                    )
             except ValueError:
                 # Re-raise ValueError directly (validation errors from missing
                 # fields)
@@ -503,11 +545,11 @@ class CasesAPI(BaseAPI):
                     f"Please verify your TestRail connection and try again."
                 )
                 self.logger.error(
-                    f"Validation error: {error_msg}",
-                    exc_info=True)
+                    f"Validation error: {error_msg}", exc_info=True
+                )
                 raise ValueError(error_msg) from e
 
-        return self._post(f'add_case/{section_id}', data=data)
+        return self._post(f"add_case/{section_id}", data=data)
 
     def _is_missing_required_value(self, value: Any) -> bool:
         """
@@ -527,7 +569,7 @@ class CasesAPI(BaseAPI):
             return True
         return False
 
-    def _validate_steps_separated(self, steps: List[Dict[str, Any]]) -> bool:
+    def _validate_steps_separated(self, steps: list[dict[str, Any]]) -> bool:
         """
         Validate separated steps payload for stepped fields.
 
@@ -552,10 +594,10 @@ class CasesAPI(BaseAPI):
 
     def _normalize_and_validate_custom_fields(
         self,
-        custom_fields: Dict[str, Any],
+        custom_fields: dict[str, Any],
         section_id: int,
-        template_id: Optional[int] = None
-    ) -> Dict[str, Any]:
+        template_id: int | None = None,
+    ) -> dict[str, Any]:
         """
         Normalize and validate custom field values before sending to TestRail API.
 
@@ -578,22 +620,26 @@ class CasesAPI(BaseAPI):
         """
         try:
             # Resolve context to get field definitions
-            project_id, suite_id = self._resolve_project_and_suite_from_section(
-                section_id=section_id)
+            project_id, suite_id = (
+                self._resolve_project_and_suite_from_section(
+                    section_id=section_id
+                )
+            )
 
             # Get all case fields to understand field types
             all_fields = self.get_case_fields()
             field_info_map = {
-                (f.get('system_name') or f.get('name')): f
+                (f.get("system_name") or f.get("name")): f
                 for f in all_fields
-                if (f.get('system_name') or f.get('name'))
+                if (f.get("system_name") or f.get("name"))
             }
 
         except Exception as e:
             # If we can't get field info, log and return fields as-is
             # (validation will catch issues later)
             self.logger.debug(
-                f"Could not fetch field info for normalization: {e}")
+                f"Could not fetch field info for normalization: {e}"
+            )
             return custom_fields
 
         normalized = {}
@@ -610,21 +656,22 @@ class CasesAPI(BaseAPI):
                 normalized[field_name] = field_value
                 continue
 
-            type_id = field_info.get('type_id')
+            type_id = field_info.get("type_id")
 
             # Handle dropdown (6) and multi-select (11) fields
             if type_id in (6, 11):
                 # These fields require arrays of IDs (numbers or strings)
-                if isinstance(field_value, (int, str)):
+                if isinstance(field_value, int | str):
                     # Single value - convert to array of string
                     normalized[field_name] = [str(field_value)]
                     self.logger.debug(
-                        f"Normalized {field_name}: single value {field_value!r} -> array ['{field_value}']")
+                        f"Normalized {field_name}: single value {field_value!r} -> array ['{field_value}']"
+                    )
                 elif isinstance(field_value, list):
                     # Array - ensure all elements are strings
                     normalized_array = []
                     for item in field_value:
-                        if isinstance(item, (int, str)):
+                        if isinstance(item, int | str):
                             normalized_array.append(str(item))
                         else:
                             format_errors.append(
@@ -636,7 +683,8 @@ class CasesAPI(BaseAPI):
                     normalized[field_name] = normalized_array
                     if normalized_array != field_value:
                         self.logger.debug(
-                            f"Normalized {field_name}: converted integer IDs to strings")
+                            f"Normalized {field_name}: converted integer IDs to strings"
+                        )
                 else:
                     format_errors.append(
                         f"Field '{field_name}' (multi-select/dropdown) has invalid type: {type(field_value).__name__}. "
@@ -650,7 +698,7 @@ class CasesAPI(BaseAPI):
                 # Stepped fields can be either step objects OR arrays of IDs depending on config
                 # Check if it's a steps_separated field (step objects) or ID
                 # array
-                if 'steps_separated' in field_name.lower():
+                if "steps_separated" in field_name.lower():
                     # This is a steps field - should be array of step objects
                     if isinstance(field_value, list):
                         # Validate step objects
@@ -663,19 +711,22 @@ class CasesAPI(BaseAPI):
                     else:
                         format_errors.append(
                             f"Field '{field_name}' (steps) has invalid type: {type(field_value).__name__}. "
-                            f"Expected array of step objects.")
+                            f"Expected array of step objects."
+                        )
                         normalized[field_name] = field_value
                 else:
                     # Regular stepped field - treat as array of IDs
-                    if isinstance(field_value, (int, str)):
+                    if isinstance(field_value, int | str):
                         normalized[field_name] = [str(field_value)]
                     elif isinstance(field_value, list):
                         normalized[field_name] = [
-                            str(item) for item in field_value]
+                            str(item) for item in field_value
+                        ]
                     else:
                         format_errors.append(
                             f"Field '{field_name}' (stepped) has invalid type: {type(field_value).__name__}. "
-                            f"Expected array of IDs.")
+                            f"Expected array of IDs."
+                        )
                         normalized[field_name] = [str(field_value)]
 
             # Handle checkbox fields (5) - ensure boolean
@@ -684,9 +735,9 @@ class CasesAPI(BaseAPI):
                     normalized[field_name] = field_value
                 elif isinstance(field_value, str):
                     # Convert string to boolean
-                    if field_value.lower() in ('true', '1', 'yes'):
+                    if field_value.lower() in ("true", "1", "yes"):
                         normalized[field_name] = True
-                    elif field_value.lower() in ('false', '0', 'no'):
+                    elif field_value.lower() in ("false", "0", "no"):
                         normalized[field_name] = False
                     else:
                         format_errors.append(
@@ -699,7 +750,8 @@ class CasesAPI(BaseAPI):
                 else:
                     format_errors.append(
                         f"Field '{field_name}' (checkbox) has invalid type: {type(field_value).__name__}. "
-                        f"Expected boolean.")
+                        f"Expected boolean."
+                    )
                     normalized[field_name] = bool(field_value)
 
             # For all other field types, pass through as-is
@@ -710,8 +762,7 @@ class CasesAPI(BaseAPI):
         if format_errors:
             error_msg = (
                 "Custom field format errors detected:\n"
-                + "\n".join(
-                    f"  - {error}" for error in format_errors)
+                + "\n".join(f"  - {error}" for error in format_errors)
                 + "\n\n"
                 + "Field type guide:\n"
                 + "  - Dropdown/Multi-select: Arrays of numeric IDs (e.g., [3, 5])\n"
@@ -719,7 +770,8 @@ class CasesAPI(BaseAPI):
                 + "  - Checkboxes: Boolean values (True/False)\n"
                 + "  - Separated steps: Array of objects: [{'content': '...', 'expected': '...'}]\n"
                 + "\n"
-                + "Use get_required_case_fields() to see complete field requirements and types.")
+                + "Use get_required_case_fields() to see complete field requirements and types."
+            )
             raise ValueError(error_msg)
 
         return normalized
@@ -727,7 +779,7 @@ class CasesAPI(BaseAPI):
     def _resolve_project_and_suite_from_section(
         self,
         section_id: int,
-    ) -> Tuple[int, Optional[int]]:
+    ) -> tuple[int, int | None]:
         """
         Resolve project_id and suite_id from a section_id.
 
@@ -745,7 +797,8 @@ class CasesAPI(BaseAPI):
             section = self.client.sections.get_section(section_id=section_id)
         except Exception as e:
             raise ValueError(
-                f"Unable to resolve section context for section_id={section_id}: {e}") from e
+                f"Unable to resolve section context for section_id={section_id}: {e}"
+            ) from e
 
         project_id = section.get("project_id")
         suite_id = section.get("suite_id")
@@ -765,7 +818,8 @@ class CasesAPI(BaseAPI):
                 suite = self.client.suites.get_suite(suite_id=suite_id)
             except Exception as e:
                 raise ValueError(
-                    f"Unable to resolve suite context for suite_id={suite_id}: {e}") from e
+                    f"Unable to resolve suite context for suite_id={suite_id}: {e}"
+                ) from e
 
             suite_project_id = suite.get("project_id")
             if not isinstance(suite_project_id, int):
@@ -780,8 +834,8 @@ class CasesAPI(BaseAPI):
     def _resolve_effective_template_id(
         self,
         project_id: int,
-        template_id: Optional[int],
-    ) -> Optional[int]:
+        template_id: int | None,
+    ) -> int | None:
         """
         Resolve the effective template_id used for case creation.
 
@@ -800,7 +854,8 @@ class CasesAPI(BaseAPI):
 
         try:
             templates = self.client.templates.get_templates(
-                project_id=project_id)
+                project_id=project_id
+            )
         except Exception:
             return None
 
@@ -809,21 +864,23 @@ class CasesAPI(BaseAPI):
 
         for tmpl in templates:
             if tmpl.get("is_default") is True and isinstance(
-                    tmpl.get("id"), int):
+                tmpl.get("id"), int
+            ):
                 return tmpl["id"]
 
         # Fallback: use the first template if available.
-        first_id = templates[0].get("id") if isinstance(
-            templates[0], dict) else None
+        first_id = (
+            templates[0].get("id") if isinstance(templates[0], dict) else None
+        )
         return first_id if isinstance(first_id, int) else None
 
     def _get_required_case_fields_for_context(
         self,
         project_id: int,
-        suite_id: Optional[int],
-        template_id: Optional[int],
+        suite_id: int | None,
+        template_id: int | None,
         use_cache: bool = True,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get required case fields for a specific creation context.
 
@@ -839,7 +896,7 @@ class CasesAPI(BaseAPI):
             specific config entry.
         """
         required_any = self._get_required_case_fields(use_cache=use_cache)
-        required_for_context: List[Dict[str, Any]] = []
+        required_for_context: list[dict[str, Any]] = []
 
         for field in required_any:
             field_name = field.get("system_name") or field.get("name")
@@ -870,11 +927,11 @@ class CasesAPI(BaseAPI):
 
     def _select_required_config_for_context(
         self,
-        field: Dict[str, Any],
+        field: dict[str, Any],
         project_id: int,
-        suite_id: Optional[int],
-        template_id: Optional[int],
-    ) -> Optional[Dict[str, Any]]:
+        suite_id: int | None,
+        template_id: int | None,
+    ) -> dict[str, Any] | None:
         """
         Pick a required config for this field that applies to the given context.
 
@@ -888,8 +945,10 @@ class CasesAPI(BaseAPI):
             if not isinstance(config, dict):
                 continue
             options = config.get("options", {})
-            if not isinstance(options, dict) or options.get(
-                    "is_required") is not True:
+            if (
+                not isinstance(options, dict)
+                or options.get("is_required") is not True
+            ):
                 continue
             context = config.get("context", {})
             if self._config_applies_to_context(
@@ -906,8 +965,8 @@ class CasesAPI(BaseAPI):
         self,
         context: Any,
         project_id: int,
-        suite_id: Optional[int],
-        template_id: Optional[int],
+        suite_id: int | None,
+        template_id: int | None,
     ) -> bool:
         """
         Determine if a TestRail field config context applies to this create-case context.
@@ -922,9 +981,11 @@ class CasesAPI(BaseAPI):
             return True
 
         project_ids = context.get("project_ids")
-        if isinstance(
-                project_ids,
-                list) and project_ids and project_id not in project_ids:
+        if (
+            isinstance(project_ids, list)
+            and project_ids
+            and project_id not in project_ids
+        ):
             return False
 
         suite_ids = context.get("suite_ids")
@@ -939,7 +1000,7 @@ class CasesAPI(BaseAPI):
 
         return True
 
-    def _extract_default_value(self, field_info: Dict[str, Any]) -> Any:
+    def _extract_default_value(self, field_info: dict[str, Any]) -> Any:
         """
         Extract default_value for a field from the selected config (preferred) or
         from the first config/options if present.
@@ -963,8 +1024,8 @@ class CasesAPI(BaseAPI):
 
     def _apply_default_value(
         self,
-        data: Dict[str, Any],
-        field_info: Dict[str, Any],
+        data: dict[str, Any],
+        field_info: dict[str, Any],
         default_value: Any,
     ) -> bool:
         """
@@ -978,7 +1039,8 @@ class CasesAPI(BaseAPI):
 
         # Don't override an explicitly provided value.
         if field_name in data and not self._is_missing_required_value(
-                data.get(field_name)):
+            data.get(field_name)
+        ):
             return False
 
         # Normalize common default formats based on field type.
@@ -986,8 +1048,9 @@ class CasesAPI(BaseAPI):
             # Dropdown / Multi-select: TestRail often uses comma-separated
             # string ids.
             if isinstance(default_value, str):
-                parts = [p.strip()
-                         for p in default_value.split(",") if p.strip()]
+                parts = [
+                    p.strip() for p in default_value.split(",") if p.strip()
+                ]
                 if parts:
                     data[field_name] = parts
                     return True
@@ -1014,9 +1077,10 @@ class CasesAPI(BaseAPI):
             if isinstance(default_value, int):
                 data[field_name] = default_value
                 return True
-            if isinstance(
-                    default_value,
-                    str) and default_value.strip().isdigit():
+            if (
+                isinstance(default_value, str)
+                and default_value.strip().isdigit()
+            ):
                 data[field_name] = int(default_value.strip())
                 return True
             return False
@@ -1030,7 +1094,8 @@ class CasesAPI(BaseAPI):
         return False
 
     def _get_required_case_fields(
-            self, use_cache: bool = True) -> List[Dict[str, Any]]:
+        self, use_cache: bool = True
+    ) -> list[dict[str, Any]]:
         """
         Get list of required case fields from TestRail with caching.
 
@@ -1051,7 +1116,8 @@ class CasesAPI(BaseAPI):
         # valid)
         if use_cache and self._case_fields_cache is not None:
             self.logger.debug(
-                f"Using cached case fields ({len(self._case_fields_cache)} fields)")
+                f"Using cached case fields ({len(self._case_fields_cache)} fields)"
+            )
             # If cache is empty, log a warning but still return it (it means no
             # required fields)
             if len(self._case_fields_cache) == 0:
@@ -1059,13 +1125,15 @@ class CasesAPI(BaseAPI):
                     "Cached field requirements are empty. This means either:\n"
                     "  1. Your TestRail project has no required fields (unusual), OR\n"
                     "  2. The cache was populated with empty data due to an API error.\n"
-                    "  Call clear_case_fields_cache() to refresh if this seems wrong.")
+                    "  Call clear_case_fields_cache() to refresh if this seems wrong."
+                )
             return self._case_fields_cache
 
         self.logger.debug("Fetching case fields from TestRail API")
         all_fields = self._get_case_fields_raw(use_cache=use_cache)
         self.logger.debug(
-            f"Retrieved {len(all_fields)} total case fields from API")
+            f"Retrieved {len(all_fields)} total case fields from API"
+        )
 
         # Check if we got any fields at all
         if len(all_fields) == 0:
@@ -1074,7 +1142,8 @@ class CasesAPI(BaseAPI):
                 "  1. API connection issues\n"
                 "  2. Invalid project configuration\n"
                 "  3. Missing permissions\n"
-                "Will NOT cache this empty result to allow retry.")
+                "Will NOT cache this empty result to allow retry."
+            )
             # Don't cache empty results from API errors - return empty but
             # don't cache
             return []
@@ -1082,43 +1151,42 @@ class CasesAPI(BaseAPI):
         # Filter required fields - check BOTH top-level is_required AND configs
         required_fields = []
         for field in all_fields:
-            field_name = field.get('system_name') or field.get('name')
+            field_name = field.get("system_name") or field.get("name")
             is_required = False
-            required_configs: List[Dict[str, Any]] = []
+            required_configs: list[dict[str, Any]] = []
 
             # Check top-level is_required flag (for backwards compatibility)
-            if field.get('is_required', False):
+            if field.get("is_required", False):
                 is_required = True
                 self.logger.debug(
-                    f"  Field {field_name}: required via top-level flag")
+                    f"  Field {field_name}: required via top-level flag"
+                )
 
             # CRITICAL: Also check configs array for project/template-specific requirements
             # TestRail returns required field info in
             # configs[].options.is_required
-            configs = field.get('configs', [])
+            configs = field.get("configs", [])
             if isinstance(configs, list) and configs:
                 for config in configs:
                     if not isinstance(config, dict):
                         continue
-                    options = config.get('options', {})
-                    if isinstance(
-                            options, dict) and options.get(
-                            'is_required', False):
+                    options = config.get("options", {})
+                    if isinstance(options, dict) and options.get(
+                        "is_required", False
+                    ):
                         is_required = True
                         required_configs.append(config)
-                        context = config.get('context', {})
+                        context = config.get("context", {})
                         context_type = (
-                            context.get(
-                                'is_global',
-                                False) if isinstance(
-                                context,
-                                dict) else None)
+                            context.get("is_global", False)
+                            if isinstance(context, dict)
+                            else None
+                        )
                         project_ids = (
-                            context.get(
-                                'project_ids',
-                                []) if isinstance(
-                                context,
-                                dict) else [])
+                            context.get("project_ids", [])
+                            if isinstance(context, dict)
+                            else []
+                        )
                         self.logger.debug(
                             f"  Field {field_name}: required via config "
                             f"(global={context_type}, projects={project_ids})"
@@ -1128,28 +1196,32 @@ class CasesAPI(BaseAPI):
                 enhanced_field = field.copy()
                 # Ensure downstream validation can treat this as required even if the
                 # top-level field flag is False.
-                enhanced_field['is_required'] = True
+                enhanced_field["is_required"] = True
                 if required_configs:
-                    enhanced_field['_required_configs'] = required_configs
+                    enhanced_field["_required_configs"] = required_configs
                 required_fields.append(enhanced_field)
 
         self.logger.debug(
-            f"Filtered to {len(required_fields)} required fields")
+            f"Filtered to {len(required_fields)} required fields"
+        )
         for field in required_fields:
-            field_name = field.get('system_name') or field.get('name')
+            field_name = field.get("system_name") or field.get("name")
             self.logger.debug(
-                f"  Required: {field_name} (type_id={field.get('type_id')})")
+                f"  Required: {field_name} (type_id={field.get('type_id')})"
+            )
 
         # Cache the results for future calls (even if empty - it's valid to
         # have no required fields)
         self._case_fields_cache = required_fields
         self.logger.debug(
-            f"Cached {len(required_fields)} required fields for future use")
+            f"Cached {len(required_fields)} required fields for future use"
+        )
 
         return required_fields
 
     def _get_case_fields_raw(
-            self, use_cache: bool = True) -> List[Dict[str, Any]]:
+        self, use_cache: bool = True
+    ) -> list[dict[str, Any]]:
         """
         Get raw case fields from TestRail with caching.
 
@@ -1190,12 +1262,12 @@ class CasesAPI(BaseAPI):
 
     def get_required_case_fields(
         self,
-        project_id: Optional[int] = None,
-        suite_id: Optional[int] = None,
-        template_id: Optional[int] = None,
-        section_id: Optional[int] = None,
-        use_cache: bool = True
-    ) -> Dict[str, Any]:
+        project_id: int | None = None,
+        suite_id: int | None = None,
+        template_id: int | None = None,
+        section_id: int | None = None,
+        use_cache: bool = True,
+    ) -> dict[str, Any]:
         """
         Get required case fields for creating test cases, optionally filtered by project.
 
@@ -1259,8 +1331,11 @@ class CasesAPI(BaseAPI):
         resolved_project_id = project_id
         resolved_suite_id = suite_id
         if section_id is not None:
-            sec_project_id, sec_suite_id = self._resolve_project_and_suite_from_section(
-                section_id=section_id)
+            sec_project_id, sec_suite_id = (
+                self._resolve_project_and_suite_from_section(
+                    section_id=section_id
+                )
+            )
             if resolved_project_id is None:
                 resolved_project_id = sec_project_id
             if resolved_suite_id is None:
@@ -1278,29 +1353,33 @@ class CasesAPI(BaseAPI):
 
         # Get all required fields (with enhanced config context)
         all_required_fields = self._get_required_case_fields(
-            use_cache=use_cache)
+            use_cache=use_cache
+        )
         self.logger.debug(
-            f"Retrieved {len(all_required_fields)} required fields from cache/API")
+            f"Retrieved {len(all_required_fields)} required fields from cache/API"
+        )
 
         # Filter by context if provided
         filtered_fields = []
         for field in all_required_fields:
-            field_name = field.get('system_name') or field.get('name')
+            field_name = field.get("system_name") or field.get("name")
 
             # If no context filter, include all required fields
             if resolved_project_id is None:
                 # Attach a representative required config (if any) for
                 # metadata.
                 selected_any = None
-                if isinstance(
-                        field.get("configs"),
-                        list) and field.get("configs"):
+                if isinstance(field.get("configs"), list) and field.get(
+                    "configs"
+                ):
                     for cfg in field.get("configs", []):
                         if not isinstance(cfg, dict):
                             continue
                         options = cfg.get("options", {})
-                        if isinstance(options, dict) and options.get(
-                                "is_required") is True:
+                        if (
+                            isinstance(options, dict)
+                            and options.get("is_required") is True
+                        ):
                             selected_any = cfg
                             break
                 if selected_any is not None:
@@ -1312,9 +1391,10 @@ class CasesAPI(BaseAPI):
                 continue
 
             # Legacy/top-level required without configs always applies.
-            if field.get('is_required', False) and not field.get('configs'):
+            if field.get("is_required", False) and not field.get("configs"):
                 self.logger.debug(
-                    f"  Including {field_name}: top-level required flag")
+                    f"  Including {field_name}: top-level required flag"
+                )
                 filtered_fields.append(field)
                 continue
 
@@ -1351,67 +1431,64 @@ class CasesAPI(BaseAPI):
         # Format the response
         formatted_fields = []
         for field in filtered_fields:
-            field_name = field.get('system_name') or field.get('name')
-            type_id = field.get('type_id')
+            field_name = field.get("system_name") or field.get("name")
+            type_id = field.get("type_id")
 
             # Extract config context info
-            matching_config = field.get('_selected_config')
+            matching_config = field.get("_selected_config")
             is_global = None
             project_ids = None
             if matching_config:
-                context = matching_config.get('context', {})
-                is_global = context.get('is_global', False)
-                project_ids = context.get('project_ids')
+                context = matching_config.get("context", {})
+                is_global = context.get("is_global", False)
+                project_ids = context.get("project_ids")
 
             # Get format example based on field type
             format_example = self._get_field_format_example(
-                type_id, field_name, field)
+                type_id, field_name, field
+            )
 
             formatted_field = {
-                'system_name': field_name,
-                'label': field.get('label') or field.get('name') or field_name,
-                'type_id': type_id,
-                'type_name': self._get_field_type_name(type_id),
-                'type_hint': self._get_field_type_hint(
-                    type_id,
-                    field_name,
-                    field),
-                'format_example': format_example,
-                'is_global': is_global,
-                'project_ids': project_ids,
-                'description': field.get(
-                    'description',
-                    '')}
+                "system_name": field_name,
+                "label": field.get("label") or field.get("name") or field_name,
+                "type_id": type_id,
+                "type_name": self._get_field_type_name(type_id),
+                "type_hint": self._get_field_type_hint(
+                    type_id, field_name, field
+                ),
+                "format_example": format_example,
+                "is_global": is_global,
+                "project_ids": project_ids,
+                "description": field.get("description", ""),
+            }
             formatted_fields.append(formatted_field)
 
         # Add summary with common format guide
         format_guide = {
-            'text_fields': 'String values (e.g., "Automated")',
-            'dropdown_single': 'Single numeric ID (e.g., 3). Strings like "3" also work.',
-            'dropdown_multi': 'Array of numeric IDs (e.g., [3, 5]). Strings like ["3", "5"] also work.',
-            'checkbox': 'Boolean values (True/False)',
-            'steps_separated': 'Array of step objects: [{"content": "Step 1", "expected": "Result 1"}]',
+            "text_fields": 'String values (e.g., "Automated")',
+            "dropdown_single": 'Single numeric ID (e.g., 3). Strings like "3" also work.',
+            "dropdown_multi": 'Array of numeric IDs (e.g., [3, 5]). Strings like ["3", "5"] also work.',
+            "checkbox": "Boolean values (True/False)",
+            "steps_separated": 'Array of step objects: [{"content": "Step 1", "expected": "Result 1"}]',
         }
 
         return {
-            'required_fields': formatted_fields,
-            'field_count': len(formatted_fields),
-            'project_filtered': resolved_project_id is not None,
-            'cache_used': cache_was_used,
-            'format_guide': format_guide,
-            'context': {
-                'project_id': resolved_project_id,
-                'suite_id': resolved_suite_id,
-                'template_id': resolved_template_id,
-                'section_id': section_id
-            }
+            "required_fields": formatted_fields,
+            "field_count": len(formatted_fields),
+            "project_filtered": resolved_project_id is not None,
+            "cache_used": cache_was_used,
+            "format_guide": format_guide,
+            "context": {
+                "project_id": resolved_project_id,
+                "suite_id": resolved_suite_id,
+                "template_id": resolved_template_id,
+                "section_id": section_id,
+            },
         }
 
     def get_field_options(
-        self,
-        field_name: str,
-        use_cache: bool = True
-    ) -> Dict[str, Any]:
+        self, field_name: str, use_cache: bool = True
+    ) -> dict[str, Any]:
         """
         Get valid options for a specific custom field.
 
@@ -1452,8 +1529,8 @@ class CasesAPI(BaseAPI):
             ...     print(f"  {opt['id']}: {opt['label']}")
         """
         # Normalize field name
-        if not field_name.startswith('custom_'):
-            field_name = f'custom_{field_name}'
+        if not field_name.startswith("custom_"):
+            field_name = f"custom_{field_name}"
 
         # Get all fields
         all_fields = self._get_case_fields_raw(use_cache=use_cache)
@@ -1461,97 +1538,97 @@ class CasesAPI(BaseAPI):
         # Find the requested field
         target_field = None
         for field in all_fields:
-            sys_name = field.get('system_name') or field.get('name')
+            sys_name = field.get("system_name") or field.get("name")
             if sys_name == field_name:
                 target_field = field
                 break
 
         if target_field is None:
             available = [
-                f.get('system_name') or f.get('name')
+                f.get("system_name") or f.get("name")
                 for f in all_fields
-                if (f.get('system_name') or f.get('name', '')).startswith('custom_')
+                if (f.get("system_name") or f.get("name", "")).startswith(
+                    "custom_"
+                )
             ]
             raise ValueError(
                 f"Field '{field_name}' not found. Available custom fields: "
                 f"{', '.join(sorted(available))}"
             )
 
-        type_id = target_field.get('type_id')
-        label = target_field.get('label') or field_name
+        type_id = target_field.get("type_id")
+        label = target_field.get("label") or field_name
 
         # Extract options from configs
-        configs = target_field.get('configs', [])
+        configs = target_field.get("configs", [])
         config = configs[0] if isinstance(configs, list) and configs else {}
-        options_dict = config.get(
-            'options',
-            {}) if isinstance(
-            config,
-            dict) else {}
+        options_dict = (
+            config.get("options", {}) if isinstance(config, dict) else {}
+        )
 
-        is_required = options_dict.get('is_required', False)
-        default_value = options_dict.get('default_value')
-        items_str = options_dict.get('items', '')
+        is_required = options_dict.get("is_required", False)
+        default_value = options_dict.get("default_value")
+        items_str = options_dict.get("items", "")
 
         # Parse items
         parsed_options = []
         if items_str and isinstance(items_str, str):
-            for line in items_str.strip().split('\n'):
+            for line in items_str.strip().split("\n"):
                 line = line.strip()
                 if not line:
                     continue
-                parts = line.split(',', 1)
+                parts = line.split(",", 1)
                 if len(parts) >= 2:
-                    parsed_options.append({
-                        'id': parts[0].strip(),
-                        'label': parts[1].strip()
-                    })
+                    parsed_options.append(
+                        {"id": parts[0].strip(), "label": parts[1].strip()}
+                    )
                 elif len(parts) == 1 and parts[0].strip():
-                    parsed_options.append({
-                        'id': parts[0].strip(),
-                        'label': parts[0].strip()
-                    })
+                    parsed_options.append(
+                        {"id": parts[0].strip(), "label": parts[0].strip()}
+                    )
 
         # Generate format hint based on type
         if type_id == 6:
             format_hint = (
                 f"Single numeric ID (or string). (e.g., {parsed_options[0]['id']} for '{parsed_options[0]['label']}')"
-                if parsed_options else "Single numeric ID (or string)")
+                if parsed_options
+                else "Single numeric ID (or string)"
+            )
         elif type_id in (11, 12):
             format_hint = (
                 "Array of numeric IDs (or strings). "
                 f"(e.g., [{parsed_options[0]['id']}] for '{parsed_options[0]['label']}')"
-                if parsed_options else "Array of numeric IDs (or strings)"
+                if parsed_options
+                else "Array of numeric IDs (or strings)"
             )
         elif type_id == 10:
-            format_hint = (
-                "Array of step objects: [{'content': '...', 'expected': '...'}]"
-            )
+            format_hint = "Array of step objects: [{'content': '...', 'expected': '...'}]"
         elif type_id == 5:
             format_hint = "Boolean: True or False"
         elif type_id == 3:
             format_hint = "Text string (can be multi-line)"
         else:
             format_hint = self._get_field_type_hint(
-                type_id, field_name, target_field)
+                type_id, field_name, target_field
+            )
 
         return {
-            'field_name': field_name,
-            'label': label,
-            'type_id': type_id,
-            'type_name': self._get_field_type_name(type_id),
-            'options': parsed_options,
-            'is_required': is_required,
-            'default_value': default_value,
-            'format_hint': format_hint,
-            'description': target_field.get('description', '')
+            "field_name": field_name,
+            "label": label,
+            "type_id": type_id,
+            "type_name": self._get_field_type_name(type_id),
+            "options": parsed_options,
+            "is_required": is_required,
+            "default_value": default_value,
+            "format_hint": format_hint,
+            "description": target_field.get("description", ""),
         }
 
     def _get_field_type_hint(
         self,
-        type_id: Optional[int],
+        type_id: int | None,
         field_name: str,
-        field_info: Optional[Dict[str, Any]] = None
+        field_info: dict[str, Any] | None = None,
     ) -> str:
         """
         Get a helpful type hint for a field based on its type ID and config.
@@ -1601,15 +1678,18 @@ class CasesAPI(BaseAPI):
                     hint = self._get_steps_hint(field_info)
 
         # Override for known step fields regardless of options
-        if type_id == 10 or 'steps_separated' in field_name:
-            hint = self._get_steps_hint(field_info) if field_info else (
-                "array of step objects: [{'content': '...', 'expected': '...'}]"
+        if type_id == 10 or "steps_separated" in field_name:
+            hint = (
+                self._get_steps_hint(field_info)
+                if field_info
+                else (
+                    "array of step objects: [{'content': '...', 'expected': '...'}]"
+                )
             )
 
         return hint
 
-    def _extract_field_options(
-            self, field_info: Dict[str, Any]) -> Optional[str]:
+    def _extract_field_options(self, field_info: dict[str, Any]) -> str | None:
         """
         Extract valid options from a field's config.
 
@@ -1619,34 +1699,36 @@ class CasesAPI(BaseAPI):
         Returns:
             Formatted string of valid options, or None if no options found.
         """
-        configs = field_info.get('configs', [])
+        configs = field_info.get("configs", [])
         if not isinstance(configs, list) or not configs:
             return None
 
         # Check the selected config first, then fall back to first config
-        selected_config = field_info.get('_selected_config')
-        config = selected_config if selected_config else (
-            configs[0] if configs else None
+        selected_config = field_info.get("_selected_config")
+        config = (
+            selected_config
+            if selected_config
+            else (configs[0] if configs else None)
         )
 
         if not isinstance(config, dict):
             return None
 
-        options = config.get('options', {})
+        options = config.get("options", {})
         if not isinstance(options, dict):
             return None
 
-        items_str = options.get('items')
+        items_str = options.get("items")
         if not items_str or not isinstance(items_str, str):
             return None
 
         # Parse items format: "id,label\nid,label\n..."
         parsed_options = []
-        for line in items_str.strip().split('\n'):
+        for line in items_str.strip().split("\n"):
             line = line.strip()
             if not line:
                 continue
-            parts = line.split(',', 1)
+            parts = line.split(",", 1)
             if len(parts) >= 2:
                 item_id = parts[0].strip()
                 item_label = parts[1].strip()
@@ -1659,14 +1741,15 @@ class CasesAPI(BaseAPI):
 
         # Limit to first 5 options for readability, with ellipsis if more
         if len(parsed_options) > 5:
-            display = parsed_options[:5] + \
-                [f"... ({len(parsed_options)} total)"]
+            display = parsed_options[:5] + [
+                f"... ({len(parsed_options)} total)"
+            ]
         else:
             display = parsed_options
 
-        return '{' + ', '.join(display) + '}'
+        return "{" + ", ".join(display) + "}"
 
-    def _get_steps_hint(self, field_info: Optional[Dict[str, Any]]) -> str:
+    def _get_steps_hint(self, field_info: dict[str, Any] | None) -> str:
         """
         Generate hint for step-type fields based on config options.
 
@@ -1680,19 +1763,25 @@ class CasesAPI(BaseAPI):
         example_parts = ["'content': '...'", "'expected': '...'"]
 
         if field_info:
-            configs = field_info.get('configs', [])
-            selected_config = field_info.get('_selected_config')
-            config = selected_config if selected_config else (
-                configs[0] if isinstance(configs, list) and configs else None
+            configs = field_info.get("configs", [])
+            selected_config = field_info.get("_selected_config")
+            config = (
+                selected_config
+                if selected_config
+                else (
+                    configs[0]
+                    if isinstance(configs, list) and configs
+                    else None
+                )
             )
 
             if isinstance(config, dict):
-                options = config.get('options', {})
+                options = config.get("options", {})
                 if isinstance(options, dict):
                     # Check which fields are enabled
-                    has_expected = options.get('has_expected', True)
-                    has_additional = options.get('has_additional', False)
-                    has_reference = options.get('has_reference', False)
+                    has_expected = options.get("has_expected", True)
+                    has_additional = options.get("has_additional", False)
+                    has_reference = options.get("has_reference", False)
 
                     example_parts = ["'content': '...'"]
                     if has_expected:
@@ -1704,7 +1793,7 @@ class CasesAPI(BaseAPI):
 
         return f"{base_hint}: [" + "{" + ", ".join(example_parts) + "}]"
 
-    def _get_field_type_name(self, type_id: Optional[int]) -> str:
+    def _get_field_type_name(self, type_id: int | None) -> str:
         """
         Map TestRail type ID to human-readable type name.
 
@@ -1726,16 +1815,16 @@ class CasesAPI(BaseAPI):
             9: "Milestone",
             10: "Steps",
             11: "Multi-select",
-            12: "Stepped"
+            12: "Stepped",
         }
         return type_names.get(type_id, "Unknown")
 
     def _get_field_format_example(
         self,
-        type_id: Optional[int],
+        type_id: int | None,
         field_name: str,
-        field_info: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        field_info: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Get a format example for a field showing correct usage.
 
@@ -1756,98 +1845,118 @@ class CasesAPI(BaseAPI):
         if type_id == 6:  # Dropdown
             if options:
                 # Use first option ID as example
-                example_id = options.split(',')[0].split(
-                    '=')[0].strip() if '=' in options else "3"
+                example_id = (
+                    options.split(",")[0].split("=")[0].strip()
+                    if "=" in options
+                    else "3"
+                )
                 return {
-                    'description': 'Single numeric ID',
-                    'example': f'{example_id}',
-                    'example_array': f'[{example_id}]',
-                    'note': 'You can provide a number or a string. Single values are auto-converted.'}
+                    "description": "Single numeric ID",
+                    "example": f"{example_id}",
+                    "example_array": f"[{example_id}]",
+                    "note": "You can provide a number or a string. Single values are auto-converted.",
+                }
             return {
-                'description': 'Single numeric ID',
-                'example': '3',
-                'example_array': '[3]',
-                'note': 'Use a numeric ID (or string). Single values are auto-converted to array.'}
+                "description": "Single numeric ID",
+                "example": "3",
+                "example_array": "[3]",
+                "note": "Use a numeric ID (or string). Single values are auto-converted to array.",
+            }
 
         elif type_id == 11:  # Multi-select
             if options:
                 # Use first two option IDs as example
                 option_ids = [
-                    opt.split('=')[0].strip() for opt in options.split(',')[
-                        :2] if '=' in opt]
+                    opt.split("=")[0].strip()
+                    for opt in options.split(",")[:2]
+                    if "=" in opt
+                ]
                 if option_ids:
-                    example_ids = option_ids[:2] if len(option_ids) >= 2 else [
-                        option_ids[0], option_ids[0]]
+                    example_ids = (
+                        option_ids[:2]
+                        if len(option_ids) >= 2
+                        else [option_ids[0], option_ids[0]]
+                    )
                     return {
-                        'description': 'Array of numeric IDs',
-                        'example': f'[{example_ids[0]}, {example_ids[1]}]',
-                        'note': 'Use numeric IDs. Strings like ["3", "5"] also work.'}
+                        "description": "Array of numeric IDs",
+                        "example": f"[{example_ids[0]}, {example_ids[1]}]",
+                        "note": 'Use numeric IDs. Strings like ["3", "5"] also work.',
+                    }
             return {
-                'description': 'Array of numeric IDs',
-                'example': '[3, 5]',
-                'note': 'Use numeric IDs. Strings like ["3", "5"] also work.'}
+                "description": "Array of numeric IDs",
+                "example": "[3, 5]",
+                "note": 'Use numeric IDs. Strings like ["3", "5"] also work.',
+            }
 
         elif type_id == 12:  # Stepped
-            if 'steps_separated' in field_name.lower():
+            if "steps_separated" in field_name.lower():
                 return {
-                    'description': 'Array of step objects with content and expected',
-                    'example': '[{"content": "Step 1", "expected": "Result 1"}]',
-                    'full_example': [
-                        {'content': 'Navigate to login page', 'expected': 'Login form is displayed'},
-                        {'content': 'Enter credentials and submit', 'expected': 'User is logged in'}
+                    "description": "Array of step objects with content and expected",
+                    "example": '[{"content": "Step 1", "expected": "Result 1"}]',
+                    "full_example": [
+                        {
+                            "content": "Navigate to login page",
+                            "expected": "Login form is displayed",
+                        },
+                        {
+                            "content": "Enter credentials and submit",
+                            "expected": "User is logged in",
+                        },
                     ],
-                    'note': 'Each step must have both "content" and "expected" keys with non-empty string values.'
+                    "note": 'Each step must have both "content" and "expected" keys with non-empty string values.',
                 }
             else:
                 # Regular stepped field - array of IDs
                 return {
-                    'description': 'Array of numeric IDs',
-                    'example': '[3, 5]',
-                    'note': 'Use numeric IDs. Strings like ["3", "5"] also work.'
+                    "description": "Array of numeric IDs",
+                    "example": "[3, 5]",
+                    "note": 'Use numeric IDs. Strings like ["3", "5"] also work.',
                 }
 
         elif type_id == 5:  # Checkbox
             return {
-                'description': 'Boolean value',
-                'example': 'true',
-                'example_false': 'false',
-                'note': 'Use boolean True/False, not strings "true"/"false" or integers 1/0.'}
+                "description": "Boolean value",
+                "example": "true",
+                "example_false": "false",
+                "note": 'Use boolean True/False, not strings "true"/"false" or integers 1/0.',
+            }
 
         elif type_id in (1, 3, 4):  # String, Text, URL
             return {
-                'description': 'String value',
-                'example': '"Example text value"',
-                'note': 'Plain string value.'
+                "description": "String value",
+                "example": '"Example text value"',
+                "note": "Plain string value.",
             }
 
         elif type_id == 2:  # Integer
             return {
-                'description': 'Integer value',
-                'example': '42',
-                'note': 'Numeric integer value.'
+                "description": "Integer value",
+                "example": "42",
+                "note": "Numeric integer value.",
             }
 
         else:
             return {
-                'description': 'See type_hint for format',
-                'example': 'Varies by field type',
-                'note': 'Check field type_hint for specific format requirements.'}
+                "description": "See type_hint for format",
+                "example": "Varies by field type",
+                "note": "Check field type_hint for specific format requirements.",
+            }
 
-    def update_case(self,
-                    case_id: int,
-                    title: Optional[str] = None,
-                    template_id: Optional[int] = None,
-                    type_id: Optional[int] = None,
-                    priority_id: Optional[int] = None,
-                    estimate: Optional[str] = None,
-                    milestone_id: Optional[int] = None,
-                    refs: Optional[str] = None,
-                    description: Optional[str] = None,
-                    preconditions: Optional[str] = None,
-                    postconditions: Optional[str] = None,
-                    custom_fields: Optional[Dict[str,
-                                                 Any]] = None) -> Dict[str,
-                                                                       Any]:
+    def update_case(
+        self,
+        case_id: int,
+        title: str | None = None,
+        template_id: int | None = None,
+        type_id: int | None = None,
+        priority_id: int | None = None,
+        estimate: str | None = None,
+        milestone_id: int | None = None,
+        refs: str | None = None,
+        description: str | None = None,
+        preconditions: str | None = None,
+        postconditions: str | None = None,
+        custom_fields: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Update a test case.
 
@@ -1882,16 +1991,16 @@ class CasesAPI(BaseAPI):
 
         # Add fields only if they are provided
         optional_fields = {
-            'title': title,
-            'template_id': template_id,
-            'type_id': type_id,
-            'priority_id': priority_id,
-            'estimate': estimate,
-            'milestone_id': milestone_id,
-            'refs': refs,
-            'description': description,
-            'preconditions': preconditions,
-            'postconditions': postconditions
+            "title": title,
+            "template_id": template_id,
+            "type_id": type_id,
+            "priority_id": priority_id,
+            "estimate": estimate,
+            "milestone_id": milestone_id,
+            "refs": refs,
+            "description": description,
+            "preconditions": preconditions,
+            "postconditions": postconditions,
         }
 
         for field, value in optional_fields.items():
@@ -1902,9 +2011,9 @@ class CasesAPI(BaseAPI):
         if custom_fields:
             data.update(custom_fields)
 
-        return self._post(f'update_case/{case_id}', data=data)
+        return self._post(f"update_case/{case_id}", data=data)
 
-    def delete_case(self, case_id: int) -> Dict[str, Any]:
+    def delete_case(self, case_id: int) -> dict[str, Any]:
         """
         Delete a test case.
 
@@ -1920,9 +2029,9 @@ class CasesAPI(BaseAPI):
         Example:
             >>> result = api.cases.delete_case(123)
         """
-        return self._post(f'delete_case/{case_id}')
+        return self._post(f"delete_case/{case_id}")
 
-    def get_case_fields(self) -> List[Dict[str, Any]]:
+    def get_case_fields(self) -> list[dict[str, Any]]:
         """
         Get all available test case fields.
 
@@ -1937,9 +2046,9 @@ class CasesAPI(BaseAPI):
             >>> for field in fields:
             ...     print(f"Field: {field['name']}, Type: {field['type']}")
         """
-        return self._get('get_case_fields')
+        return self._get("get_case_fields")
 
-    def get_case_types(self) -> List[Dict[str, Any]]:
+    def get_case_types(self) -> list[dict[str, Any]]:
         """
         Get all available test case types.
 
@@ -1954,9 +2063,9 @@ class CasesAPI(BaseAPI):
             >>> for case_type in types:
             ...     print(f"Type {case_type['id']}: {case_type['name']}")
         """
-        return self._get('get_case_types')
+        return self._get("get_case_types")
 
-    def get_case_history(self, case_id: int) -> List[Dict[str, Any]]:
+    def get_history_for_case(self, case_id: int) -> list[dict[str, Any]]:
         """
         Get the change history of a test case.
 
@@ -1970,14 +2079,85 @@ class CasesAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> history = api.cases.get_case_history(123)
+            >>> history = api.cases.get_history_for_case(123)
             >>> for change in history:
             ...     print(f"Changed by {change['user']} on {change['created_on']}")
         """
-        return self._get(f'get_case_history/{case_id}')
+        return self._get(f"get_history_for_case/{case_id}")
+
+    def add_case_field(self, **kwargs) -> dict[str, Any]:
+        """
+        Add a new test case custom field.
+
+        Args:
+            **kwargs: Field definition parameters including:
+                - type: The type of the field (e.g., 'String',
+                    'Integer', 'Dropdown', etc.)
+                - name: The display name of the field.
+                - label: The system name/label for the field.
+                - description: Optional description.
+                - include_all: Whether to include in all templates.
+                - template_ids: List of template IDs if not
+                    include_all.
+                - configs: Optional configuration array.
+
+        Returns:
+            Dict containing the created field data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
+        """
+        return self._post("add_case_field", data=kwargs)
+
+    def update_cases(
+        self, suite_id: int, case_ids: list[int] | None = None, **kwargs
+    ) -> dict[str, Any]:
+        """
+        Update multiple test cases at once (bulk update).
+
+        Args:
+            suite_id: The ID of the suite containing the cases.
+            case_ids: Optional list of case IDs to update. If None,
+                updates all cases in the suite.
+            **kwargs: Fields to update on all specified cases
+                (e.g., priority_id, type_id, milestone_id, etc.).
+
+        Returns:
+            Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
+        """
+        data = dict(kwargs)
+        if case_ids is not None:
+            data["case_ids"] = case_ids
+        return self._post(f"update_cases/{suite_id}", data=data)
+
+    def delete_cases(
+        self, suite_id: int, case_ids: list[int], soft: int | None = None
+    ) -> dict[str, Any]:
+        """
+        Delete multiple test cases at once (bulk delete).
+
+        Args:
+            suite_id: The ID of the suite containing the cases.
+            case_ids: List of case IDs to delete.
+            soft: Optional soft-delete flag (1 for soft delete).
+
+        Returns:
+            Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
+        """
+        data: dict[str, Any] = {"case_ids": case_ids}
+        if soft is not None:
+            data["soft"] = soft
+        return self._post(f"delete_cases/{suite_id}", data=data)
 
     def copy_cases_to_section(
-            self, case_ids: List[int], section_id: int) -> List[Dict[str, Any]]:
+        self, case_ids: list[int], section_id: int
+    ) -> list[dict[str, Any]]:
         """
         Copy test cases to a different section.
 
@@ -1994,11 +2174,12 @@ class CasesAPI(BaseAPI):
         Example:
             >>> copied_cases = api.cases.copy_cases_to_section([1, 2, 3], 5)
         """
-        data = {'case_ids': case_ids}
-        return self._post(f'copy_cases_to_section/{section_id}', data=data)
+        data = {"case_ids": case_ids}
+        return self._post(f"copy_cases_to_section/{section_id}", data=data)
 
     def move_cases_to_section(
-            self, case_ids: List[int], section_id: int) -> List[Dict[str, Any]]:
+        self, case_ids: list[int], section_id: int
+    ) -> list[dict[str, Any]]:
         """
         Move test cases to a different section.
 
@@ -2015,5 +2196,5 @@ class CasesAPI(BaseAPI):
         Example:
             >>> moved_cases = api.cases.move_cases_to_section([1, 2, 3], 5)
         """
-        data = {'case_ids': case_ids}
-        return self._post(f'move_cases_to_section/{section_id}', data=data)
+        data = {"case_ids": case_ids}
+        return self._post(f"move_cases_to_section/{section_id}", data=data)

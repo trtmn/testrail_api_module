@@ -1,13 +1,24 @@
-from .base import TestRailAPIError as TestRailAPIError, TestRailAPIException as TestRailAPIException, TestRailAuthenticationError as TestRailAuthenticationError, TestRailRateLimitError as TestRailRateLimitError
-from typing import Any, Optional, Dict, List
+from typing import Any
 
-__all__ = ['TestRailAPI', 'TestRailAPIError', 'TestRailAuthenticationError', 'TestRailRateLimitError', 'TestRailAPIException', 'attachments', 'bdd', 'cases', 'configurations', 'datasets', 'groups', 'milestones', 'plans', 'priorities', 'projects', 'reports', 'result_fields', 'results', 'roles', 'runs', 'sections', 'shared_steps', 'statuses', 'suites', 'templates', 'tests', 'users', 'variables']
+from .base import TestRailAPIError as TestRailAPIError
+from .base import TestRailAPIException as TestRailAPIException
+from .base import TestRailAuthenticationError as TestRailAuthenticationError
+from .base import TestRailRateLimitError as TestRailRateLimitError
+
+__all__ = [
+    "TestRailAPI",
+    "TestRailAPIError",
+    "TestRailAuthenticationError",
+    "TestRailRateLimitError",
+    "TestRailAPIException",
+]
 
 class TestRailAPI:
     """
     Main class for interacting with the TestRail API.
     This class serves as the entry point for all TestRail API functionality.
     """
+
     base_url: Any
     username: Any
     api_key: Any
@@ -19,6 +30,7 @@ class TestRailAPI:
     configurations: Any
     datasets: Any
     groups: Any
+    labels: Any
     milestones: Any
     plans: Any
     priorities: Any
@@ -36,43 +48,25 @@ class TestRailAPI:
     tests: Any
     users: Any
     variables: Any
-    def __init__(self, base_url: str, username: str, api_key: str | None = None, password: str | None = None, timeout: int = 30) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        username: str,
+        api_key: str | None = None,
+        password: str | None = None,
+        timeout: int = 30,
+    ) -> None:
         """
         Initialize the TestRail API client.
-        
+
         Args:
             base_url: The base URL of your TestRail instance (e.g., 'https://your-instance.testrail.io')
             username: Your TestRail username (typically your email address)
             api_key: Your TestRail API key. Either api_key or password must be provided.
             password: Your TestRail password. Either api_key or password must be provided.
             timeout: Request timeout in seconds (default: 30)
-            
+
         Raises:
             ValueError: If neither api_key nor password is provided.
             ValueError: If base_url is not a valid URL format.
         """
-
-# Names in __all__ with no definition:
-#   attachments
-#   bdd
-#   cases
-#   configurations
-#   datasets
-#   groups
-#   milestones
-#   plans
-#   priorities
-#   projects
-#   reports
-#   result_fields
-#   results
-#   roles
-#   runs
-#   sections
-#   shared_steps
-#   statuses
-#   suites
-#   templates
-#   tests
-#   users
-#   variables

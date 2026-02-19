@@ -2,7 +2,9 @@
 This module provides functionality for managing templates in TestRail.
 Templates are used to define the structure and fields for test cases.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class TemplatesAPI(BaseAPI):
     API for managing TestRail templates.
     """
 
-    def get_template(self, template_id: int) -> Optional[Dict[str, Any]]:
+    def get_template(self, template_id: int) -> dict[str, Any] | None:
         """
         Get a template by ID.
 
@@ -21,9 +23,9 @@ class TemplatesAPI(BaseAPI):
         Returns:
             dict: The template data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_template/{template_id}')
+        return self._api_request("GET", f"get_template/{template_id}")
 
-    def get_templates(self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_templates(self, project_id: int) -> list[dict[str, Any]] | None:
         """
         Get all templates for a project.
 
@@ -33,15 +35,15 @@ class TemplatesAPI(BaseAPI):
         Returns:
             list: List of templates if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_templates/{project_id}')
+        return self._api_request("GET", f"get_templates/{project_id}")
 
-    def add_template(self,
-                     project_id: int,
-                     name: str,
-                     description: Optional[str] = None,
-                     fields: Optional[List[Dict[str,
-                                                Any]]] = None) -> Optional[Dict[str,
-                                                                                Any]]:
+    def add_template(
+        self,
+        project_id: int,
+        name: str,
+        description: str | None = None,
+        fields: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a new template.
 
@@ -59,20 +61,19 @@ class TemplatesAPI(BaseAPI):
         Returns:
             dict: The created template data if successful, None otherwise.
         """
-        data = {
-            'name': name
-        }
+        data = {"name": name}
         if description:
-            data['description'] = description
+            data["description"] = description
         if fields:
-            data['fields'] = fields
+            data["fields"] = fields
 
         return self._api_request(
-            'POST', f'add_template/{project_id}', data=data)
+            "POST", f"add_template/{project_id}", data=data
+        )
 
     def update_template(
-            self, template_id: int, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+        self, template_id: int, **kwargs
+    ) -> dict[str, Any] | None:
         """
         Update a template.
 
@@ -84,11 +85,10 @@ class TemplatesAPI(BaseAPI):
             dict: The updated template data if successful, None otherwise.
         """
         return self._api_request(
-            'POST',
-            f'update_template/{template_id}',
-            data=kwargs)
+            "POST", f"update_template/{template_id}", data=kwargs
+        )
 
-    def delete_template(self, template_id: int) -> Optional[Dict[str, Any]]:
+    def delete_template(self, template_id: int) -> dict[str, Any] | None:
         """
         Delete a template.
 
@@ -98,10 +98,11 @@ class TemplatesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_template/{template_id}')
+        return self._api_request("POST", f"delete_template/{template_id}")
 
     def get_template_fields(
-            self, template_id: int) -> Optional[List[Dict[str, Any]]]:
+        self, template_id: int
+    ) -> list[dict[str, Any]] | None:
         """
         Get all fields in a template.
 
@@ -111,16 +112,17 @@ class TemplatesAPI(BaseAPI):
         Returns:
             list: List of template fields if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_template_fields/{template_id}')
+        return self._api_request("GET", f"get_template_fields/{template_id}")
 
-    def add_template_field(self,
-                           template_id: int,
-                           name: str,
-                           field_type: str,
-                           required: bool = False,
-                           default_value: Optional[str] = None,
-                           options: Optional[List[str]] = None) -> Optional[Dict[str,
-                                                                                 Any]]:
+    def add_template_field(
+        self,
+        template_id: int,
+        name: str,
+        field_type: str,
+        required: bool = False,
+        default_value: str | None = None,
+        options: list[str] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a field to a template.
 
@@ -142,21 +144,19 @@ class TemplatesAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        data = {
-            'name': name,
-            'type': field_type,
-            'required': required
-        }
+        data = {"name": name, "type": field_type, "required": required}
         if default_value:
-            data['default_value'] = default_value
+            data["default_value"] = default_value
         if options:
-            data['options'] = options
+            data["options"] = options
 
         return self._api_request(
-            'POST', f'add_template_field/{template_id}', data=data)
+            "POST", f"add_template_field/{template_id}", data=data
+        )
 
-    def update_template_field(self, template_id: int, field_id: int,
-                              **kwargs) -> Optional[Dict[str, Any]]:
+    def update_template_field(
+        self, template_id: int, field_id: int, **kwargs
+    ) -> dict[str, Any] | None:
         """
         Update a field in a template.
 
@@ -169,12 +169,14 @@ class TemplatesAPI(BaseAPI):
             dict: The response data if successful, None otherwise.
         """
         return self._api_request(
-            'POST',
-            f'update_template_field/{template_id}/{field_id}',
-            data=kwargs)
+            "POST",
+            f"update_template_field/{template_id}/{field_id}",
+            data=kwargs,
+        )
 
-    def delete_template_field(self, template_id: int,
-                              field_id: int) -> Optional[Dict[str, Any]]:
+    def delete_template_field(
+        self, template_id: int, field_id: int
+    ) -> dict[str, Any] | None:
         """
         Delete a field from a template.
 
@@ -186,4 +188,5 @@ class TemplatesAPI(BaseAPI):
             dict: The response data if successful, None otherwise.
         """
         return self._api_request(
-            'POST', f'delete_template_field/{template_id}/{field_id}')
+            "POST", f"delete_template_field/{template_id}/{field_id}"
+        )

@@ -2,7 +2,9 @@
 This module provides functionality for managing test plans in TestRail.
 Test plans are used to organize and schedule test runs.
 """
-from typing import Optional, Dict, Any, List
+
+from typing import Any
+
 from .base import BaseAPI
 
 
@@ -11,7 +13,7 @@ class PlansAPI(BaseAPI):
     API for managing TestRail test plans.
     """
 
-    def get_plan(self, plan_id: int) -> Optional[Dict[str, Any]]:
+    def get_plan(self, plan_id: int) -> dict[str, Any] | None:
         """
         Get a test plan by ID.
 
@@ -21,9 +23,9 @@ class PlansAPI(BaseAPI):
         Returns:
             dict: The test plan data if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_plan/{plan_id}')
+        return self._api_request("GET", f"get_plan/{plan_id}")
 
-    def get_plans(self, project_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_plans(self, project_id: int) -> list[dict[str, Any]] | None:
         """
         Get all test plans for a project.
 
@@ -33,16 +35,16 @@ class PlansAPI(BaseAPI):
         Returns:
             list: List of test plans if successful, None otherwise.
         """
-        return self._api_request('GET', f'get_plans/{project_id}')
+        return self._api_request("GET", f"get_plans/{project_id}")
 
-    def add_plan(self,
-                 project_id: int,
-                 name: str,
-                 description: Optional[str] = None,
-                 milestone_id: Optional[int] = None,
-                 entries: Optional[List[Dict[str,
-                                             Any]]] = None) -> Optional[Dict[str,
-                                                                             Any]]:
+    def add_plan(
+        self,
+        project_id: int,
+        name: str,
+        description: str | None = None,
+        milestone_id: int | None = None,
+        entries: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Add a new test plan.
 
@@ -62,19 +64,17 @@ class PlansAPI(BaseAPI):
         Returns:
             dict: The created test plan data if successful, None otherwise.
         """
-        data = {
-            'name': name
-        }
+        data = {"name": name}
         if description:
-            data['description'] = description
+            data["description"] = description
         if milestone_id:
-            data['milestone_id'] = milestone_id
+            data["milestone_id"] = milestone_id
         if entries:
-            data['entries'] = entries
+            data["entries"] = entries
 
-        return self._api_request('POST', f'add_plan/{project_id}', data=data)
+        return self._api_request("POST", f"add_plan/{project_id}", data=data)
 
-    def update_plan(self, plan_id: int, **kwargs) -> Optional[Dict[str, Any]]:
+    def update_plan(self, plan_id: int, **kwargs) -> dict[str, Any] | None:
         """
         Update a test plan.
 
@@ -85,9 +85,9 @@ class PlansAPI(BaseAPI):
         Returns:
             dict: The updated test plan data if successful, None otherwise.
         """
-        return self._api_request('POST', f'update_plan/{plan_id}', data=kwargs)
+        return self._api_request("POST", f"update_plan/{plan_id}", data=kwargs)
 
-    def close_plan(self, plan_id: int) -> Optional[Dict[str, Any]]:
+    def close_plan(self, plan_id: int) -> dict[str, Any] | None:
         """
         Close a test plan.
 
@@ -97,9 +97,9 @@ class PlansAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'close_plan/{plan_id}')
+        return self._api_request("POST", f"close_plan/{plan_id}")
 
-    def delete_plan(self, plan_id: int) -> Optional[Dict[str, Any]]:
+    def delete_plan(self, plan_id: int) -> dict[str, Any] | None:
         """
         Delete a test plan.
 
@@ -109,16 +109,89 @@ class PlansAPI(BaseAPI):
         Returns:
             dict: The response data if successful, None otherwise.
         """
-        return self._api_request('POST', f'delete_plan/{plan_id}')
+        return self._api_request("POST", f"delete_plan/{plan_id}")
 
-    def get_plan_stats(self, plan_id: int) -> Optional[Dict[str, Any]]:
+    def add_plan_entry(
+        self,
+        plan_id: int,
+        suite_id: int,
+        name: str | None = None,
+        description: str | None = None,
+        assignedto_id: int | None = None,
+        include_all: bool = True,
+        case_ids: list[int] | None = None,
+        config_ids: list[int] | None = None,
+        runs: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
         """
-        Get statistics for a test plan.
+        Add a new test plan entry (a test run) to an existing plan.
 
         Args:
-            plan_id (int): The ID of the test plan to get statistics for.
+            plan_id: The ID of the test plan.
+            suite_id: The ID of the test suite for the entry.
+            name: Optional name of the test run.
+            description: Optional description of the test run.
+            assignedto_id: Optional ID of the user to assign to.
+            include_all: Whether to include all test cases (default True).
+            case_ids: Optional list of case IDs to include.
+            config_ids: Optional list of configuration IDs.
+            runs: Optional list of run objects for multi-config entries.
 
         Returns:
-            dict: The test plan statistics if successful, None otherwise.
+            Dict containing the created plan entry data.
         """
-        return self._api_request('GET', f'get_plan_stats/{plan_id}')
+        data: dict[str, Any] = {"suite_id": suite_id}
+        if name is not None:
+            data["name"] = name
+        if description is not None:
+            data["description"] = description
+        if assignedto_id is not None:
+            data["assignedto_id"] = assignedto_id
+        if not include_all:
+            data["include_all"] = include_all
+        if case_ids is not None:
+            data["case_ids"] = case_ids
+        if config_ids is not None:
+            data["config_ids"] = config_ids
+        if runs is not None:
+            data["runs"] = runs
+
+        return self._api_request(
+            "POST", f"add_plan_entry/{plan_id}", data=data
+        )
+
+    def update_plan_entry(
+        self, plan_id: int, entry_id: str, **kwargs
+    ) -> dict[str, Any] | None:
+        """
+        Update an existing test plan entry.
+
+        Args:
+            plan_id: The ID of the test plan.
+            entry_id: The ID of the plan entry to update.
+            **kwargs: Fields to update (name, description,
+                assignedto_id, include_all, case_ids, etc.).
+
+        Returns:
+            Dict containing the updated plan entry data.
+        """
+        return self._api_request(
+            "POST", f"update_plan_entry/{plan_id}/{entry_id}", data=kwargs
+        )
+
+    def delete_plan_entry(
+        self, plan_id: int, entry_id: str
+    ) -> dict[str, Any] | None:
+        """
+        Delete a test plan entry.
+
+        Args:
+            plan_id: The ID of the test plan.
+            entry_id: The ID of the plan entry to delete.
+
+        Returns:
+            Dict containing the response data.
+        """
+        return self._api_request(
+            "POST", f"delete_plan_entry/{plan_id}/{entry_id}"
+        )
