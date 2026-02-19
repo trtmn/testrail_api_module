@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.4] - 2026-02-19
+
+### 🔄 Maintenance
+
+- Automated release workflow: version tags are now created automatically by GitHub Actions when a PR is merged to `main`, which then triggers docs deployment and PyPI publishing in a single pipeline
+- Added `tag-release.yml` workflow; `publish.yml` is now manual-only
+
 ## [0.6.3] - 2026-02-19
 
 ### 🐛 Fixed

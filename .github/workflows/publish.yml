@@ -1,10 +1,6 @@
-name: Publish Docs and Package
+name: Publish Docs and Package (manual)
 
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
-      - '[0-9]+.[0-9]+.[0-9]+*'
   workflow_dispatch:
 
 permissions:
@@ -71,20 +67,16 @@ jobs:
           python-version: "3.11"
 
       - name: Install build dependencies
-        run: |
-          uv pip install --system --upgrade build twine
+        run: uv pip install --system --upgrade build twine
 
       - name: Clean previous builds
-        run: |
-          rm -rf dist/ build/ *.egg-info
+        run: rm -rf dist/ build/ *.egg-info
 
       - name: Build package
-        run: |
-          uv build
+        run: uv build
 
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          twine upload dist/*
+        run: twine upload dist/*
