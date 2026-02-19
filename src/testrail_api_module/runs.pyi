@@ -165,20 +165,3 @@ class RunsAPI(BaseAPI):
         Example:
             >>> result = api.runs.delete_run(123)
         """
-    def get_run_stats(self, run_id: int) -> dict[str, Any]:
-        """
-        Get statistics for a test run.
-
-        Args:
-            run_id: The ID of the test run to get statistics for.
-
-        Returns:
-            Dict containing the test run statistics.
-
-        Raises:
-            TestRailAPIError: If the API request fails.
-
-        Example:
-            >>> stats = api.runs.get_run_stats(123)
-            >>> print(f"Passed: {stats[\'passed\']}, Failed: {stats[\'failed\']}")
-        """

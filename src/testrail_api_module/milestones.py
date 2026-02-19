@@ -102,15 +102,3 @@ class MilestonesAPI(BaseAPI):
             dict: The response data if successful, None otherwise.
         """
         return self._api_request("POST", f"delete_milestone/{milestone_id}")
-
-    def get_milestone_stats(self, milestone_id: int) -> dict[str, Any] | None:
-        """
-        Get statistics for a milestone.
-
-        Args:
-            milestone_id (int): The ID of the milestone to get statistics for.
-
-        Returns:
-            dict: The milestone statistics if successful, None otherwise.
-        """
-        return self._api_request("GET", f"get_milestone_stats/{milestone_id}")

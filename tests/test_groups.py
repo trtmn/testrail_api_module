@@ -140,52 +140,6 @@ class TestGroupsAPI:
             mock_post.assert_called_once_with("delete_group/1")
             assert result == {}
 
-    def test_add_group_to_suite(self, groups_api: GroupsAPI) -> None:
-        """Test add_group_to_suite method."""
-        with patch.object(groups_api, "_post") as mock_post:
-            mock_post.return_value = {}
-
-            result = groups_api.add_group_to_suite(group_id=1, suite_id=2)
-
-            mock_post.assert_called_once_with("add_group_to_suite/2/1")
-            assert result == {}
-
-    def test_remove_group_from_suite(self, groups_api: GroupsAPI) -> None:
-        """Test remove_group_from_suite method."""
-        with patch.object(groups_api, "_post") as mock_post:
-            mock_post.return_value = {}
-
-            result = groups_api.remove_group_from_suite(group_id=1, suite_id=2)
-
-            mock_post.assert_called_once_with("remove_group_from_suite/2/1")
-            assert result == {}
-
-    def test_get_group_cases(self, groups_api: GroupsAPI) -> None:
-        """Test get_group_cases method."""
-        with patch.object(groups_api, "_get") as mock_get:
-            mock_get.return_value = [
-                {"id": 1, "title": "Case 1"},
-                {"id": 2, "title": "Case 2"},
-            ]
-
-            result = groups_api.get_group_cases(group_id=1)
-
-            mock_get.assert_called_once_with("get_group_cases/1")
-            assert len(result) == 2
-
-    def test_get_group_suites(self, groups_api: GroupsAPI) -> None:
-        """Test get_group_suites method."""
-        with patch.object(groups_api, "_get") as mock_get:
-            mock_get.return_value = [
-                {"id": 1, "name": "Suite 1"},
-                {"id": 2, "name": "Suite 2"},
-            ]
-
-            result = groups_api.get_group_suites(group_id=1)
-
-            mock_get.assert_called_once_with("get_group_suites/1")
-            assert len(result) == 2
-
     def test_api_request_failure(self, groups_api: GroupsAPI) -> None:
         """Test behavior when API request fails."""
         with patch.object(groups_api, "_get") as mock_get:
