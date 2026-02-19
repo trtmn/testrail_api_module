@@ -53,6 +53,16 @@ uv sync --extra dev
 uv sync --all-extras
 ```
 
+## Testing
+
+```bash
+# Run tests with the current Python version
+uv run pytest
+
+# Run tests across all supported Python versions (3.11, 3.12, 3.13)
+tox
+```
+
 ## Quick Start
 
 ```python

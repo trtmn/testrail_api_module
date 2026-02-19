@@ -15,6 +15,9 @@ uv sync --extra dev
 # Run all tests
 uv run pytest
 
+# Run tests across all supported Python versions (3.11, 3.12, 3.13)
+tox
+
 # Run a single test file or test
 uv run pytest tests/test_cases.py
 uv run pytest tests/test_cases.py::TestCasesAPI::test_get_case
