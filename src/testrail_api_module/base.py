@@ -152,8 +152,9 @@ class BaseAPI:
                 raise TestRailRateLimitError("Rate limit exceeded.")
 
         elif response.status_code >= 400:
-            error_message = f"API request failed with status {
-                response.status_code}"
+            error_message = (
+                f"API request failed with status {response.status_code}"
+            )
             try:
                 error_data = response.json()
                 if 'error' in error_data:
