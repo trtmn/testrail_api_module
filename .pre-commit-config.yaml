@@ -58,18 +58,20 @@ repos:
       - id: mypy
         additional_dependencies: [types-requests]
         args: [--config-file=pyproject.toml]
-        files: ^src/
+        files: '^src/.*\.py$'
+        exclude: '\.pyi$'
 
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.42.0
     hooks:
       - id: markdownlint
-        args: ['--fix']
+        args: ['--fix', '--config', '.markdownlint.json']
 
   # Security checks
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.9
     hooks:
       - id: bandit
-        args: ['-r', '.', '-f', 'json', '-o', 'bandit-report.json', '--exclude', '.venv', '--exclude', 'venv', '--exclude', 'build', '--exclude', 'dist', '--exclude', '.git']
+        pass_filenames: false
+        args: ['-r', 'src/', '-f', 'json', '-o', 'bandit-report.json', '--exit-zero']

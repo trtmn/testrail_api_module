@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🔧 Changed
+
+- Rebrand project title to **TRAM — TestRail API Module** in README
+- Add TRAM logo to README
+- Remove `| None` return types from 14 older submodules — methods raise on failure, never return `None`
+- Improve class docstrings across all submodules with descriptive summaries
+- Standardize docstring format (Args/Returns/Raises sections, remove old-style type annotations)
+- Add `**kwargs: Any` type annotations to all `update_*()` methods and `base.py` helpers
+
+### ✨ Added
+
+- Add `__all__` exports to 18 submodules that were missing them
+
+### 🔄 Maintenance
+
+- Remove `mypy[dev]` from runtime dependencies (was only needed in dev)
+- Remove redundant `autopep8` and `flake8` from `dependency-groups` (ruff handles both)
+- Bump version to 0.7.1
+- Fix release skill post-merge sync step to fetch `main` and merge back into `development`
+- Add `.venv-*/` and `.1password/` patterns to `.gitignore`
+- Enable parallel test execution in `tox.ini` (`parallel = auto`)
+- Add Python 3.14 to supported versions (`tox.ini`, CI matrix, docs)
+
 ## [0.7.0] - 2026-02-19
 
 ### 🚨 Breaking Changes

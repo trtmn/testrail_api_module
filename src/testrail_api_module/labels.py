@@ -72,7 +72,7 @@ class LabelsAPI(BaseAPI):
 
         return self._post(f"add_label/{project_id}", data=data)
 
-    def update_label(self, label_id: int, **kwargs) -> dict[str, Any]:
+    def update_label(self, label_id: int, **kwargs: Any) -> dict[str, Any]:
         """
         Update a label.
 

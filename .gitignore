@@ -90,6 +90,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.venv-*/
 env/
 venv/
 ENV/
@@ -142,3 +143,6 @@ bandit-report.html
 
 # Git worktrees
 .worktrees/
+
+# 1Password local environment config
+.1password/

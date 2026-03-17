@@ -1,8 +1,12 @@
-# testrail_api_module
+<p align="center">
+  <img src="tram.png" alt="TRAM Logo" width="400">
+</p>
+
+# TRAM — TestRail API Module
 
 [![PyPI - Version](https://img.shields.io/pypi/v/testrail-api-module?label=Latest%20Version)](https://pypi.org/project/testrail-api-module/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/testrail-api-module?color=purple)](https://pypi.org/project/testrail-api-module/) [![GitHub Source](https://img.shields.io/badge/github-source-blue?logo=github)](https://github.com/trtmn/testrail_api_module/) [![PyPI Stats](https://img.shields.io/badge/%20%F0%9F%94%97-blue?label="📈%20Stats")](https://pypistats.org/packages/testrail-api-module) [![Docs](https://img.shields.io/pypi/v/testrail-api-module?label=📖%20Docs&color=blue)](https://trtmn.github.io/testrail_api_module/)
 
-A comprehensive Python wrapper for the TestRail API that provides easy access to all TestRail functionalities.
+TRAM is a comprehensive Python wrapper for the TestRail API that provides easy access to all TestRail functionalities.
 
 ## Features
 

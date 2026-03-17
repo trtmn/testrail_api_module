@@ -7,17 +7,25 @@ from typing import Any
 
 from .base import BaseAPI
 
+__all__ = ["PrioritiesAPI"]
+
 
 class PrioritiesAPI(BaseAPI):
     """
     API for managing TestRail priorities.
+
+    This class provides methods to retrieve the available priority
+    levels configured in TestRail.
     """
 
-    def get_priorities(self) -> list[dict[str, Any]] | None:
+    def get_priorities(self) -> list[dict[str, Any]]:
         """
         Get all available priorities.
 
         Returns:
-            list: List of priorities if successful, None otherwise.
+            List of dictionaries containing priority data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", "get_priorities")
