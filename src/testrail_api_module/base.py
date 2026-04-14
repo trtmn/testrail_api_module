@@ -13,6 +13,14 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+__all__ = [
+    "BaseAPI",
+    "TestRailAPIError",
+    "TestRailAuthenticationError",
+    "TestRailRateLimitError",
+    "TestRailAPIException",
+]
+
 
 class TestRailAPIError(Exception):
     """Base exception class for TestRail API errors."""
@@ -53,7 +61,7 @@ class BaseAPI:
     It can be inherited by custom API modules to extend the package's functionality.
     """
 
-    def __init__(self, client):
+    def __init__(self, client: Any) -> None:
         """
         Initialize the base API class with a client instance.
 
@@ -116,9 +124,7 @@ class BaseAPI:
                 "No valid authentication method found. Please provide either an API key or password."
             )
 
-    def _handle_response(
-        self, response: requests.Response
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+    def _handle_response(self, response: requests.Response) -> Any:
         """
         Handle API response and raise appropriate exceptions.
 
@@ -191,8 +197,8 @@ class BaseAPI:
         endpoint: str,
         data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
-        **kwargs,
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+        **kwargs: Any,
+    ) -> Any:
         """
         Make an API request to TestRail following official patterns.
 
@@ -248,13 +254,19 @@ class BaseAPI:
             raise TestRailAPIException(f"Unexpected error: {e}") from e
 
     def _get(
-        self, endpoint: str, params: dict[str, Any] | None = None, **kwargs
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+        self,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> Any:
         """Make a GET request to the TestRail API."""
         return self._api_request("GET", endpoint, params=params, **kwargs)
 
     def _post(
-        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+        self,
+        endpoint: str,
+        data: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> Any:
         """Make a POST request to the TestRail API."""
         return self._api_request("POST", endpoint, data=data, **kwargs)

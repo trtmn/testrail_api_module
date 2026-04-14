@@ -32,7 +32,7 @@ Keep the GitHub issue updated throughout the work:
 
 Branch names must include the issue number so GitHub auto-links them:
 
-```
+```text
 <issue-number>-short-description
 ```
 
@@ -49,7 +49,7 @@ uv sync --extra dev
 # Run all tests
 uv run pytest
 
-# Run tests across all supported Python versions (3.11, 3.12, 3.13)
+# Run tests across all supported Python versions (3.11, 3.12, 3.13, 3.14)
 tox
 
 # Run a single test file or test
@@ -76,7 +76,7 @@ uv run python utilities/generate_docs.py
 
 `TestRailAPI` (in `__init__.py`) is the entry point. It instantiates 23 submodule APIs as attributes, passing `self` as the client:
 
-```
+```python
 api = TestRailAPI(base_url=..., username=..., api_key=...)
 api.cases.get_case(123)        # CasesAPI
 api.runs.add_run(...)          # RunsAPI
@@ -96,7 +96,7 @@ DELETE operations in TestRail use POST and return empty bodies — `_handle_resp
 
 ### Exception Hierarchy
 
-```
+```text
 TestRailAPIError                    # base
 ├── TestRailAuthenticationError     # 401
 ├── TestRailRateLimitError          # 429

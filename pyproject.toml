@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail-api-module"
-version = "0.7.0"
+version = "0.7.1"
 description = "A comprehensive Python wrapper for the TestRail API with enhanced error handling and performance improvements"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
@@ -15,7 +15,6 @@ license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
 dependencies = [
-    "mypy[dev]>=1.19.1",
     "requests>=2.32.0",
 ]
 
@@ -87,6 +86,12 @@ warn_unreachable = true
 strict_equality = true
 exclude = ["__main__\\.pyi$"]
 
+# Submodules return _get()/_post() which is typed Any; their declared return
+# types are the authoritative contract, so suppress warn_return_any there.
+[[tool.mypy.overrides]]
+module = "testrail_api_module.*"
+warn_return_any = false
+
 # Include stubs in the package
 [tool.setuptools.package-data]
 testrail_api_module = ["*.pyi", "py.typed"]
@@ -138,9 +143,3 @@ line-ending = "auto"
 
 [tool.ruff.isort]
 known-first-party = ["testrail_api_module"]
-
-[dependency-groups]
-dev = [
-    "autopep8>=2.3.2",
-    "flake8>=7.3.0",
-]

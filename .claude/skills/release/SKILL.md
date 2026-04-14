@@ -104,11 +104,16 @@ gh pr merge <pr-number> --admin --merge
 
 Note: This repo does not allow squash merges. Always use `--merge`.
 
-### 7. Sync `development` with merged state
+### 7. Sync `development` with merge commit from `main`
+
+The merge to `main` creates a merge commit that only exists on `main`.
+Pull it back into `development` so the branches stay in sync.
 
 ```bash
 git checkout development
-git pull origin development
+git fetch origin main
+git merge origin/main
+git push origin development
 ```
 
 ### 8. Confirm
