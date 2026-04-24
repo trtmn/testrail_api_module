@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Fixed
+
+- `BaseAPI._handle_response` now accepts any 2xx status code as success, not just 200; a `201 Created` or `204 No Content` previously raised `TestRailAPIException("Unexpected response status: …")`
+
 ### 🔧 Changed
 
 - Rebrand project title to **TRAM — TestRail API Module** in README

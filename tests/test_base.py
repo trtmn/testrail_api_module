@@ -386,6 +386,25 @@ class TestBaseAPI:
         assert exc_info.value.status_code == 500
         assert "API request failed with status 500" in str(exc_info.value)
 
+    def test_handle_response_201(self, base_api: BaseAPI) -> None:
+        """Test _handle_response accepts 201 Created as a success response."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 201
+        response.json.return_value = {"id": 1, "name": "Created"}
+        response.text = '{"id": 1, "name": "Created"}'
+
+        result = base_api._handle_response(response)
+        assert result == {"id": 1, "name": "Created"}
+
+    def test_handle_response_204(self, base_api: BaseAPI) -> None:
+        """Test _handle_response accepts 204 No Content as a success response."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 204
+        response.text = ""
+
+        result = base_api._handle_response(response)
+        assert result == {}
+
     def test_handle_response_unexpected_status(
         self, base_api: BaseAPI
     ) -> None:
