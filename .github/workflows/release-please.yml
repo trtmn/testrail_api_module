@@ -1,0 +1,141 @@
+name: release-please
+
+on:
+  push:
+    branches: [development]
+
+permissions:
+  contents: write
+  pull-requests: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Maintain release PR / cut release
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          target-branch: development
+          config-file: .github/release-please-config.json
+          manifest-file: .github/.release-please-manifest.json
+
+  publish:
+    name: Build and publish to PyPI
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout at tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: latest
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: uv pip install --system --upgrade build twine
+
+      - name: Clean previous builds
+        run: rm -rf dist/ build/ *.egg-info
+
+      - name: Build package
+        run: uv build
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
+
+  deploy-docs:
+    name: Build and deploy documentation
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout at tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: latest
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Generate documentation
+        run: uv run python utilities/generate_docs.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload documentation artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: 'docs'
+
+      - name: Deploy documentation to GitHub Pages
+        uses: actions/deploy-pages@v5
+
+  sync-main:
+    name: Open sync PR development to main
+    needs: [release-please, publish]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Open or update sync PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: |
+          existing=$(gh pr list --repo "$REPO" --base main --head development --state open --json number -q '.[0].number' || echo "")
+          if [ -n "$existing" ]; then
+            echo "Sync PR #$existing already open; enabling auto-merge on it."
+            gh pr merge "$existing" --repo "$REPO" --auto --merge
+            exit 0
+          fi
+          pr_url=$(gh pr create \
+            --repo "$REPO" \
+            --base main \
+            --head development \
+            --title "release: sync $TAG to main" \
+            --body "Auto-opened by release-please after publishing $TAG to PyPI. Auto-merging once required Tests checks pass; main is just a mirror of the published tag. See the release: https://github.com/$REPO/releases/tag/$TAG and the PyPI page: https://pypi.org/project/testrail-api-module/$VERSION/")
+          gh pr merge "$pr_url" --repo "$REPO" --auto --merge
