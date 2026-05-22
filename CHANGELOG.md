@@ -5,16 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> Entries for **0.7.4 and earlier** are hand-written. From **0.7.5
+> onward**, this file is maintained by
+> [release-please](https://github.com/googleapis/release-please), which
+> prepends new blocks above the most recent release based on
+> Conventional Commits.
+
 ## [Unreleased]
 
 ### 🔄 Maintenance
 
-- Automate GitHub release creation in `tag-release.yml`. A new
-  `github-release` job runs after the PyPI publish, extracts the
-  matching `[<version>]` block from `CHANGELOG.md`, appends an install
-  snippet, and runs `gh release create`. Previously this was a manual
-  step in the release skill (step 11). Now every PyPI publish gets a
-  matching GitHub release for free. (#122)
+- Automate GitHub release creation in the release workflow. New
+  releases ship with a GitHub release containing notes extracted from
+  the matching `CHANGELOG.md` section and an install snippet, with no
+  manual step required. (#122, #123)
+- Migrate the release flow to
+  [release-please](https://github.com/googleapis/release-please).
+  Version bumps and `CHANGELOG.md` entries are now machine-generated
+  from Conventional Commits PR titles; the old manual prep-branch dance
+  is gone. The maintainer's only release action is merging the
+  `chore(main): release X.Y.Z` PR that release-please keeps open
+  against `development`, then merging the sync PR `development → main`
+  that the workflow opens after publish. The legacy `tag-release.yml`
+  is replaced by `release-please.yml`. Dependabot is reconfigured to
+  emit `deps:` and `ci:` commit prefixes so its PRs flow through the
+  same pipeline. (#124, #125)
 
 ## [0.7.4] - 2026-05-22
 

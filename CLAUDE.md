@@ -25,10 +25,10 @@ Keep the GitHub issue updated throughout the work:
 
 ### Branches
 
-- **`main`** — production releases only, protected branch
-- **`development`** — default branch, integration branch, all feature work merges here
+- **`main`** — production mirror, protected branch (enforce_admins, PR required, Tests x4 required)
+- **`development`** — default branch, integration branch, all feature work merges here. Release-please watches this branch.
 - **Feature/fix branches** — branch from `development`, PR back to `development`
-- **Releases** — PR from `development` → `main` (merge triggers automatic tagging + PyPI publish)
+- **Release-please PR** — auto-maintained by `release-please-action`. Merging it to `development` cuts the next release.
 
 Branch names must include the issue number so GitHub auto-links them:
 
@@ -39,6 +39,27 @@ Branch names must include the issue number so GitHub auto-links them:
 Examples: `81-require-issue-branch-naming`, `42-fix-auth-bug`, `15-add-milestones-api`
 
 Always work on `development` or a feature branch. Never commit directly to `main`.
+
+### Conventional Commits (required for release-please)
+
+PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/) so release-please can categorize them into the right CHANGELOG section and pick the right semver bump.
+
+| Prefix | Bump | CHANGELOG section |
+|---|---|---|
+| `feat:` | minor (0.7.4 → 0.8.0) | ✨ Added |
+| `fix:` | patch (0.7.4 → 0.7.5) | 🐛 Fixed |
+| `perf:` / `refactor:` | patch | 🔧 Changed |
+| `chore:` / `deps:` / `ci:` / `docs:` / `build:` | none | 🔄 Maintenance |
+| `feat!:` or `BREAKING CHANGE:` in body | major (0.7.4 → 1.0.0) | 🚨 Breaking Changes |
+| `test:` / `style:` | none | (hidden) |
+
+PRs are squash-merged, so the PR title becomes the commit message — write the title carefully. Dependabot is configured (`.github/dependabot.yml`) to use `deps:` and `ci:` prefixes automatically.
+
+### Release process
+
+You do not bump versions or edit `CHANGELOG.md` by hand. Release-please does both. See `.claude/skills/release/SKILL.md` for the full flow.
+
+Short version: merge feature PRs to `development` with conventional-commits titles. The release-please PR (auto-maintained, titled `chore(main): release X.Y.Z`) accumulates pending changes. When ready to ship, merge release-please's PR — that publishes to PyPI, deploys docs, and opens a sync PR `development → main` for you to merge.
 
 ## Commands
 
