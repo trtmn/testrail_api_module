@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > prepends new blocks above the most recent release based on
 > Conventional Commits.
 
+## [0.7.6](https://github.com/trtmn/testrail_api_module/compare/v0.7.5...v0.7.6) (2026-05-22)
+
+
+### 🔄 Maintenance
+
+* **deps:** bump googleapis/release-please-action in the actions group ([#126](https://github.com/trtmn/testrail_api_module/issues/126)) ([eb20d49](https://github.com/trtmn/testrail_api_module/commit/eb20d49692490e0ffd9f8bc522758e8d51bed0ae))
+
 ## [0.7.5](https://github.com/trtmn/testrail_api_module/compare/v0.7.4...v0.7.5) (2026-05-22)
 
 > Bootstrap release for the release-please pipeline. The auto-generated changelog was hand-trimmed to keep only commits that actually landed after v0.7.4. Future releases will be fully automatic.
