@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="tram.png" alt="TRAM Logo" width="400">
+  <img src="https://raw.githubusercontent.com/trtmn/testrail_api_module/main/tram.png" alt="TRAM Logo" width="400">
 </p>
 
 # TRAM — TestRail API Module
