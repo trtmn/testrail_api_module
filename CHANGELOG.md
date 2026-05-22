@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.4] - 2026-05-22
+
+### 🔄 Maintenance
+
+- Bump GitHub Actions to drop Node.js 20 deprecation warnings on CI runs
+  (#116):
+  - `actions/checkout` 4 → 6
+  - `astral-sh/setup-uv` 4 → 7
+  - `actions/setup-python` 5 → 6
+  - `actions/configure-pages` 5 → 6
+  - `actions/upload-pages-artifact` 3 → 5
+  - `actions/deploy-pages` 4 → 5
+- Bump Python dependencies via Dependabot's uv group (#117). The
+  `requests` bump is to the runtime dep (the HTTP library that powers
+  `BaseAPI`); the rest are dev-only:
+  - `requests` 2.33.0 → 2.34.2 (runtime)
+  - `pytest-cov` 7.0.0 → 7.1.0
+  - `mypy` 1.19.1 → 2.1.0
+  - `pre-commit` 4.5.1 → 4.6.0
+  - `ruff` 0.14.11 → 0.15.14
+  - `bandit` 1.9.3 → 1.9.4
+
 ## [0.7.3] - 2026-05-22
 
 ### 🔄 Maintenance
