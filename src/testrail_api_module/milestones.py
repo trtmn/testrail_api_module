@@ -7,33 +7,45 @@ from typing import Any
 
 from .base import BaseAPI
 
+__all__ = ["MilestonesAPI"]
+
 
 class MilestonesAPI(BaseAPI):
     """
     API for managing TestRail milestones.
+
+    This class provides methods to create, read, update, and delete
+    milestones in TestRail, following the official TestRail API
+    patterns.
     """
 
-    def get_milestone(self, milestone_id: int) -> dict[str, Any] | None:
+    def get_milestone(self, milestone_id: int) -> dict[str, Any]:
         """
         Get a milestone by ID.
 
         Args:
-            milestone_id (int): The ID of the milestone to retrieve.
+            milestone_id: The ID of the milestone to retrieve.
 
         Returns:
-            dict: The milestone data if successful, None otherwise.
+            Dict containing the milestone data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_milestone/{milestone_id}")
 
-    def get_milestones(self, project_id: int) -> list[dict[str, Any]] | None:
+    def get_milestones(self, project_id: int) -> list[dict[str, Any]]:
         """
         Get all milestones for a project.
 
         Args:
-            project_id (int): The ID of the project to get milestones for.
+            project_id: The ID of the project to get milestones for.
 
         Returns:
-            list: List of milestones if successful, None otherwise.
+            List of dictionaries containing milestone data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_milestones/{project_id}")
 
@@ -45,22 +57,26 @@ class MilestonesAPI(BaseAPI):
         due_on: str | None = None,
         parent_id: int | None = None,
         start_on: str | None = None,
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """
         Add a new milestone.
 
         Args:
-            project_id (int): The ID of the project to add the milestone to.
-            name (str): The name of the milestone.
-            description (str, optional): The description of the milestone.
-            due_on (str, optional): The due date of the milestone (ISO 8601 format).
-            parent_id (int, optional): The ID of the parent milestone.
-            start_on (str, optional): The start date of the milestone (ISO 8601 format).
+            project_id: The ID of the project to add the milestone
+                to.
+            name: The name of the milestone.
+            description: Optional description of the milestone.
+            due_on: Optional due date (ISO 8601 format).
+            parent_id: Optional ID of the parent milestone.
+            start_on: Optional start date (ISO 8601 format).
 
         Returns:
-            dict: The created milestone data if successful, None otherwise.
+            Dict containing the created milestone data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
-        data = {"name": name}
+        data: dict[str, Any] = {"name": name}
         if description:
             data["description"] = description
         if due_on:
@@ -75,30 +91,39 @@ class MilestonesAPI(BaseAPI):
         )
 
     def update_milestone(
-        self, milestone_id: int, **kwargs
-    ) -> dict[str, Any] | None:
+        self, milestone_id: int, **kwargs: Any
+    ) -> dict[str, Any]:
         """
         Update a milestone.
 
         Args:
-            milestone_id (int): The ID of the milestone to update.
-            **kwargs: The fields to update (name, description, due_on, parent_id, start_on).
+            milestone_id: The ID of the milestone to update.
+            **kwargs: Fields to update (name, description, due_on,
+                parent_id, start_on).
 
         Returns:
-            dict: The updated milestone data if successful, None otherwise.
+            Dict containing the updated milestone data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request(
-            "POST", f"update_milestone/{milestone_id}", data=kwargs
+            "POST",
+            f"update_milestone/{milestone_id}",
+            data=kwargs,
         )
 
-    def delete_milestone(self, milestone_id: int) -> dict[str, Any] | None:
+    def delete_milestone(self, milestone_id: int) -> dict[str, Any]:
         """
         Delete a milestone.
 
         Args:
-            milestone_id (int): The ID of the milestone to delete.
+            milestone_id: The ID of the milestone to delete.
 
         Returns:
-            dict: The response data if successful, None otherwise.
+            Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("POST", f"delete_milestone/{milestone_id}")

@@ -1,15 +1,23 @@
 """
-This module provides functionality for managing BDD (Behavior-Driven Development) scenarios in TestRail.
-It allows you to import and export BDD scenarios as .feature files.
+This module provides functionality for managing BDD (Behavior-Driven
+Development) scenarios in TestRail. It allows you to import and export
+BDD scenarios as .feature files.
 """
 
 from typing import Any
 
 from .base import BaseAPI
 
+__all__ = ["BDDAPI"]
+
 
 class BDDAPI(BaseAPI):
-    """API for managing BDD scenarios in TestRail."""
+    """
+    API for managing BDD scenarios in TestRail.
+
+    This class provides methods to import and export BDD .feature files
+    for test cases in TestRail.
+    """
 
     def get_bdd(self, case_id: int) -> dict[str, Any]:
         """
@@ -19,7 +27,11 @@ class BDDAPI(BaseAPI):
             case_id: The ID of the test case to export.
 
         Returns:
-            Dict containing the BDD scenario data in .feature file format.
+            Dict containing the BDD scenario data in .feature
+            file format.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_bdd/{case_id}")
 
@@ -30,10 +42,12 @@ class BDDAPI(BaseAPI):
         description: str | None = None,
     ) -> dict[str, Any]:
         """
-        Import/upload a BDD scenario from a .feature file into a section.
+        Import/upload a BDD scenario from a .feature file into a
+        section.
 
         Args:
-            section_id: The ID of the section to import the BDD scenario into.
+            section_id: The ID of the section to import the BDD
+                scenario into.
             feature_file: The path to the .feature file to import.
             description: Optional description for the BDD scenario.
 
@@ -41,7 +55,9 @@ class BDDAPI(BaseAPI):
             Dict containing the created BDD scenario data.
 
         Raises:
-            FileNotFoundError: If the specified feature file does not exist.
+            FileNotFoundError: If the specified feature file does
+                not exist.
+            TestRailAPIError: If the API request fails.
         """
         try:
             with open(feature_file) as file:

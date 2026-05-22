@@ -138,4 +138,3 @@ class GroupsAPI(BaseAPI):
             >>> result = api.groups.delete_group(123)
         """
         return self._post(f"delete_group/{group_id}")
-

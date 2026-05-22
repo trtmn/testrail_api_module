@@ -1,3 +1,6 @@
+# OS files
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -90,6 +93,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.venv-*/
 env/
 venv/
 ENV/
@@ -125,6 +129,8 @@ bandit-report.json
 
 # Credential and secret files
 .env
+.env.*
+*.env
 .env.local
 .env.*.local
 *.key
@@ -147,3 +153,6 @@ bandit-report.html
 
 # Git worktrees
 .worktrees/
+
+# 1Password local environment config
+.1password/

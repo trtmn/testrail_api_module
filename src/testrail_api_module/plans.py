@@ -1,39 +1,51 @@
 """
 This module provides functionality for managing test plans in TestRail.
-Test plans are used to organize and schedule test runs.
+Test plans are used to organize and schedule test runs across
+configurations and milestones.
 """
 
 from typing import Any
 
 from .base import BaseAPI
 
+__all__ = ["PlansAPI"]
+
 
 class PlansAPI(BaseAPI):
     """
     API for managing TestRail test plans.
+
+    This class provides methods to create, read, update, close, and
+    delete test plans and their entries (runs) in TestRail.
     """
 
-    def get_plan(self, plan_id: int) -> dict[str, Any] | None:
+    def get_plan(self, plan_id: int) -> dict[str, Any]:
         """
         Get a test plan by ID.
 
         Args:
-            plan_id (int): The ID of the test plan to retrieve.
+            plan_id: The ID of the test plan to retrieve.
 
         Returns:
-            dict: The test plan data if successful, None otherwise.
+            Dict containing the test plan data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_plan/{plan_id}")
 
-    def get_plans(self, project_id: int) -> list[dict[str, Any]] | None:
+    def get_plans(self, project_id: int) -> list[dict[str, Any]]:
         """
         Get all test plans for a project.
 
         Args:
-            project_id (int): The ID of the project to get test plans for.
+            project_id: The ID of the project to get test plans for.
 
         Returns:
-            list: List of test plans if successful, None otherwise.
+            List of dictionaries containing test plan data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_plans/{project_id}")
 
@@ -44,27 +56,29 @@ class PlansAPI(BaseAPI):
         description: str | None = None,
         milestone_id: int | None = None,
         entries: list[dict[str, Any]] | None = None,
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """
         Add a new test plan.
 
         Args:
-            project_id (int): The ID of the project to add the test plan to.
-            name (str): The name of the test plan.
-            description (str, optional): The description of the test plan.
-            milestone_id (int, optional): The ID of the milestone to add the test plan to.
-            entries (list, optional): List of test plan entries, each containing:
+            project_id: The ID of the project to add the plan to.
+            name: The name of the test plan.
+            description: Optional description of the test plan.
+            milestone_id: Optional ID of the milestone to link to.
+            entries: Optional list of plan entries, each containing:
                 - suite_id (int): The ID of the test suite
                 - name (str): The name of the test run
-                - description (str, optional): The description of the test run
-                - assignedto_id (int, optional): The ID of the user to assign the test run to
-                - include_all (bool, optional): Whether to include all test cases
-                - case_ids (list, optional): List of test case IDs to include
+                - assignedto_id (int, optional): User to assign to
+                - include_all (bool, optional): Include all cases
+                - case_ids (list, optional): Case IDs to include
 
         Returns:
-            dict: The created test plan data if successful, None otherwise.
+            Dict containing the created test plan data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
-        data = {"name": name}
+        data: dict[str, Any] = {"name": name}
         if description:
             data["description"] = description
         if milestone_id:
@@ -74,40 +88,50 @@ class PlansAPI(BaseAPI):
 
         return self._api_request("POST", f"add_plan/{project_id}", data=data)
 
-    def update_plan(self, plan_id: int, **kwargs) -> dict[str, Any] | None:
+    def update_plan(self, plan_id: int, **kwargs: Any) -> dict[str, Any]:
         """
         Update a test plan.
 
         Args:
-            plan_id (int): The ID of the test plan to update.
-            **kwargs: The fields to update (name, description, milestone_id, entries).
+            plan_id: The ID of the test plan to update.
+            **kwargs: Fields to update (name, description,
+                milestone_id, entries).
 
         Returns:
-            dict: The updated test plan data if successful, None otherwise.
+            Dict containing the updated test plan data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("POST", f"update_plan/{plan_id}", data=kwargs)
 
-    def close_plan(self, plan_id: int) -> dict[str, Any] | None:
+    def close_plan(self, plan_id: int) -> dict[str, Any]:
         """
         Close a test plan.
 
         Args:
-            plan_id (int): The ID of the test plan to close.
+            plan_id: The ID of the test plan to close.
 
         Returns:
-            dict: The response data if successful, None otherwise.
+            Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("POST", f"close_plan/{plan_id}")
 
-    def delete_plan(self, plan_id: int) -> dict[str, Any] | None:
+    def delete_plan(self, plan_id: int) -> dict[str, Any]:
         """
         Delete a test plan.
 
         Args:
-            plan_id (int): The ID of the test plan to delete.
+            plan_id: The ID of the test plan to delete.
 
         Returns:
-            dict: The response data if successful, None otherwise.
+            Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("POST", f"delete_plan/{plan_id}")
 
@@ -122,7 +146,7 @@ class PlansAPI(BaseAPI):
         case_ids: list[int] | None = None,
         config_ids: list[int] | None = None,
         runs: list[dict[str, Any]] | None = None,
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """
         Add a new test plan entry (a test run) to an existing plan.
 
@@ -132,13 +156,18 @@ class PlansAPI(BaseAPI):
             name: Optional name of the test run.
             description: Optional description of the test run.
             assignedto_id: Optional ID of the user to assign to.
-            include_all: Whether to include all test cases (default True).
+            include_all: Whether to include all test cases
+                (default True).
             case_ids: Optional list of case IDs to include.
             config_ids: Optional list of configuration IDs.
-            runs: Optional list of run objects for multi-config entries.
+            runs: Optional list of run objects for multi-config
+                entries.
 
         Returns:
             Dict containing the created plan entry data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         data: dict[str, Any] = {"suite_id": suite_id}
         if name is not None:
@@ -161,8 +190,8 @@ class PlansAPI(BaseAPI):
         )
 
     def update_plan_entry(
-        self, plan_id: int, entry_id: str, **kwargs
-    ) -> dict[str, Any] | None:
+        self, plan_id: int, entry_id: str, **kwargs: Any
+    ) -> dict[str, Any]:
         """
         Update an existing test plan entry.
 
@@ -174,14 +203,17 @@ class PlansAPI(BaseAPI):
 
         Returns:
             Dict containing the updated plan entry data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request(
-            "POST", f"update_plan_entry/{plan_id}/{entry_id}", data=kwargs
+            "POST",
+            f"update_plan_entry/{plan_id}/{entry_id}",
+            data=kwargs,
         )
 
-    def delete_plan_entry(
-        self, plan_id: int, entry_id: str
-    ) -> dict[str, Any] | None:
+    def delete_plan_entry(self, plan_id: int, entry_id: str) -> dict[str, Any]:
         """
         Delete a test plan entry.
 
@@ -191,7 +223,11 @@ class PlansAPI(BaseAPI):
 
         Returns:
             Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request(
-            "POST", f"delete_plan_entry/{plan_id}/{entry_id}"
+            "POST",
+            f"delete_plan_entry/{plan_id}/{entry_id}",
         )
