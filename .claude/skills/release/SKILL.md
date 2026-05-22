@@ -156,6 +156,8 @@ The merge triggers `tag-release.yml`:
 1. **Create version tag** — reads `uv version --short`, tags `v<version>`
 2. **Build and deploy documentation** — GitHub Pages
 3. **Build and publish to PyPI** — `uv build` + `twine upload`
+4. **Create GitHub release** — pulls notes from the `[<version>]` block
+   in `CHANGELOG.md` and runs `gh release create v<version>`
 
 ### 10. Verify PyPI publish
 
@@ -172,51 +174,37 @@ git tag --sort=-version:refname | head -3
 
 Confirm: PyPI shows the new version and `v<version>` tag exists locally.
 
-### 11. Create a GitHub release
+### 11. Confirm
 
-PyPI and tag are not enough — also create a GitHub release so it
-appears under <https://github.com/trtmn/testrail_api_module/releases>
-and Watchers get notified.
-
-```bash
-gh release create v<version> --title "v<version>" --notes "$(cat <<'EOF'
-## 🐛 Fixed
-- <items, with issue refs>
-
-## 🔧 Changed
-- <items>
-
-## 🔄 Maintenance
-- <items>
-
-## Install
-
-\`\`\`bash
-pip install testrail-api-module==<version>
-\`\`\`
-
-## Full changelog
-
-See [CHANGELOG.md](https://github.com/trtmn/testrail_api_module/blob/v<version>/CHANGELOG.md#<anchor>) and the [PyPI page](https://pypi.org/project/testrail-api-module/<version>/).
-EOF
-)"
-```
-
-Use the same category headings as `CHANGELOG.md` (🐛 Fixed, ✨ Added,
-🔧 Changed, 🚨 Breaking Changes, 🔄 Maintenance). The CHANGELOG anchor
-follows GitHub's convention: `#<version>---<yyyy-mm-dd>` (lowercase,
-hyphens, em-dash replaced with three hyphens).
-
-### 12. Confirm
+The `github-release` job in `tag-release.yml` creates the GitHub
+release automatically — it pulls notes from the matching `[<version>]`
+block in `CHANGELOG.md`, appends an install snippet, and runs
+`gh release create v<version>`. So once `tag-release.yml` is green
+you have a tag, PyPI artifact, deployed docs, **and** a GitHub
+release for free.
 
 Report to the user:
 
 - PR URL (release PR)
 - Tag URL (`https://github.com/trtmn/testrail_api_module/releases/tag/v<version>`)
 - PyPI URL (`https://pypi.org/project/testrail-api-module/<version>/`)
-- GitHub release URL
+- GitHub release URL (auto-created — same as the tag URL)
 - That `development` and `main` are now in sync (the release PR
   brought `development`'s state into `main`)
+
+If for any reason the workflow's `github-release` job failed and you
+need to create the release manually, the workflow's exact note
+generation can be reproduced locally:
+
+```bash
+version=<version>
+awk -v ver="$version" '
+  $0 ~ "^## \\[" ver "\\]" { flag=1; print; next }
+  flag && /^## \[/         { exit }
+  flag                     { print }
+' CHANGELOG.md > /tmp/notes.md
+gh release create "v$version" --title "v$version" --notes-file /tmp/notes.md
+```
 
 ## Important Notes
 

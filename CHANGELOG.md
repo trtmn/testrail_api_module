@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🔄 Maintenance
+
+- Automate GitHub release creation in `tag-release.yml`. A new
+  `github-release` job runs after the PyPI publish, extracts the
+  matching `[<version>]` block from `CHANGELOG.md`, appends an install
+  snippet, and runs `gh release create`. Previously this was a manual
+  step in the release skill (step 11). Now every PyPI publish gets a
+  matching GitHub release for free. (#122)
+
 ## [0.7.4] - 2026-05-22
 
 ### 🔄 Maintenance
