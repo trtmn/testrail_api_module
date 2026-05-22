@@ -5,7 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.2] - 2026-05-22
+
+### 🐛 Fixed
+
+- `ResultsAPI.add_results_for_cases` return type annotation corrected from
+  `dict[str, Any]` to `list[dict[str, Any]]` to match the TestRail API, which
+  returns an unpaginated list of result objects. Both `results.py` and
+  `results.pyi` updated; regression test pins the annotation via
+  `typing.get_type_hints` (#100, #102).
+- TRAM logo on the PyPI project page (was rendering as a broken-image
+  placeholder). README now references the logo by absolute
+  `raw.githubusercontent.com` URL so PyPI's renderer can resolve it
+  (#109, #110).
+
+### 🔄 Maintenance
+
+- Gitignore `.claude/agent-memory/`, `.claude/agents/`, and `.1password/`
+  to prevent accidental commits of agent state and local tooling config
+  containing absolute `/Users/<name>/` paths (#105, #106).
+- Back-merge `main` into `development` to reconverge branches after the
+  0.7.1 release work landed directly on `main`. Adds `enforce_admins`
+  branch protection on `main` and a required Tests status check
+  (Python 3.11/3.12/3.13/3.14) to prevent future drift (#107, #108).
+
+## [0.7.1] - 2026-04-14
 
 ### 🔧 Changed
 
