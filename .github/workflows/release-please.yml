@@ -128,12 +128,14 @@ jobs:
         run: |
           existing=$(gh pr list --repo "$REPO" --base main --head development --state open --json number -q '.[0].number' || echo "")
           if [ -n "$existing" ]; then
-            echo "Sync PR #$existing already open; leaving it for the user to merge."
+            echo "Sync PR #$existing already open; enabling auto-merge on it."
+            gh pr merge "$existing" --repo "$REPO" --auto --merge
             exit 0
           fi
-          gh pr create \
+          pr_url=$(gh pr create \
             --repo "$REPO" \
             --base main \
             --head development \
             --title "release: sync $TAG to main" \
-            --body "Auto-opened by release-please after publishing $TAG to PyPI. Merging this brings main up to $TAG. See the release: https://github.com/$REPO/releases/tag/$TAG and the PyPI page: https://pypi.org/project/testrail-api-module/$VERSION/"
+            --body "Auto-opened by release-please after publishing $TAG to PyPI. Auto-merging once required Tests checks pass; main is just a mirror of the published tag. See the release: https://github.com/$REPO/releases/tag/$TAG and the PyPI page: https://pypi.org/project/testrail-api-module/$VERSION/")
+          gh pr merge "$pr_url" --repo "$REPO" --auto --merge
