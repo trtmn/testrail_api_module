@@ -7,6 +7,7 @@
   "bump-patch-for-minor-pre-major": true,
   "draft": false,
   "prerelease": false,
+  "bootstrap-sha": "902a6866519df109e860886c7a233bdb0209fd02",
   "packages": {
     ".": {
       "package-name": "testrail-api-module",
