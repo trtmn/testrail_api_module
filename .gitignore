@@ -139,6 +139,11 @@ bandit-report.html
 
 # Claude Code local settings
 .claude/settings.local.json
+.claude/agent-memory/
+.claude/agents/
+
+# 1Password CLI local config
+.1password/
 
 # Git worktrees
 .worktrees/
