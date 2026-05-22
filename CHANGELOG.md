@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-05-22
+
+### 🔄 Maintenance
+
+- Bump transitive `Pygments` from 2.19.2 to 2.20.0 to resolve a low-severity
+  ReDoS advisory (CVE-2026-4539 / GHSA-5239-wwwm-4pmq). Pygments is
+  dev-only — pulled in by `pdoc`, `pytest`, and `rich` — so this does
+  not affect published-wheel users (#114, #115).
+- Commit `.github/dependabot.yml` codifying the previously UI-only
+  Dependabot configuration: weekly updates for both the `uv` ecosystem
+  and `github-actions`, with both ecosystems grouped into a single PR
+  each (#114, #115).
+- Document the new release workflow in `.claude/skills/release/SKILL.md`:
+  pre-release drift check, local `tox` run, two-PR flow
+  (release-branch → development → main), PyPI verification, and
+  GitHub release creation (#113).
+
 ## [0.7.2] - 2026-05-22
 
 ### 🐛 Fixed
