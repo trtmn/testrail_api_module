@@ -9,6 +9,8 @@ from typing import Any
 
 from .base import BaseAPI
 
+__all__ = ["DatasetsAPI"]
+
 
 class DatasetsAPI(BaseAPI):
     """
@@ -20,7 +22,7 @@ class DatasetsAPI(BaseAPI):
     Enterprise 7.6+.
     """
 
-    def get_dataset(self, dataset_id: int) -> dict[str, Any] | None:
+    def get_dataset(self, dataset_id: int) -> dict[str, Any]:
         """
         Get a dataset by ID.
 
@@ -29,22 +31,14 @@ class DatasetsAPI(BaseAPI):
 
         Returns:
             Dict containing the dataset data with id, name, and
-            variables array. Each variable in the array contains id,
-            name, and value. Returns None if the request fails.
+            variables array.
 
         Raises:
-            TestRailAPIError: If the API request fails (e.g., invalid
-                dataset_id).
-            TestRailAuthenticationError: If authentication fails.
-            TestRailRateLimitError: If rate limit is exceeded.
-
-        Note:
-            Requires TestRail Enterprise 7.6+. Returns 403 for
-            non-Enterprise instances.
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_dataset/{dataset_id}")
 
-    def get_datasets(self, project_id: int) -> list[dict[str, Any]] | None:
+    def get_datasets(self, project_id: int) -> list[dict[str, Any]]:
         """
         Get all datasets for a project.
 
@@ -52,23 +46,10 @@ class DatasetsAPI(BaseAPI):
             project_id: The ID of the project to get datasets for.
 
         Returns:
-            List of dictionaries containing dataset data. Each dataset
-            contains id, name, and variables array. Returns None if the
-            request fails.
-
-            Note: The API returns a paginated result with offset,
-            limit, size, _links, and datasets array. This method
-            returns the datasets array directly.
+            List of dictionaries containing dataset data.
 
         Raises:
-            TestRailAPIError: If the API request fails (e.g., invalid
-                project_id).
-            TestRailAuthenticationError: If authentication fails.
-            TestRailRateLimitError: If rate limit is exceeded.
-
-        Note:
-            Requires TestRail Enterprise 7.6+. Returns 403 for
-            non-Enterprise instances.
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_datasets/{project_id}")
 
@@ -77,7 +58,7 @@ class DatasetsAPI(BaseAPI):
         project_id: int,
         name: str,
         variables: list[dict[str, Any]] | None = None,
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """
         Add a new dataset to a project.
 
@@ -92,9 +73,6 @@ class DatasetsAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
-
-        Note:
-            Requires TestRail Enterprise 7.6+.
         """
         data: dict[str, Any] = {"name": name}
         if variables is not None:
@@ -103,9 +81,7 @@ class DatasetsAPI(BaseAPI):
             "POST", f"add_dataset/{project_id}", data=data
         )
 
-    def update_dataset(
-        self, dataset_id: int, **kwargs
-    ) -> dict[str, Any] | None:
+    def update_dataset(self, dataset_id: int, **kwargs: Any) -> dict[str, Any]:
         """
         Update a dataset.
 
@@ -118,15 +94,12 @@ class DatasetsAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
-
-        Note:
-            Requires TestRail Enterprise 7.6+.
         """
         return self._api_request(
             "POST", f"update_dataset/{dataset_id}", data=kwargs
         )
 
-    def delete_dataset(self, dataset_id: int) -> dict[str, Any] | None:
+    def delete_dataset(self, dataset_id: int) -> dict[str, Any]:
         """
         Delete a dataset.
 
@@ -138,8 +111,5 @@ class DatasetsAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
-
-        Note:
-            Requires TestRail Enterprise 7.6+.
         """
         return self._api_request("POST", f"delete_dataset/{dataset_id}")

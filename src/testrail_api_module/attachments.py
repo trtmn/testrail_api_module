@@ -7,13 +7,18 @@ from typing import Any
 
 from .base import BaseAPI
 
+__all__ = ["AttachmentsAPI"]
+
 
 class AttachmentsAPI(BaseAPI):
     """
     API for managing TestRail attachments.
+
+    This class provides methods to add, retrieve, and delete file
+    attachments on test cases, runs, plans, and other TestRail entities.
     """
 
-    def get_attachment(self, attachment_id: int) -> dict[str, Any] | None:
+    def get_attachment(self, attachment_id: int) -> dict[str, Any]:
         """
         Get an attachment by ID.
 
@@ -22,21 +27,28 @@ class AttachmentsAPI(BaseAPI):
 
         Returns:
             Dict containing the attachment data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", f"get_attachment/{attachment_id}")
 
     def get_attachments(
         self, entity_type: str, entity_id: int
-    ) -> list[dict[str, Any]] | None:
+    ) -> list[dict[str, Any]]:
         """
         Get all attachments for a specific entity.
 
         Args:
-            entity_type: The type of entity ('case', 'run', 'plan', 'project').
+            entity_type: The type of entity
+                ('case', 'run', 'plan', 'project').
             entity_id: The ID of the entity to get attachments for.
 
         Returns:
             List of dictionaries containing attachment data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request(
             "GET", f"get_attachments/{entity_type}/{entity_id}"
@@ -48,28 +60,34 @@ class AttachmentsAPI(BaseAPI):
         entity_id: int,
         file_path: str,
         description: str | None = None,
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """
         Add an attachment to a specific entity.
 
         Args:
-            entity_type: The type of entity ('case', 'run', 'plan', 'project').
+            entity_type: The type of entity
+                ('case', 'run', 'plan', 'project').
             entity_id: The ID of the entity to add the attachment to.
             file_path: The path to the file to attach.
             description: Optional description of the attachment.
 
         Returns:
             Dict containing the created attachment data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         data = {"file": file_path}
         if description:
             data["description"] = description
 
         return self._api_request(
-            "POST", f"add_attachment/{entity_type}/{entity_id}", data=data
+            "POST",
+            f"add_attachment/{entity_type}/{entity_id}",
+            data=data,
         )
 
-    def delete_attachment(self, attachment_id: int) -> dict[str, Any] | None:
+    def delete_attachment(self, attachment_id: int) -> dict[str, Any]:
         """
         Delete an attachment.
 
@@ -78,5 +96,8 @@ class AttachmentsAPI(BaseAPI):
 
         Returns:
             Dict containing the response data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("POST", f"delete_attachment/{attachment_id}")

@@ -7,28 +7,39 @@ from typing import Any
 
 from .base import BaseAPI
 
+__all__ = ["StatusesAPI"]
+
 
 class StatusesAPI(BaseAPI):
     """
     API for managing TestRail statuses.
+
+    This class provides methods to retrieve the available test result
+    and case statuses configured in TestRail.
     """
 
-    def get_statuses(self) -> list[dict[str, Any]] | None:
+    def get_statuses(self) -> list[dict[str, Any]]:
         """
-        Get all available statuses.
+        Get all available test result statuses.
 
         Returns:
-            list: List of statuses if successful, None otherwise.
+            List of dictionaries containing status data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", "get_statuses")
 
-    def get_case_statuses(self) -> list[dict[str, Any]] | None:
+    def get_case_statuses(self) -> list[dict[str, Any]]:
         """
         Get all available case statuses.
 
         Requires TestRail Enterprise 7.3+.
 
         Returns:
-            List of case status dicts if successful, None otherwise.
+            List of dictionaries containing case status data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
         """
         return self._api_request("GET", "get_case_statuses")
