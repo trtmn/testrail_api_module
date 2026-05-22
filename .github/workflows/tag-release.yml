@@ -129,3 +129,51 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: twine upload dist/*
+
+  github-release:
+    name: Create GitHub release
+    needs: [tag, publish]
+    if: needs.tag.outputs.tag_exists == 'false'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code at the new tag
+        uses: actions/checkout@v6
+        with:
+          ref: v${{ needs.tag.outputs.version }}
+
+      - name: Extract release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ needs.tag.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          {
+            awk -v ver="$VERSION" '
+              $0 ~ "^## \\[" ver "\\]" { flag=1; print; next }
+              flag && /^## \[/         { exit }
+              flag                     { print }
+            ' CHANGELOG.md
+            echo ""
+            echo "## Install"
+            echo ""
+            echo '```bash'
+            echo "pip install testrail-api-module==$VERSION"
+            echo '```'
+            echo ""
+            echo "## Full changelog"
+            echo ""
+            echo "See [CHANGELOG.md](https://github.com/$REPO/blob/v$VERSION/CHANGELOG.md) and the [PyPI page](https://pypi.org/project/testrail-api-module/$VERSION/)."
+          } > /tmp/release_notes.md
+          echo "--- Generated release notes ---"
+          cat /tmp/release_notes.md
+
+      - name: Create GitHub release
+        env:
+          VERSION: ${{ needs.tag.outputs.version }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --notes-file /tmp/release_notes.md \
+            --repo "$REPO"
