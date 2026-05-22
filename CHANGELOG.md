@@ -11,6 +11,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > prepends new blocks above the most recent release based on
 > Conventional Commits.
 
+## [0.7.5](https://github.com/trtmn/testrail_api_module/compare/v0.7.4...v0.7.5) (2026-05-22)
+
+
+### ✨ Added
+
+* add workflow_dispatch to publish workflow for manual triggering ([9687298](https://github.com/trtmn/testrail_api_module/commit/968729852b23afdfbd7a41f88fa07d50b279f4a7))
+* complete FastMCP integration and enhance documentation ([b8e8006](https://github.com/trtmn/testrail_api_module/commit/b8e800618340e9c4c00620fe55e8cf0f3aa92fcf))
+* enhance coverage configuration and update API method calls ([aa40219](https://github.com/trtmn/testrail_api_module/commit/aa40219a009375c6260338ca1f1e0d68e0a17ce4))
+* Implement datasets module with full TestRail API support ([036ffc6](https://github.com/trtmn/testrail_api_module/commit/036ffc6f3a0617f87797d7f91d87320527b8673e))
+* implement module-based tool architecture for FastMCP integration ([49e45c3](https://github.com/trtmn/testrail_api_module/commit/49e45c34a0257d525ce0813a7761368720b3cff3))
+* migrate release flow to release-please ([#125](https://github.com/trtmn/testrail_api_module/issues/125)) ([90a54da](https://github.com/trtmn/testrail_api_module/commit/90a54dabce8975f929ecbf8223ea9b3fc7969a93))
+* update version to 0.5.0 and enhance README documentation ([dc0c4cf](https://github.com/trtmn/testrail_api_module/commit/dc0c4cfe4e07c34f8e7c57b81c415ab39028da9d))
+
+
+### 🐛 Fixed
+
+* add --system flag to uv pip install in publish workflow ([061b729](https://github.com/trtmn/testrail_api_module/commit/061b729afc598f37cc32a54d05fb6b40c1fe2666))
+* clean dist directory before building to prevent uploading old artifacts ([51ab2b6](https://github.com/trtmn/testrail_api_module/commit/51ab2b6500a50a748a1fb1fd38e1ce900929b814))
+* **docs:** correct typos in README and add commit conventions document ([8123a99](https://github.com/trtmn/testrail_api_module/commit/8123a99c791bd1980ba6a9578ad81559e88f1cdb))
+* remove environment block from docs workflow to bypass protection rules for tag deployments ([7a22c83](https://github.com/trtmn/testrail_api_module/commit/7a22c8388fb84a81e54a0ae231c97621ba1ac4c9))
+* **results:** annotate add_results_for_cases return as list ([#100](https://github.com/trtmn/testrail_api_module/issues/100)) ([#102](https://github.com/trtmn/testrail_api_module/issues/102)) ([e083b91](https://github.com/trtmn/testrail_api_module/commit/e083b91522357de917c70ce229aef2416d7133c6))
+* update installation link in README for MCP server ([9b3d3d7](https://github.com/trtmn/testrail_api_module/commit/9b3d3d721cef1f0c947ab5135be76e4b9b7ef016))
+* update README and documentation for TestRail module usage ([afbf52a](https://github.com/trtmn/testrail_api_module/commit/afbf52a391cbeafdfb277f7b747758f48557faa6))
+
+
+### 🔧 Changed
+
+* remove MCP server script and enhance version retrieval ([4df712c](https://github.com/trtmn/testrail_api_module/commit/4df712c8340bb3b940c3fa68e31b1f3eb13fdc8e))
+* update TODO.md to reflect test coverage status for API modules ([1edaa07](https://github.com/trtmn/testrail_api_module/commit/1edaa071b2ded9d3a81cc2abd7b74928ab1d7d54))
+
+
+### 🔄 Maintenance
+
+* add .cursor/mcp.json to .gitignore to prevent credential exposure ([93a45d8](https://github.com/trtmn/testrail_api_module/commit/93a45d8fa6d30aaf785349cbb0ac3ee049e267c4))
+* Add .cursor/mcp.json to .gitignore to prevent credential exposure ([5dfbdf4](https://github.com/trtmn/testrail_api_module/commit/5dfbdf4cf6202f24b87e4bb3fb579d13ab2063dd))
+* add blank lines to test files for consistency ([fc21673](https://github.com/trtmn/testrail_api_module/commit/fc216730cc53acec77c4868084504fe5f51730a5))
+* add changelog rules for consistent documentation ([164865f](https://github.com/trtmn/testrail_api_module/commit/164865f11ccd606972c4161e94d69843d8926d87))
+* add reusable MCP prompts for TestRail workflows ([48d6511](https://github.com/trtmn/testrail_api_module/commit/48d6511323af3afab54b9ded5ca5da8b5d8411ab))
+* auto-create GitHub release after PyPI publish ([#123](https://github.com/trtmn/testrail_api_module/issues/123)) ([302b435](https://github.com/trtmn/testrail_api_module/commit/302b4354cfde2f417d7a73807134e46b1a76d350))
+* automate release pipeline via GitHub Actions (v0.6.4) ([6e2864f](https://github.com/trtmn/testrail_api_module/commit/6e2864f7fbffef9f2f9966923f527a1992ce9e67))
+* automate release tagging and publishing via GitHub Actions (v0.6.4) ([61a2b46](https://github.com/trtmn/testrail_api_module/commit/61a2b466f24364573e9275e8a666e046f5463358))
+* bump version to 0.3.1 and update documentation ([c92bacf](https://github.com/trtmn/testrail_api_module/commit/c92bacf5b881a10f17347494634f34bcbfc0cbcc))
+* bump version to 0.3.3 and update documentation ([#35](https://github.com/trtmn/testrail_api_module/issues/35)) ([972ed6e](https://github.com/trtmn/testrail_api_module/commit/972ed6e3bead346457240ed20fabea36c1f8ca53))
+* bump version to 0.4.0 and update documentation ([d08b966](https://github.com/trtmn/testrail_api_module/commit/d08b9660e7c484433c7e934b9561df84e9d239f7))
+* bump version to 0.4.0rc2 and enhance API functionality ([6882fd3](https://github.com/trtmn/testrail_api_module/commit/6882fd3519645998fc85dedc8932ff8b87878709))
+* bump version to 0.5.2 in pyproject.toml and uv.lock ([48bcb40](https://github.com/trtmn/testrail_api_module/commit/48bcb4068546e7eb741f6c599d5b88c21fd0722f))
+* bump version to 0.5.2 in pyproject.toml and uv.lock ([4865c20](https://github.com/trtmn/testrail_api_module/commit/4865c2092384680af56ee01c1f06267678a178c0))
+* **deps:** bump Pygments 2.19.2 → 2.20.0; commit dependabot.yml ([#115](https://github.com/trtmn/testrail_api_module/issues/115)) ([7aa496f](https://github.com/trtmn/testrail_api_module/commit/7aa496fce5b1e1224efec0fbc187877da80efb0a))
+* enhance MCP prompts for TestRail operations ([cabd643](https://github.com/trtmn/testrail_api_module/commit/cabd643335bdcdff8d88ba82093ce5e521d90a13))
+* enhance MCP tool descriptions and error handling ([ae14907](https://github.com/trtmn/testrail_api_module/commit/ae14907799388062dd650de03d69c3d46711d609))
+* gitignore .claude/agent-memory, .claude/agents, .1password ([#106](https://github.com/trtmn/testrail_api_module/issues/106)) ([c388e74](https://github.com/trtmn/testrail_api_module/commit/c388e7401f92cf31c7a50327723300f3f2b346d1))
+* move unreleased changelog entries to 0.5.1 section ([354f3aa](https://github.com/trtmn/testrail_api_module/commit/354f3aabad120e9911b60b515e2de8137f90448a))
+* release 0.5.2 with automated PyPI publishing and updated documentation workflow ([d3fba79](https://github.com/trtmn/testrail_api_module/commit/d3fba79687971195e5807309a65a6a748cb1932c))
+* release 0.5.2 with automated PyPI publishing and updated documentation workflow ([b2be821](https://github.com/trtmn/testrail_api_module/commit/b2be821c5eb90095964b24fa32c3a7dc37ae84d2))
+* reorganize dependencies in uv.lock for clarity ([9b7f28a](https://github.com/trtmn/testrail_api_module/commit/9b7f28a4e741c726302d5a772affd36977f1db08))
+* set bootstrap-sha to v0.7.4 commit so release-please only scans new commits ([#128](https://github.com/trtmn/testrail_api_module/issues/128)) ([66d2def](https://github.com/trtmn/testrail_api_module/commit/66d2def59e30d6c4750b093c0688f05aeaa5f230))
+* **skill:** document new release flow (GH release, tox, drift guard) ([#113](https://github.com/trtmn/testrail_api_module/issues/113)) ([ef70086](https://github.com/trtmn/testrail_api_module/commit/ef70086f97e23407d204a34089c1186f520ef1d0))
+* update .gitignore and enhance MCP tool parameter handling ([fa1362a](https://github.com/trtmn/testrail_api_module/commit/fa1362a55c343443b4fc9ccc2aa00a80d27b950b))
+* update CHANGELOG and version for 0.5.1 release ([b4f16f6](https://github.com/trtmn/testrail_api_module/commit/b4f16f635c25b9f2dedf9a6b0d8e32ee4d8d85fb))
+* update CHANGELOG for version 0.5.0 release ([8152d4b](https://github.com/trtmn/testrail_api_module/commit/8152d4bd8e640cb600aa571048298fb2a1019902))
+* update license year and implement dynamic version retrieval ([fdca710](https://github.com/trtmn/testrail_api_module/commit/fdca7107264ffc35c08d9590b1b4b264887ee23a))
+* update project name and add pytest dependency ([502afb2](https://github.com/trtmn/testrail_api_module/commit/502afb22d928c7f4f2fb497bc9e914bd8c6e97b7))
+* update README and MCP_USAGE for improved installation instructions ([83c9abb](https://github.com/trtmn/testrail_api_module/commit/83c9abb94ea2f4ce2e1bcfe76b1ccb2300561e64))
+* update version to 0.4.0 in project files ([646b044](https://github.com/trtmn/testrail_api_module/commit/646b044326fdac0a45bf0f4bf8fcc52da81f5b63))
+* update versioning to 0.4.0 and revise documentation ([eef4b33](https://github.com/trtmn/testrail_api_module/commit/eef4b33fe931eb13649b63ce8c1f002b35f60170))
+* use absolute URL for TRAM logo so it renders on PyPI ([#110](https://github.com/trtmn/testrail_api_module/issues/110)) ([e5ef93b](https://github.com/trtmn/testrail_api_module/commit/e5ef93baad9be9fe63f94ded5aa3074723c2f58a))
+
 ## [Unreleased]
 
 ### 🔄 Maintenance
