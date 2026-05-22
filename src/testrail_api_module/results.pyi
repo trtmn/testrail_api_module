@@ -41,7 +41,7 @@ class ResultsAPI(BaseAPI):
         """Add a test result for a specific test case in a test run."""
     def add_results_for_cases(
         self, run_id: int, results: list[dict[str, Any]]
-    ) -> dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         """Add multiple test results for test cases in a test run."""
     def get_results_for_case(
         self, run_id: int, case_id: int

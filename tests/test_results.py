@@ -571,6 +571,20 @@ class TestResultsAPI:
             )
             assert result == [{"id": 1}, {"id": 2}]
 
+    def test_add_results_for_cases_return_annotation_is_list(
+        self, results_api: ResultsAPI
+    ) -> None:
+        """Regression: return type must be list[dict[str, Any]], not dict[str, Any] (#100)."""
+        import inspect
+        import typing
+
+        sig = inspect.signature(results_api.add_results_for_cases)
+        hints = typing.get_type_hints(results_api.add_results_for_cases)
+        assert hints["return"] == list[dict[str, typing.Any]], (
+            f"add_results_for_cases must return list[dict[str, Any]], "
+            f"got {sig.return_annotation!r}"
+        )
+
     def test_add_results_for_cases_empty_list(
         self, results_api: ResultsAPI
     ) -> None:

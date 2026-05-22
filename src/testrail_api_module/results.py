@@ -177,7 +177,7 @@ class ResultsAPI(BaseAPI):
 
     def add_results_for_cases(
         self, run_id: int, results: list[dict[str, Any]]
-    ) -> dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         """
         Add multiple test results for test cases in a test run.
 
@@ -195,7 +195,7 @@ class ResultsAPI(BaseAPI):
                     - custom_fields: Optional dictionary of custom field values
 
         Returns:
-            Dict containing the created test results data.
+            List of created test result dicts (one per submitted case).
 
         Raises:
             TestRailAPIError: If the API request fails.
