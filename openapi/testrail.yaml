@@ -1,0 +1,3303 @@
+openapi: 3.1.0
+info:
+  title: TestRail API (community-authored)
+  version: "2.0.0-community.1"
+  summary: An unofficial OpenAPI 3.1 description of the TestRail v2 REST API.
+  description: |
+    A hand-authored, **community-maintained** OpenAPI 3.1 description of the
+    TestRail v2 HTTP API (`/index.php?/api/v2/...`).
+
+    **This spec is not produced or endorsed by Gurock / TestRail.** Gurock has
+    never published an official machine-readable contract for the TestRail API
+    (see <https://github.com/gurock/testrail-api/issues/6>, open since 2017).
+    This document is maintained alongside the
+    [`testrail-api-module`](https://pypi.org/project/testrail-api-module/)
+    Python wrapper as a community resource.
+
+    ## Coverage
+
+    Every endpoint reachable from `TestRailAPI.*` in `testrail-api-module` has a
+    matching path here (107 operations across 24 resource groups). Request
+    bodies, query parameters and response schemas are typed against the wrapper's
+    PEP 561 stubs and TestRail's published documentation.
+
+    ## TestRail routing quirk
+
+    TestRail does not use conventional REST paths. Every request is routed
+    through `index.php` and the "path" lives inside the query string, e.g.
+
+    ```
+    GET https://example.testrail.io/index.php?/api/v2/get_case/1
+    ```
+
+    The `servers` URL below therefore ends in `/index.php?/api/v2` and each
+    OpenAPI path (`/get_case/{case_id}`) is appended to it. One consequence is
+    that `get_user_by_email` takes its `email` argument with an `&` separator
+    (`...get_user_by_email&email=a@b.com`) rather than `?`, because the route is
+    already inside a query string. It is modelled here as an ordinary `email`
+    query parameter; see that operation's description.
+
+    ## Custom fields
+
+    TestRail instances define per-instance custom fields whose keys are prefixed
+    `custom_` (e.g. `custom_automation_type`). These cannot be enumerated
+    statically, so the `Case` and `Result` schemas set `additionalProperties:
+    true`. Discover the live field definitions at runtime via `get_case_fields`
+    and `get_result_fields`.
+
+    ## Verification status
+
+    Response shapes are modelled from the wrapper's typed stubs and TestRail's
+    docs. The pagination envelope (`{offset, limit, size, _links, <entity>}`)
+    used by bulk-collection endpoints, the plain-list shape of metadata
+    endpoints (e.g. `get_statuses`), and the plain-object shape of
+    `get_current_user` are confirmed against a live TestRail 8.x instance.
+    Operations whose exact envelope has not been re-confirmed against a live
+    instance carry an `x-verified: docs-only` extension and should be treated as
+    best-effort until validated against a fixture.
+  contact:
+    name: testrail-api-module maintainers
+    url: https://github.com/trtmn/testrail_api_module
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+externalDocs:
+  description: TestRail API reference (official prose docs)
+  url: https://support.testrail.com/hc/en-us/categories/7076916891156-API
+
+servers:
+  - url: https://{instance}.testrail.io/index.php?/api/v2
+    description: TestRail Cloud instance
+    variables:
+      instance:
+        default: example
+        description: Your TestRail Cloud subdomain (e.g. `acme` for acme.testrail.io)
+  - url: "{base_url}/index.php?/api/v2"
+    description: Self-hosted / Server install (arbitrary base URL)
+    variables:
+      base_url:
+        default: https://testrail.example.com
+        description: Scheme + host (+ optional path) of a self-hosted TestRail install
+
+security:
+  - basicAuth: []
+
+tags:
+  - name: Cases
+    description: Test cases, case fields, case types and bulk case operations.
+  - name: Sections
+    description: Sections that organise test cases within a suite.
+  - name: Suites
+    description: Test suites (collections of sections/cases) within a project.
+  - name: Shared Steps
+    description: Reusable step definitions shared across cases.
+  - name: BDD
+    description: Behaviour-driven (Gherkin `.feature`) scenario import/export.
+  - name: Runs
+    description: Test runs.
+  - name: Results
+    description: Test results for individual tests, cases and runs.
+  - name: Tests
+    description: Individual tests within a run.
+  - name: Plans
+    description: Test plans and plan entries.
+  - name: Milestones
+    description: Project milestones.
+  - name: Projects
+    description: Projects.
+  - name: Configurations
+    description: Configuration groups and configurations.
+  - name: Groups
+    description: User groups.
+  - name: Roles
+    description: User roles.
+  - name: Users
+    description: Users.
+  - name: Datasets
+    description: Datasets (parameterised data) for a project.
+  - name: Variables
+    description: Variables used by datasets.
+  - name: Statuses
+    description: Test result statuses and case statuses.
+  - name: Priorities
+    description: Case priorities.
+  - name: Templates
+    description: Field layout templates for a project.
+  - name: Result Fields
+    description: Custom result field definitions.
+  - name: Labels
+    description: Labels.
+  - name: Reports
+    description: Reports configured in the UI.
+  - name: Attachments
+    description: File attachments on cases, results, runs and plans.
+
+paths:
+  # ----------------------------------------------------------------- Cases
+  /get_case/{case_id}:
+    get:
+      tags: [Cases]
+      operationId: getCase
+      summary: Get a test case by ID
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: The requested test case.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Case' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_cases/{project_id}:
+    get:
+      tags: [Cases]
+      operationId: getCases
+      summary: Get test cases for a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - { name: suite_id, in: query, schema: { type: integer }, description: Suite to read cases from (required for multi-suite projects). }
+        - { name: section_id, in: query, schema: { type: integer }, description: Restrict to a section. }
+        - { name: created_after, in: query, schema: { type: integer }, description: Only cases created after this UNIX timestamp. }
+        - { name: created_before, in: query, schema: { type: integer }, description: Only cases created before this UNIX timestamp. }
+        - { name: created_by, in: query, schema: { type: string }, description: Comma-separated creator user IDs. }
+        - { name: milestone_id, in: query, schema: { type: string }, description: Comma-separated milestone IDs. }
+        - { name: priority_id, in: query, schema: { type: string }, description: Comma-separated priority IDs. }
+        - { name: type_id, in: query, schema: { type: string }, description: Comma-separated case type IDs. }
+        - { name: updated_after, in: query, schema: { type: integer }, description: Only cases updated after this UNIX timestamp. }
+        - { name: updated_before, in: query, schema: { type: integer }, description: Only cases updated before this UNIX timestamp. }
+        - { name: updated_by, in: query, schema: { type: string }, description: Comma-separated user IDs who updated. }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of test cases.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CasesResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_case/{section_id}:
+    post:
+      tags: [Cases]
+      operationId: addCase
+      summary: Create a test case
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CaseInput' }
+      responses:
+        '200':
+          description: The created test case.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Case' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_case/{case_id}:
+    post:
+      tags: [Cases]
+      operationId: updateCase
+      summary: Update a test case
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CaseInput' }
+      responses:
+        '200':
+          description: The updated test case.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Case' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_case/{case_id}:
+    post:
+      tags: [Cases]
+      operationId: deleteCase
+      summary: Delete a test case
+      description: TestRail deletes via POST and returns an empty body.
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_case_fields:
+    get:
+      tags: [Cases]
+      operationId: getCaseFields
+      summary: Get available custom case field definitions
+      responses:
+        '200':
+          description: A list of case field definitions.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/CaseField' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_case_types:
+    get:
+      tags: [Cases]
+      operationId: getCaseTypes
+      summary: Get available case types
+      responses:
+        '200':
+          description: A list of case types.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/CaseType' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_history_for_case/{case_id}:
+    get:
+      tags: [Cases]
+      operationId: getHistoryForCase
+      summary: Get the change history for a case
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of history entries.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CaseHistoryResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_case_field:
+    post:
+      tags: [Cases]
+      operationId: addCaseField
+      summary: Create a custom case field
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CaseFieldInput' }
+      responses:
+        '200':
+          description: The created case field.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CaseField' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_cases/{suite_id}:
+    post:
+      tags: [Cases]
+      operationId: updateCases
+      summary: Bulk-update test cases in a suite
+      parameters:
+        - $ref: '#/components/parameters/SuiteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - type: object
+                  properties:
+                    case_ids:
+                      type: array
+                      items: { type: integer }
+                      description: Cases to update. Omit to update all cases in the suite.
+                - $ref: '#/components/schemas/CaseInput'
+      responses:
+        '200':
+          description: The updated cases (or an empty body).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items: { $ref: '#/components/schemas/Case' }
+                  - type: object
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_cases/{suite_id}:
+    post:
+      tags: [Cases]
+      operationId: deleteCases
+      summary: Bulk-delete test cases in a suite
+      parameters:
+        - $ref: '#/components/parameters/SuiteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [case_ids]
+              properties:
+                case_ids:
+                  type: array
+                  items: { type: integer }
+                  description: Cases to delete.
+                soft:
+                  type: integer
+                  enum: [0, 1]
+                  description: 1 = preview only (no deletion); 0 = perform deletion.
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /copy_cases_to_section/{section_id}:
+    post:
+      tags: [Cases]
+      operationId: copyCasesToSection
+      summary: Copy test cases into a section
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [case_ids]
+              properties:
+                case_ids:
+                  type: array
+                  items: { type: integer }
+      responses:
+        '200':
+          description: The copied cases.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Case' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /move_cases_to_section/{section_id}:
+    post:
+      tags: [Cases]
+      operationId: moveCasesToSection
+      summary: Move test cases into a section
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [case_ids]
+              properties:
+                suite_id:
+                  type: integer
+                  description: Target suite (required when moving across suites).
+                case_ids:
+                  type: array
+                  items: { type: integer }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # -------------------------------------------------------------- Sections
+  /get_section/{section_id}:
+    get:
+      tags: [Sections]
+      operationId: getSection
+      summary: Get a section by ID
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      responses:
+        '200':
+          description: The requested section.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Section' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_sections/{project_id}:
+    get:
+      tags: [Sections]
+      operationId: getSections
+      summary: Get sections for a project/suite
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - { name: suite_id, in: query, schema: { type: integer }, description: Suite to read sections from (required for multi-suite projects). }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of sections.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SectionsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_section/{project_id}:
+    post:
+      tags: [Sections]
+      operationId: addSection
+      summary: Create a section
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                suite_id: { type: integer, description: Required for multi-suite projects. }
+                parent_id: { type: integer, description: "Parent section, for nesting." }
+      responses:
+        '200':
+          description: The created section.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Section' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_section/{section_id}:
+    post:
+      tags: [Sections]
+      operationId: updateSection
+      summary: Update a section
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+      responses:
+        '200':
+          description: The updated section.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Section' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /move_section/{section_id}:
+    post:
+      tags: [Sections]
+      operationId: moveSection
+      summary: Move a section (TestRail 6.5.2+)
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parent_id: { type: integer, nullable: true, description: "New parent section, or null for top level." }
+                after_id: { type: integer, nullable: true, description: "Place after this section, or null for first." }
+      responses:
+        '200':
+          description: The moved section.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Section' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_section/{section_id}:
+    post:
+      tags: [Sections]
+      operationId: deleteSection
+      summary: Delete a section
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ---------------------------------------------------------------- Suites
+  /get_suite/{suite_id}:
+    get:
+      tags: [Suites]
+      operationId: getSuite
+      summary: Get a suite by ID
+      parameters:
+        - $ref: '#/components/parameters/SuiteId'
+      responses:
+        '200':
+          description: The requested suite.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Suite' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_suites/{project_id}:
+    get:
+      tags: [Suites]
+      operationId: getSuites
+      summary: Get suites for a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: A list of suites.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Suite' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_suite/{project_id}:
+    post:
+      tags: [Suites]
+      operationId: addSuite
+      summary: Create a suite
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+      responses:
+        '200':
+          description: The created suite.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Suite' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_suite/{suite_id}:
+    post:
+      tags: [Suites]
+      operationId: updateSuite
+      summary: Update a suite
+      parameters:
+        - $ref: '#/components/parameters/SuiteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+      responses:
+        '200':
+          description: The updated suite.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Suite' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_suite/{suite_id}:
+    post:
+      tags: [Suites]
+      operationId: deleteSuite
+      summary: Delete a suite
+      parameters:
+        - $ref: '#/components/parameters/SuiteId'
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ---------------------------------------------------------- Shared Steps
+  /get_shared_step/{shared_step_id}:
+    get:
+      tags: [Shared Steps]
+      operationId: getSharedStep
+      summary: Get a shared step by ID
+      parameters:
+        - { name: shared_step_id, in: path, required: true, schema: { type: integer }, description: The shared step ID. }
+      responses:
+        '200':
+          description: The requested shared step.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SharedStep' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_shared_steps/{project_id}:
+    get:
+      tags: [Shared Steps]
+      operationId: getSharedSteps
+      summary: Get shared steps for a project
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of shared steps.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SharedStepsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_shared_step/{project_id}:
+    post:
+      tags: [Shared Steps]
+      operationId: addSharedStep
+      summary: Create a shared step
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+                custom_steps_separated:
+                  type: array
+                  items: { $ref: '#/components/schemas/Step' }
+                  description: The ordered steps for the shared step.
+      responses:
+        '200':
+          description: The created shared step.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SharedStep' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_shared_step/{shared_step_id}:
+    post:
+      tags: [Shared Steps]
+      operationId: updateSharedStep
+      summary: Update a shared step
+      parameters:
+        - { name: shared_step_id, in: path, required: true, schema: { type: integer }, description: The shared step ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                custom_steps_separated:
+                  type: array
+                  items: { $ref: '#/components/schemas/Step' }
+      responses:
+        '200':
+          description: The updated shared step.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SharedStep' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_shared_step/{shared_step_id}:
+    post:
+      tags: [Shared Steps]
+      operationId: deleteSharedStep
+      summary: Delete a shared step
+      parameters:
+        - { name: shared_step_id, in: path, required: true, schema: { type: integer }, description: The shared step ID. }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keep_in_cases:
+                  type: integer
+                  enum: [0, 1]
+                  description: 1 (default) keeps step content in cases; 0 removes it.
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ------------------------------------------------------------------- BDD
+  /get_bdd/{case_id}:
+    get:
+      tags: [BDD]
+      operationId: getBdd
+      summary: Export a case as a Gherkin .feature file
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: The .feature file content.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+            application/json:
+              schema: { $ref: '#/components/schemas/BddScenario' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_bdd/{section_id}:
+    post:
+      tags: [BDD]
+      operationId: addBdd
+      summary: Import a Gherkin .feature file as a case
+      parameters:
+        - $ref: '#/components/parameters/SectionId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [attachment]
+              properties:
+                attachment:
+                  type: string
+                  format: binary
+                  description: The .feature file to import.
+      responses:
+        '200':
+          description: The created BDD case/scenario.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BddScenario' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ------------------------------------------------------------------ Runs
+  /get_run/{run_id}:
+    get:
+      tags: [Runs]
+      operationId: getRun
+      summary: Get a run by ID
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+      responses:
+        '200':
+          description: The requested run.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Run' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_runs/{project_id}:
+    get:
+      tags: [Runs]
+      operationId: getRuns
+      summary: Get runs for a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - { name: created_after, in: query, schema: { type: integer }, description: Only runs created after this UNIX timestamp. }
+        - { name: created_before, in: query, schema: { type: integer }, description: Only runs created before this UNIX timestamp. }
+        - { name: created_by, in: query, schema: { type: string }, description: Comma-separated creator user IDs. }
+        - { name: is_completed, in: query, schema: { type: integer, enum: [0, 1] }, description: "1 = only completed runs, 0 = only active runs." }
+        - { name: milestone_id, in: query, schema: { type: string }, description: Comma-separated milestone IDs. }
+        - { name: suite_id, in: query, schema: { type: string }, description: Comma-separated suite IDs. }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of runs.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RunsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_run/{project_id}:
+    post:
+      tags: [Runs]
+      operationId: addRun
+      summary: Create a run
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RunInput' }
+      responses:
+        '200':
+          description: The created run.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Run' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_run/{run_id}:
+    post:
+      tags: [Runs]
+      operationId: updateRun
+      summary: Update a run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RunInput' }
+      responses:
+        '200':
+          description: The updated run.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Run' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /close_run/{run_id}:
+    post:
+      tags: [Runs]
+      operationId: closeRun
+      summary: Close a run (archives results; irreversible)
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+      responses:
+        '200':
+          description: The closed run.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Run' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_run/{run_id}:
+    post:
+      tags: [Runs]
+      operationId: deleteRun
+      summary: Delete a run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # --------------------------------------------------------------- Results
+  /get_results/{test_id}:
+    get:
+      tags: [Results]
+      operationId: getResults
+      summary: Get results for a test
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+        - { name: status_id, in: query, schema: { type: string }, description: Comma-separated status IDs. }
+        - { name: defects_filter, in: query, schema: { type: string }, description: A single defect ID (e.g. TR-1). }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of results.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResultsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_results_for_case/{run_id}/{case_id}:
+    get:
+      tags: [Results]
+      operationId: getResultsForCase
+      summary: Get results for a case within a run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+        - $ref: '#/components/parameters/CaseId'
+        - { name: status_id, in: query, schema: { type: string }, description: Comma-separated status IDs. }
+        - { name: defects_filter, in: query, schema: { type: string }, description: A single defect ID. }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of results.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResultsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_results_for_run/{run_id}:
+    get:
+      tags: [Results]
+      operationId: getResultsForRun
+      summary: Get results across a run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+        - { name: created_after, in: query, schema: { type: integer }, description: Only results created after this UNIX timestamp. }
+        - { name: created_before, in: query, schema: { type: integer }, description: Only results created before this UNIX timestamp. }
+        - { name: created_by, in: query, schema: { type: string }, description: Comma-separated creator user IDs. }
+        - { name: defects_filter, in: query, schema: { type: string }, description: A single defect ID. }
+        - { name: status_id, in: query, schema: { type: string }, description: Comma-separated status IDs. }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of results.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResultsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_result/{test_id}:
+    post:
+      tags: [Results]
+      operationId: addResult
+      summary: Add a result for a test
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResultInput' }
+      responses:
+        '200':
+          description: The created result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Result' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_result_for_case/{run_id}/{case_id}:
+    post:
+      tags: [Results]
+      operationId: addResultForCase
+      summary: Add a result for a case within a run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResultInput' }
+      responses:
+        '200':
+          description: The created result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Result' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_results/{run_id}:
+    post:
+      tags: [Results]
+      operationId: addResults
+      summary: Add results for multiple tests in a run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [results]
+              properties:
+                results:
+                  type: array
+                  items:
+                    allOf:
+                      - type: object
+                        required: [test_id]
+                        properties:
+                          test_id: { type: integer }
+                      - $ref: '#/components/schemas/ResultInput'
+      responses:
+        '200':
+          description: The created results, one per submitted test.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Result' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_results_for_cases/{run_id}:
+    post:
+      tags: [Results]
+      operationId: addResultsForCases
+      summary: Add results for multiple cases in a run
+      description: |
+        Returns a JSON **array** of the created results (one per submitted
+        case). This list-return shape was confirmed in issues #100/#102.
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [results]
+              properties:
+                results:
+                  type: array
+                  items:
+                    allOf:
+                      - type: object
+                        required: [case_id]
+                        properties:
+                          case_id: { type: integer }
+                      - $ref: '#/components/schemas/ResultInput'
+      responses:
+        '200':
+          description: The created results, one per submitted case.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Result' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ----------------------------------------------------------------- Tests
+  /get_test/{test_id}:
+    get:
+      tags: [Tests]
+      operationId: getTest
+      summary: Get a test by ID
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+        - { name: with_data, in: query, schema: { type: string }, description: Include additional data (e.g. custom step results). }
+      responses:
+        '200':
+          description: The requested test.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Test' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_tests/{run_id}:
+    get:
+      tags: [Tests]
+      operationId: getTests
+      summary: Get tests for a run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+        - { name: status_id, in: query, schema: { type: string }, description: Comma-separated status IDs. }
+        - { name: label_id, in: query, schema: { type: string }, description: Comma-separated label IDs. }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of tests.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TestsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ----------------------------------------------------------------- Plans
+  /get_plan/{plan_id}:
+    get:
+      tags: [Plans]
+      operationId: getPlan
+      summary: Get a plan by ID
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      responses:
+        '200':
+          description: The requested plan.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Plan' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_plans/{project_id}:
+    get:
+      tags: [Plans]
+      operationId: getPlans
+      summary: Get plans for a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - { name: created_after, in: query, schema: { type: integer } }
+        - { name: created_before, in: query, schema: { type: integer } }
+        - { name: created_by, in: query, schema: { type: string }, description: Comma-separated creator user IDs. }
+        - { name: is_completed, in: query, schema: { type: integer, enum: [0, 1] } }
+        - { name: milestone_id, in: query, schema: { type: string }, description: Comma-separated milestone IDs. }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of plans.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlansResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_plan/{project_id}:
+    post:
+      tags: [Plans]
+      operationId: addPlan
+      summary: Create a plan
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                milestone_id: { type: integer }
+                entries:
+                  type: array
+                  items: { $ref: '#/components/schemas/PlanEntryInput' }
+      responses:
+        '200':
+          description: The created plan.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Plan' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_plan/{plan_id}:
+    post:
+      tags: [Plans]
+      operationId: updatePlan
+      summary: Update a plan
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                milestone_id: { type: integer }
+      responses:
+        '200':
+          description: The updated plan.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Plan' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /close_plan/{plan_id}:
+    post:
+      tags: [Plans]
+      operationId: closePlan
+      summary: Close a plan (irreversible)
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      responses:
+        '200':
+          description: The closed plan.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Plan' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_plan/{plan_id}:
+    post:
+      tags: [Plans]
+      operationId: deletePlan
+      summary: Delete a plan
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_plan_entry/{plan_id}:
+    post:
+      tags: [Plans]
+      operationId: addPlanEntry
+      summary: Add an entry to a plan
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlanEntryInput' }
+      responses:
+        '200':
+          description: The created plan entry.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_plan_entry/{plan_id}/{entry_id}:
+    post:
+      tags: [Plans]
+      operationId: updatePlanEntry
+      summary: Update a plan entry
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+        - { name: entry_id, in: path, required: true, schema: { type: string }, description: The plan entry GUID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                assignedto_id: { type: integer }
+                include_all: { type: boolean }
+                case_ids: { type: array, items: { type: integer } }
+      responses:
+        '200':
+          description: The updated plan entry.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanEntry' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_plan_entry/{plan_id}/{entry_id}:
+    post:
+      tags: [Plans]
+      operationId: deletePlanEntry
+      summary: Delete a plan entry
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+        - { name: entry_id, in: path, required: true, schema: { type: string }, description: The plan entry GUID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ------------------------------------------------------------ Milestones
+  /get_milestone/{milestone_id}:
+    get:
+      tags: [Milestones]
+      operationId: getMilestone
+      summary: Get a milestone by ID
+      parameters:
+        - { name: milestone_id, in: path, required: true, schema: { type: integer }, description: The milestone ID. }
+      responses:
+        '200':
+          description: The requested milestone.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Milestone' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_milestones/{project_id}:
+    get:
+      tags: [Milestones]
+      operationId: getMilestones
+      summary: Get milestones for a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - { name: is_completed, in: query, schema: { type: integer, enum: [0, 1] } }
+        - { name: is_started, in: query, schema: { type: integer, enum: [0, 1] } }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of milestones.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MilestonesResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_milestone/{project_id}:
+    post:
+      tags: [Milestones]
+      operationId: addMilestone
+      summary: Create a milestone
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                due_on: { type: integer, description: Due date as a UNIX timestamp. }
+                parent_id: { type: integer, description: "Parent milestone, for sub-milestones." }
+                start_on: { type: integer, description: Scheduled start as a UNIX timestamp. }
+      responses:
+        '200':
+          description: The created milestone.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Milestone' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_milestone/{milestone_id}:
+    post:
+      tags: [Milestones]
+      operationId: updateMilestone
+      summary: Update a milestone
+      parameters:
+        - { name: milestone_id, in: path, required: true, schema: { type: integer }, description: The milestone ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                due_on: { type: integer }
+                parent_id: { type: integer }
+                start_on: { type: integer }
+                is_completed: { type: boolean }
+                is_started: { type: boolean }
+      responses:
+        '200':
+          description: The updated milestone.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Milestone' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_milestone/{milestone_id}:
+    post:
+      tags: [Milestones]
+      operationId: deleteMilestone
+      summary: Delete a milestone
+      parameters:
+        - { name: milestone_id, in: path, required: true, schema: { type: integer }, description: The milestone ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # -------------------------------------------------------------- Projects
+  /get_project/{project_id}:
+    get:
+      tags: [Projects]
+      operationId: getProject
+      summary: Get a project by ID
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: The requested project.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Project' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_projects:
+    get:
+      tags: [Projects]
+      operationId: getProjects
+      summary: Get all projects
+      parameters:
+        - { name: is_completed, in: query, schema: { type: integer, enum: [0, 1] } }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of projects.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectsResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_project:
+    post:
+      tags: [Projects]
+      operationId: addProject
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                announcement: { type: string }
+                show_announcement: { type: boolean }
+                suite_mode: { type: integer, enum: [1, 2, 3], description: "1=single suite, 2=single + baselines, 3=multiple suites." }
+                is_completed: { type: boolean }
+      responses:
+        '200':
+          description: The created project.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Project' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_project/{project_id}:
+    post:
+      tags: [Projects]
+      operationId: updateProject
+      summary: Update a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                announcement: { type: string }
+                show_announcement: { type: boolean }
+                is_completed: { type: boolean }
+      responses:
+        '200':
+          description: The updated project.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Project' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_project/{project_id}:
+    post:
+      tags: [Projects]
+      operationId: deleteProject
+      summary: Delete a project (irreversible)
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # -------------------------------------------------------- Configurations
+  /get_configs/{project_id}:
+    get:
+      tags: [Configurations]
+      operationId: getConfigs
+      summary: Get configuration groups for a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: A list of configuration groups.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ConfigGroup' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_config_group/{project_id}:
+    post:
+      tags: [Configurations]
+      operationId: addConfigGroup
+      summary: Create a configuration group
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: The created configuration group.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConfigGroup' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_config/{config_group_id}:
+    post:
+      tags: [Configurations]
+      operationId: addConfig
+      summary: Create a configuration in a group
+      parameters:
+        - { name: config_group_id, in: path, required: true, schema: { type: integer }, description: The configuration group ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: The created configuration.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Config' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_config_group/{config_group_id}:
+    post:
+      tags: [Configurations]
+      operationId: updateConfigGroup
+      summary: Update a configuration group
+      parameters:
+        - { name: config_group_id, in: path, required: true, schema: { type: integer }, description: The configuration group ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: The updated configuration group.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConfigGroup' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_config/{config_id}:
+    post:
+      tags: [Configurations]
+      operationId: updateConfig
+      summary: Update a configuration
+      parameters:
+        - { name: config_id, in: path, required: true, schema: { type: integer }, description: The configuration ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: The updated configuration.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Config' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_config_group/{config_group_id}:
+    post:
+      tags: [Configurations]
+      operationId: deleteConfigGroup
+      summary: Delete a configuration group
+      parameters:
+        - { name: config_group_id, in: path, required: true, schema: { type: integer }, description: The configuration group ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_config/{config_id}:
+    post:
+      tags: [Configurations]
+      operationId: deleteConfig
+      summary: Delete a configuration
+      parameters:
+        - { name: config_id, in: path, required: true, schema: { type: integer }, description: The configuration ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ---------------------------------------------------------------- Groups
+  /get_group/{group_id}:
+    get:
+      tags: [Groups]
+      operationId: getGroup
+      summary: Get a group by ID
+      parameters:
+        - { name: group_id, in: path, required: true, schema: { type: integer }, description: The group ID. }
+      responses:
+        '200':
+          description: The requested group.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Group' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_groups/{project_id}:
+    get:
+      tags: [Groups]
+      operationId: getGroups
+      summary: Get groups (project parameter retained for wrapper compatibility)
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of groups.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GroupsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_group/{project_id}:
+    post:
+      tags: [Groups]
+      operationId: addGroup
+      summary: Create a group
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                user_ids: { type: array, items: { type: integer } }
+      responses:
+        '200':
+          description: The created group.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Group' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_group/{group_id}:
+    post:
+      tags: [Groups]
+      operationId: updateGroup
+      summary: Update a group
+      parameters:
+        - { name: group_id, in: path, required: true, schema: { type: integer }, description: The group ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                user_ids: { type: array, items: { type: integer } }
+      responses:
+        '200':
+          description: The updated group.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Group' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_group/{group_id}:
+    post:
+      tags: [Groups]
+      operationId: deleteGroup
+      summary: Delete a group
+      parameters:
+        - { name: group_id, in: path, required: true, schema: { type: integer }, description: The group ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ----------------------------------------------------------------- Roles
+  /get_roles:
+    get:
+      tags: [Roles]
+      operationId: getRoles
+      summary: Get all roles
+      responses:
+        '200':
+          description: A list of roles.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Role' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ----------------------------------------------------------------- Users
+  /get_user/{user_id}:
+    get:
+      tags: [Users]
+      operationId: getUser
+      summary: Get a user by ID
+      parameters:
+        - { name: user_id, in: path, required: true, schema: { type: integer }, description: The user ID. }
+      responses:
+        '200':
+          description: The requested user.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_users:
+    get:
+      tags: [Users]
+      operationId: getUsers
+      summary: Get all users
+      parameters:
+        - { name: project_id, in: query, schema: { type: integer }, description: "TestRail 6.6+: scope to users with access to this project." }
+      responses:
+        '200':
+          description: A list of users.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/User' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_current_user:
+    get:
+      tags: [Users]
+      operationId: getCurrentUser
+      summary: Get the authenticated user (TestRail 6.6+)
+      responses:
+        '200':
+          description: The current user (a plain object, not paginated).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_user_by_email:
+    get:
+      tags: [Users]
+      operationId: getUserByEmail
+      summary: Get a user by email address
+      description: |
+        Because TestRail routes the whole API path inside `index.php`'s query
+        string, the real request appends the address with `&`
+        (`...get_user_by_email&email=a@b.com`), not `?`. It is modelled here as
+        an ordinary `email` query parameter.
+      parameters:
+        - { name: email, in: query, required: true, schema: { type: string, format: email }, description: The email address to look up. }
+      responses:
+        '200':
+          description: The requested user.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # -------------------------------------------------------------- Datasets
+  /get_dataset/{dataset_id}:
+    get:
+      tags: [Datasets]
+      operationId: getDataset
+      summary: Get a dataset by ID
+      parameters:
+        - { name: dataset_id, in: path, required: true, schema: { type: integer }, description: The dataset ID. }
+      responses:
+        '200':
+          description: The requested dataset.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dataset' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_datasets/{project_id}:
+    get:
+      tags: [Datasets]
+      operationId: getDatasets
+      summary: Get datasets for a project
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: A list of datasets.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Dataset' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_dataset/{project_id}:
+    post:
+      tags: [Datasets]
+      operationId: addDataset
+      summary: Create a dataset
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                variables:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      value: { type: string }
+      responses:
+        '200':
+          description: The created dataset.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dataset' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_dataset/{dataset_id}:
+    post:
+      tags: [Datasets]
+      operationId: updateDataset
+      summary: Update a dataset
+      parameters:
+        - { name: dataset_id, in: path, required: true, schema: { type: integer }, description: The dataset ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                variables:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      value: { type: string }
+      responses:
+        '200':
+          description: The updated dataset.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dataset' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_dataset/{dataset_id}:
+    post:
+      tags: [Datasets]
+      operationId: deleteDataset
+      summary: Delete a dataset
+      parameters:
+        - { name: dataset_id, in: path, required: true, schema: { type: integer }, description: The dataset ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ------------------------------------------------------------- Variables
+  /get_variables/{project_id}:
+    get:
+      tags: [Variables]
+      operationId: getVariables
+      summary: Get variables for a project
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: A list of variables.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Variable' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_variable/{project_id}:
+    post:
+      tags: [Variables]
+      operationId: addVariable
+      summary: Create a variable
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: The created variable.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variable' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_variable/{variable_id}:
+    post:
+      tags: [Variables]
+      operationId: updateVariable
+      summary: Update a variable
+      parameters:
+        - { name: variable_id, in: path, required: true, schema: { type: integer }, description: The variable ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: The updated variable.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variable' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_variable/{variable_id}:
+    post:
+      tags: [Variables]
+      operationId: deleteVariable
+      summary: Delete a variable
+      parameters:
+        - { name: variable_id, in: path, required: true, schema: { type: integer }, description: The variable ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # -------------------------------------------------------------- Statuses
+  /get_statuses:
+    get:
+      tags: [Statuses]
+      operationId: getStatuses
+      summary: Get test result statuses
+      responses:
+        '200':
+          description: A list of result statuses.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Status' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_case_statuses:
+    get:
+      tags: [Statuses]
+      operationId: getCaseStatuses
+      summary: Get case statuses (TestRail Enterprise 7.3+)
+      x-verified: docs-only
+      responses:
+        '200':
+          description: A list of case statuses.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/CaseStatus' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ------------------------------------------------------------ Priorities
+  /get_priorities:
+    get:
+      tags: [Priorities]
+      operationId: getPriorities
+      summary: Get case priorities
+      responses:
+        '200':
+          description: A list of priorities.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Priority' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ------------------------------------------------------------- Templates
+  /get_templates/{project_id}:
+    get:
+      tags: [Templates]
+      operationId: getTemplates
+      summary: Get field templates for a project (TestRail 5.2+)
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: A list of templates.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Template' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # --------------------------------------------------------- Result Fields
+  /get_result_fields:
+    get:
+      tags: [Result Fields]
+      operationId: getResultFields
+      summary: Get custom result field definitions
+      responses:
+        '200':
+          description: A list of result field definitions.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ResultField' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ---------------------------------------------------------------- Labels
+  /get_label/{label_id}:
+    get:
+      tags: [Labels]
+      operationId: getLabel
+      summary: Get a label by ID
+      x-verified: docs-only
+      parameters:
+        - { name: label_id, in: path, required: true, schema: { type: integer }, description: The label ID. }
+      responses:
+        '200':
+          description: The requested label.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Label' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_labels/{project_id}:
+    get:
+      tags: [Labels]
+      operationId: getLabels
+      summary: Get labels for a project
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A list of labels.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Label' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_label/{project_id}:
+    post:
+      tags: [Labels]
+      operationId: addLabel
+      summary: Create a label
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, description: The label text. }
+      responses:
+        '200':
+          description: The created label.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Label' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /update_label/{label_id}:
+    post:
+      tags: [Labels]
+      operationId: updateLabel
+      summary: Update a label
+      x-verified: docs-only
+      parameters:
+        - { name: label_id, in: path, required: true, schema: { type: integer }, description: The label ID. }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+      responses:
+        '200':
+          description: The updated label.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Label' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_label/{label_id}:
+    post:
+      tags: [Labels]
+      operationId: deleteLabel
+      summary: Delete a label
+      x-verified: docs-only
+      parameters:
+        - { name: label_id, in: path, required: true, schema: { type: integer }, description: The label ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # --------------------------------------------------------------- Reports
+  /get_reports/{project_id}:
+    get:
+      tags: [Reports]
+      operationId: getReports
+      summary: Get reports configured for a project (TestRail 5.7+)
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: A list of report definitions.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Report' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /run_report/{report_id}:
+    post:
+      tags: [Reports]
+      operationId: runReport
+      summary: Run a report and get URLs to the generated report
+      x-verified: docs-only
+      parameters:
+        - { name: report_id, in: path, required: true, schema: { type: integer }, description: The report template ID. }
+      responses:
+        '200':
+          description: URLs to the generated report.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_url: { type: string, format: uri }
+                  report_html: { type: string, format: uri }
+                  report_pdf: { type: string, format: uri }
+                additionalProperties: true
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ----------------------------------------------------------- Attachments
+  /get_attachment/{attachment_id}:
+    get:
+      tags: [Attachments]
+      operationId: getAttachment
+      summary: Download an attachment
+      parameters:
+        - { name: attachment_id, in: path, required: true, schema: { type: string }, description: The attachment ID (string in newer versions). }
+      responses:
+        '200':
+          description: The attachment file content.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /get_attachments/{entity_type}/{entity_id}:
+    get:
+      tags: [Attachments]
+      operationId: getAttachments
+      summary: Get attachments for an entity
+      x-verified: docs-only
+      parameters:
+        - $ref: '#/components/parameters/AttachmentEntityType'
+        - { name: entity_id, in: path, required: true, schema: { type: integer }, description: The entity ID. }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: A paginated list of attachments.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttachmentsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /add_attachment/{entity_type}/{entity_id}:
+    post:
+      tags: [Attachments]
+      operationId: addAttachment
+      summary: Upload an attachment to an entity
+      description: |
+        TestRail's HTTP API expects a `multipart/form-data` upload with the file
+        in an `attachment` part. (Note: the wrapper's current `add_attachment`
+        helper sends the file path as a JSON field rather than a multipart body;
+        the multipart contract documented here is the authoritative server-side
+        contract.)
+      parameters:
+        - $ref: '#/components/parameters/AttachmentEntityType'
+        - { name: entity_id, in: path, required: true, schema: { type: integer }, description: The entity ID. }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [attachment]
+              properties:
+                attachment:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: The new attachment ID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachment_id: { oneOf: [ { type: integer }, { type: string } ] }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /delete_attachment/{attachment_id}:
+    post:
+      tags: [Attachments]
+      operationId: deleteAttachment
+      summary: Delete an attachment
+      parameters:
+        - { name: attachment_id, in: path, required: true, schema: { type: string }, description: The attachment ID. }
+      responses:
+        '200': { $ref: '#/components/responses/EmptyOk' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: |
+        HTTP Basic authentication. Username is your TestRail email; the password
+        is **either** your API key (recommended; enable API keys under
+        Administration > Site Settings > API) **or** your account password.
+
+  parameters:
+    ProjectId:
+      name: project_id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: The project ID.
+    CaseId:
+      name: case_id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: The test case ID.
+    SectionId:
+      name: section_id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: The section ID.
+    SuiteId:
+      name: suite_id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: The suite ID.
+    RunId:
+      name: run_id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: The run ID.
+    TestId:
+      name: test_id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: The test ID.
+    PlanId:
+      name: plan_id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: The plan ID.
+    AttachmentEntityType:
+      name: entity_type
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [case, result, run, plan, plan_entry]
+      description: The kind of entity the attachment belongs to.
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, default: 250, maximum: 250 }
+      description: Maximum number of records to return (TestRail caps at 250).
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema: { type: integer, default: 0 }
+      description: Number of records to skip (for pagination).
+
+  responses:
+    EmptyOk:
+      description: |
+        Success. TestRail returns an empty body for delete/close-style POST
+        operations; the wrapper maps this to an empty object `{}`.
+      content:
+        application/json:
+          schema: { type: object, additionalProperties: true }
+    BadRequest:
+      description: |
+        Bad request (validation error, malformed field, etc.). Raised by the
+        wrapper as `TestRailAPIException` (carries `status_code` and
+        `response_text`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: |
+        Authentication failed. Raised by the wrapper as
+        `TestRailAuthenticationError`.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: |
+        Authenticated but not permitted (insufficient role/permissions, or API
+        access disabled). Raised by the wrapper as `TestRailAPIException`.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: |
+        Rate limit exceeded. Raised by the wrapper as `TestRailRateLimitError`.
+        TestRail Cloud may include a `Retry-After` header.
+      headers:
+        Retry-After:
+          schema: { type: integer }
+          description: Seconds to wait before retrying.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ServerError:
+      description: |
+        Server error. Raised by the wrapper as `TestRailAPIException`. The
+        wrapper's session retries 429/500/502/503/504 up to 3 times with
+        backoff before surfacing this.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      description: TestRail error envelope.
+      properties:
+        error:
+          type: string
+          description: Human-readable error message.
+      additionalProperties: true
+
+    PaginationMeta:
+      type: object
+      description: |
+        Common envelope fields on bulk-collection responses (TestRail 6.7+).
+      properties:
+        offset: { type: integer }
+        limit: { type: integer }
+        size: { type: integer }
+        _links: { $ref: '#/components/schemas/PaginationLinks' }
+    PaginationLinks:
+      type: object
+      properties:
+        next: { type: string, nullable: true }
+        prev: { type: string, nullable: true }
+
+    Step:
+      type: object
+      description: A single test step (separated-steps format).
+      properties:
+        content: { type: string }
+        expected: { type: string }
+        additional_info: { type: string }
+        refs: { type: string }
+      additionalProperties: true
+
+    Case:
+      type: object
+      description: |
+        A test case. Per-instance custom fields appear as `custom_*` keys, hence
+        `additionalProperties: true`. Discover field definitions via
+        `get_case_fields`.
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        section_id: { type: integer }
+        template_id: { type: integer }
+        type_id: { type: integer }
+        priority_id: { type: integer }
+        milestone_id: { type: integer, nullable: true }
+        refs: { type: string, nullable: true }
+        created_by: { type: integer }
+        created_on: { type: integer }
+        updated_by: { type: integer }
+        updated_on: { type: integer }
+        estimate: { type: string, nullable: true }
+        estimate_forecast: { type: string, nullable: true }
+        suite_id: { type: integer }
+        display_order: { type: integer }
+        is_deleted: { type: integer }
+      additionalProperties: true
+    CaseInput:
+      type: object
+      description: |
+        Fields accepted when creating/updating a case. Custom fields are passed
+        as additional `custom_*` keys.
+      properties:
+        title: { type: string }
+        template_id: { type: integer }
+        type_id: { type: integer }
+        priority_id: { type: integer }
+        estimate: { type: string }
+        milestone_id: { type: integer }
+        refs: { type: string }
+      additionalProperties: true
+    CaseField:
+      type: object
+      description: A custom case field definition.
+      properties:
+        id: { type: integer }
+        is_active: { type: boolean }
+        type_id: { type: integer }
+        name: { type: string }
+        system_name: { type: string }
+        label: { type: string }
+        description: { type: string, nullable: true }
+        configs:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+    CaseFieldInput:
+      type: object
+      required: [type, name, label]
+      description: Fields accepted when creating a custom case field.
+      properties:
+        type: { type: string, description: "Field type, e.g. String, Integer, Text, Dropdown, Checkbox, Multiselect, Steps." }
+        name: { type: string, description: "Unique system name (lower snake_case, without the custom_ prefix)." }
+        label: { type: string, description: Display label. }
+        description: { type: string }
+        include_all: { type: boolean }
+        template_ids: { type: array, items: { type: integer } }
+        configs:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+    CaseType:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        is_default: { type: boolean }
+    CaseHistoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            history:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+
+    Section:
+      type: object
+      properties:
+        id: { type: integer }
+        suite_id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        parent_id: { type: integer, nullable: true }
+        display_order: { type: integer }
+        depth: { type: integer }
+      additionalProperties: true
+
+    Suite:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        project_id: { type: integer }
+        is_master: { type: boolean }
+        is_baseline: { type: boolean }
+        is_completed: { type: boolean }
+        completed_on: { type: integer, nullable: true }
+        url: { type: string }
+      additionalProperties: true
+
+    SharedStep:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        project_id: { type: integer }
+        created_by: { type: integer }
+        created_on: { type: integer }
+        updated_by: { type: integer }
+        updated_on: { type: integer }
+        custom_steps_separated:
+          type: array
+          items: { $ref: '#/components/schemas/Step' }
+        case_ids:
+          type: array
+          items: { type: integer }
+      additionalProperties: true
+
+    BddScenario:
+      type: object
+      description: |
+        Result of importing/exporting a BDD `.feature` file. TestRail may return
+        the raw feature text or a case-like object depending on version.
+      additionalProperties: true
+
+    Run:
+      type: object
+      properties:
+        id: { type: integer }
+        suite_id: { type: integer, nullable: true }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        milestone_id: { type: integer, nullable: true }
+        assignedto_id: { type: integer, nullable: true }
+        include_all: { type: boolean }
+        is_completed: { type: boolean }
+        completed_on: { type: integer, nullable: true }
+        config: { type: string, nullable: true }
+        config_ids: { type: array, items: { type: integer } }
+        passed_count: { type: integer }
+        blocked_count: { type: integer }
+        untested_count: { type: integer }
+        retest_count: { type: integer }
+        failed_count: { type: integer }
+        custom_status1_count: { type: integer }
+        project_id: { type: integer }
+        plan_id: { type: integer, nullable: true }
+        created_on: { type: integer }
+        created_by: { type: integer }
+        url: { type: string }
+      additionalProperties: true
+    RunInput:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        suite_id: { type: integer }
+        milestone_id: { type: integer }
+        assignedto_id: { type: integer }
+        include_all: { type: boolean, description: "When true, include every case in the suite; when false, supply case_ids." }
+        case_ids:
+          type: array
+          items: { type: integer }
+        refs: { type: string }
+      additionalProperties: true
+
+    Result:
+      type: object
+      description: |
+        A test result. Per-instance custom result fields appear as `custom_*`
+        keys; discover them via `get_result_fields`.
+      properties:
+        id: { type: integer }
+        test_id: { type: integer }
+        status_id: { type: integer, nullable: true }
+        comment: { type: string, nullable: true }
+        version: { type: string, nullable: true }
+        elapsed: { type: string, nullable: true }
+        defects: { type: string, nullable: true }
+        assignedto_id: { type: integer, nullable: true }
+        created_by: { type: integer }
+        created_on: { type: integer }
+        attachment_ids:
+          type: array
+          items: { oneOf: [ { type: integer }, { type: string } ] }
+      additionalProperties: true
+    ResultInput:
+      type: object
+      description: |
+        Fields accepted when adding a result. Exactly one of `status_id`,
+        `comment`, `assignedto_id` (etc.) must be provided. Custom result fields
+        are passed as additional `custom_*` keys.
+      properties:
+        status_id:
+          type: integer
+          description: "1=Passed, 2=Blocked, 3=Untested, 4=Retest, 5=Failed (plus any custom statuses)."
+        comment: { type: string }
+        version: { type: string }
+        elapsed: { type: string, description: "e.g. '30s' or '2m 30s'." }
+        defects: { type: string, description: Comma-separated defect IDs. }
+        assignedto_id: { type: integer }
+      additionalProperties: true
+
+    Test:
+      type: object
+      properties:
+        id: { type: integer }
+        case_id: { type: integer }
+        run_id: { type: integer }
+        status_id: { type: integer }
+        title: { type: string }
+        template_id: { type: integer }
+        type_id: { type: integer }
+        priority_id: { type: integer }
+        milestone_id: { type: integer, nullable: true }
+        refs: { type: string, nullable: true }
+        estimate: { type: string, nullable: true }
+        estimate_forecast: { type: string, nullable: true }
+        assignedto_id: { type: integer, nullable: true }
+        labels:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+
+    Plan:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        milestone_id: { type: integer, nullable: true }
+        assignedto_id: { type: integer, nullable: true }
+        project_id: { type: integer }
+        is_completed: { type: boolean }
+        completed_on: { type: integer, nullable: true }
+        passed_count: { type: integer }
+        blocked_count: { type: integer }
+        untested_count: { type: integer }
+        retest_count: { type: integer }
+        failed_count: { type: integer }
+        created_on: { type: integer }
+        created_by: { type: integer }
+        url: { type: string }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/PlanEntry' }
+      additionalProperties: true
+    PlanEntry:
+      type: object
+      properties:
+        id: { type: string, description: Plan entry GUID. }
+        suite_id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        runs:
+          type: array
+          items: { $ref: '#/components/schemas/Run' }
+      additionalProperties: true
+    PlanEntryInput:
+      type: object
+      required: [suite_id]
+      properties:
+        suite_id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        assignedto_id: { type: integer }
+        include_all: { type: boolean }
+        case_ids: { type: array, items: { type: integer } }
+        config_ids: { type: array, items: { type: integer } }
+        runs:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+
+    Milestone:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        project_id: { type: integer }
+        parent_id: { type: integer, nullable: true }
+        due_on: { type: integer, nullable: true }
+        start_on: { type: integer, nullable: true }
+        started_on: { type: integer, nullable: true }
+        completed_on: { type: integer, nullable: true }
+        is_completed: { type: boolean }
+        is_started: { type: boolean }
+        url: { type: string }
+        milestones:
+          type: array
+          items: { type: object, additionalProperties: true }
+      additionalProperties: true
+
+    Project:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        announcement: { type: string, nullable: true }
+        show_announcement: { type: boolean }
+        is_completed: { type: boolean }
+        completed_on: { type: integer, nullable: true }
+        suite_mode: { type: integer }
+        url: { type: string }
+      additionalProperties: true
+
+    ConfigGroup:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        project_id: { type: integer }
+        configs:
+          type: array
+          items: { $ref: '#/components/schemas/Config' }
+      additionalProperties: true
+    Config:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        group_id: { type: integer }
+      additionalProperties: true
+
+    Group:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        user_ids:
+          type: array
+          items: { type: integer }
+      additionalProperties: true
+
+    Role:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        is_default: { type: boolean }
+        is_project_admin: { type: boolean }
+      additionalProperties: true
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        is_active: { type: boolean }
+        is_admin: { type: boolean }
+        role_id: { type: integer, nullable: true }
+        role: { type: string, nullable: true }
+      additionalProperties: true
+
+    Dataset:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        project_id: { type: integer }
+        variables:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+
+    Variable:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        project_id: { type: integer }
+      additionalProperties: true
+
+    Status:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        label: { type: string }
+        color_dark: { type: integer }
+        color_medium: { type: integer }
+        color_bright: { type: integer }
+        is_system: { type: boolean }
+        is_untested: { type: boolean }
+        is_final: { type: boolean }
+      additionalProperties: true
+    CaseStatus:
+      type: object
+      properties:
+        case_status_id: { type: integer }
+        name: { type: string }
+        abbreviation: { type: string, nullable: true }
+        is_default: { type: boolean }
+        is_approved: { type: boolean }
+      additionalProperties: true
+
+    Priority:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        short_name: { type: string }
+        is_default: { type: boolean }
+        priority: { type: integer }
+      additionalProperties: true
+
+    Template:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        is_default: { type: boolean }
+      additionalProperties: true
+
+    ResultField:
+      type: object
+      properties:
+        id: { type: integer }
+        is_active: { type: boolean }
+        type_id: { type: integer }
+        name: { type: string }
+        system_name: { type: string }
+        label: { type: string }
+        description: { type: string, nullable: true }
+        configs:
+          type: array
+          items: { type: object, additionalProperties: true }
+      additionalProperties: true
+
+    Label:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        created_by: { type: integer }
+        created_on: { type: integer }
+      additionalProperties: true
+
+    Report:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        notify_user: { type: boolean }
+      additionalProperties: true
+
+    Attachment:
+      type: object
+      properties:
+        id: { oneOf: [ { type: integer }, { type: string } ] }
+        name: { type: string }
+        filename: { type: string }
+        size: { type: integer }
+        created_on: { type: integer }
+        project_id: { type: integer, nullable: true }
+        case_id: { type: integer, nullable: true }
+        test_change_id: { type: integer, nullable: true }
+        user_id: { type: integer, nullable: true }
+        client_id: { type: integer, nullable: true }
+        icon: { type: string, nullable: true }
+        is_image: { type: boolean }
+      additionalProperties: true
+
+    # ---- Paginated collection envelopes ----
+    CasesResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            cases:
+              type: array
+              items: { $ref: '#/components/schemas/Case' }
+    SectionsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            sections:
+              type: array
+              items: { $ref: '#/components/schemas/Section' }
+    SharedStepsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            shared_steps:
+              type: array
+              items: { $ref: '#/components/schemas/SharedStep' }
+    RunsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            runs:
+              type: array
+              items: { $ref: '#/components/schemas/Run' }
+    ResultsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            results:
+              type: array
+              items: { $ref: '#/components/schemas/Result' }
+    TestsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            tests:
+              type: array
+              items: { $ref: '#/components/schemas/Test' }
+    PlansResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            plans:
+              type: array
+              items: { $ref: '#/components/schemas/Plan' }
+    MilestonesResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            milestones:
+              type: array
+              items: { $ref: '#/components/schemas/Milestone' }
+    ProjectsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            projects:
+              type: array
+              items: { $ref: '#/components/schemas/Project' }
+    GroupsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            groups:
+              type: array
+              items: { $ref: '#/components/schemas/Group' }
+    AttachmentsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          properties:
+            attachments:
+              type: array
+              items: { $ref: '#/components/schemas/Attachment' }

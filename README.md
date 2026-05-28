@@ -288,6 +288,40 @@ except Exception as e:
 For complete documentation, visit our
 [docs](https://trtmn.github.io/testrail_api_module/).
 
+## OpenAPI Specification
+
+This repository ships a hand-authored OpenAPI 3.1 description of the TestRail
+v2 HTTP API at [`openapi/testrail.yaml`](openapi/testrail.yaml). It covers every
+endpoint reachable from `TestRailAPI.*` (107 operations across 24 resource
+groups), including request bodies, query parameters, response schemas, the
+HTTP Basic auth scheme, the `{offset, limit, size, _links, <entity>}`
+pagination envelope, and error responses mapped to this package's exception
+hierarchy.
+
+> [!IMPORTANT]
+> **This spec is community-authored and is not produced or endorsed by Gurock /
+> TestRail.** Gurock has never published an official machine-readable contract
+> for the TestRail API (the community request in
+> [`gurock/testrail-api#6`](https://github.com/gurock/testrail-api/issues/6)
+> has been open since 2017). This document is maintained here as a community
+> resource and may lag behind, or diverge from, the behaviour of any particular
+> TestRail server version. Always verify against your own instance for
+> production use.
+
+Per-instance custom fields (`custom_*` keys) cannot be enumerated statically,
+so the `Case` and `Result` schemas use `additionalProperties: true`; discover
+the live definitions at runtime via `get_case_fields` / `get_result_fields`.
+Operations whose exact response envelope has not been re-confirmed against a
+live instance are tagged `x-verified: docs-only`.
+
+Validate the spec and check it for drift against the wrapper:
+
+```bash
+# Validates against the OpenAPI 3.1 meta-schema and asserts every wrapper
+# endpoint has a matching spec path. Runs in CI on every push/PR.
+uv run python openapi/check_spec.py
+```
+
 ## Dependency Management
 
 This project uses modern Python packaging with `pyproject.toml` for dependency
