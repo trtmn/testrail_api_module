@@ -45,6 +45,8 @@ dev = [
     "ruff>=0.8.0",
     "bandit>=1.7.0",
     "detect-secrets>=1.5.0",
+    "pyyaml>=6.0",
+    "openapi-spec-validator>=0.7.1",
 ]
 
 # Optional docs extra so consumers can install only what's needed to build docs
