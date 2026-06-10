@@ -11,6 +11,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > prepends new blocks above the most recent release based on
 > Conventional Commits.
 
+## [0.8.0](https://github.com/trtmn/testrail_api_module/compare/v0.7.6...v0.8.0) (2026-06-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* correct transport layer (param serialization, retries, 2xx, sessions) and rewrite attachments/BDD file transfer ([#167](https://github.com/trtmn/testrail_api_module/issues/167))
+* GroupsAPI.get_groups and GroupsAPI.add_group no longer accept project_id; add_group/update_group accept user_ids instead of description; LabelsAPI.add_label takes title instead of name and no longer accepts color.
+
+### ✨ Added
+
+* add community-authored OpenAPI 3.1 spec for the TestRail API ([#183](https://github.com/trtmn/testrail_api_module/issues/183)) ([25ccea8](https://github.com/trtmn/testrail_api_module/commit/25ccea80eb316e43da0dbfb86d8e1b2780141daf))
+
+
+### 🐛 Fixed
+
+* cases.py API parity (get_cases filters, history, copy/move/delete_cases) ([#179](https://github.com/trtmn/testrail_api_module/issues/179)) ([c10f850](https://github.com/trtmn/testrail_api_module/commit/c10f8500f54615767268344bcfc47a558503787f))
+* correct groups endpoint scoping and labels payload fields ([#165](https://github.com/trtmn/testrail_api_module/issues/165)) ([d332829](https://github.com/trtmn/testrail_api_module/commit/d3328295fa324774912d8960393939b681d69c82)), closes [#142](https://github.com/trtmn/testrail_api_module/issues/142)
+* correct transport layer (param serialization, retries, 2xx, sessions) and rewrite attachments/BDD file transfer ([#167](https://github.com/trtmn/testrail_api_module/issues/167)) ([999e4e2](https://github.com/trtmn/testrail_api_module/commit/999e4e28ccb251d66259aad43f955fe845a17169)), closes [#134](https://github.com/trtmn/testrail_api_module/issues/134) [#135](https://github.com/trtmn/testrail_api_module/issues/135) [#136](https://github.com/trtmn/testrail_api_module/issues/136) [#137](https://github.com/trtmn/testrail_api_module/issues/137) [#138](https://github.com/trtmn/testrail_api_module/issues/138) [#139](https://github.com/trtmn/testrail_api_module/issues/139)
+* make example script Python 3.11-compatible and pagination-aware ([#173](https://github.com/trtmn/testrail_api_module/issues/173)) ([cc0ba31](https://github.com/trtmn/testrail_api_module/commit/cc0ba31aac7785c40ebb282dc3ee51f2a3fa9932))
+* projects, milestones, suites, and variables API parity ([#181](https://github.com/trtmn/testrail_api_module/issues/181)) ([408bf5b](https://github.com/trtmn/testrail_api_module/commit/408bf5b94d86c3e0636fa5b4a9de4abd613d109f)), closes [#143](https://github.com/trtmn/testrail_api_module/issues/143)
+* results, tests, statuses, and datasets API parity ([#180](https://github.com/trtmn/testrail_api_module/issues/180)) ([48863cd](https://github.com/trtmn/testrail_api_module/commit/48863cd68a6e145b511baa860e4e07d7dbd89eb6))
+* run_report uses POST not GET per TestRail API spec ([#176](https://github.com/trtmn/testrail_api_module/issues/176)) ([5f4ffe8](https://github.com/trtmn/testrail_api_module/commit/5f4ffe850e46cb42f0b088bb6294cfeac4cea332))
+* runs and plans payload/endpoint parity ([#169](https://github.com/trtmn/testrail_api_module/issues/169)) ([aa9116c](https://github.com/trtmn/testrail_api_module/commit/aa9116c5c0dbe01b8e2a0f667d0f84db44b42c2e)), closes [#141](https://github.com/trtmn/testrail_api_module/issues/141) [#101](https://github.com/trtmn/testrail_api_module/issues/101)
+* sections move_section null semantics and pagination params ([#166](https://github.com/trtmn/testrail_api_module/issues/166)) ([64097be](https://github.com/trtmn/testrail_api_module/commit/64097be2d3169776d3b48e9752c6f83b8aacac5c)), closes [#145](https://github.com/trtmn/testrail_api_module/issues/145)
+* shared_steps endpoint parity (filters, delete keep_in_cases) ([#178](https://github.com/trtmn/testrail_api_module/issues/178)) ([26614b1](https://github.com/trtmn/testrail_api_module/commit/26614b17090557ce5aa51362e6ae661ae7899741))
+* URL-encode get_user_by_email and add project_id to get_users ([#164](https://github.com/trtmn/testrail_api_module/issues/164)) ([6938361](https://github.com/trtmn/testrail_api_module/commit/69383618d81009f282971423080ee578e36edbe9)), closes [#144](https://github.com/trtmn/testrail_api_module/issues/144)
+
+
+### 🔧 Changed
+
+* migrate remaining _api_request calls to _get/_post ([#182](https://github.com/trtmn/testrail_api_module/issues/182)) ([2683fbf](https://github.com/trtmn/testrail_api_module/commit/2683fbf2cbc8888ed241522e303d0cf41cacd8f7)), closes [#156](https://github.com/trtmn/testrail_api_module/issues/156)
+
+
+### 🔄 Maintenance
+
+* add consumer usage guide and fix stale skill API references (Closes [#96](https://github.com/trtmn/testrail_api_module/issues/96)) ([#184](https://github.com/trtmn/testrail_api_module/issues/184)) ([dace6b3](https://github.com/trtmn/testrail_api_module/commit/dace6b30b846d866eff0a6ce961d48b7a710e4dc))
+* add per-entity attachment API examples to README ([#175](https://github.com/trtmn/testrail_api_module/issues/175)) ([891c826](https://github.com/trtmn/testrail_api_module/commit/891c826491cd1962a3a5bccf45a2f5623a0a89bc))
+* add ruff and mypy gates; migrate deprecated ruff config keys ([#163](https://github.com/trtmn/testrail_api_module/issues/163)) ([0f934bd](https://github.com/trtmn/testrail_api_module/commit/0f934bde7669c6e53b758ab2a4468d2bd8cda31f))
+* add trove classifiers and fix author metadata ([#157](https://github.com/trtmn/testrail_api_module/issues/157)) ([64fdd40](https://github.com/trtmn/testrail_api_module/commit/64fdd40247d8028f7a865577f592d72ddc5821a8))
+* **deps:** bump ruff from 0.15.14 to 0.15.15 in the uv group ([c6b244f](https://github.com/trtmn/testrail_api_module/commit/c6b244f85df2c1d72e10b06d1d386d3d340cee74))
+* fix README errors and remove stale planning docs ([1e927aa](https://github.com/trtmn/testrail_api_module/commit/1e927aa25bcadd18f585e749b546e6be74f996dd))
+* fix README errors and remove stale planning docs ([818a4ea](https://github.com/trtmn/testrail_api_module/commit/818a4ea2b70cf6a7b65e125e74354b9405216921))
+* remove .cursor/ IDE artifacts from repository ([#172](https://github.com/trtmn/testrail_api_module/issues/172)) ([cdae504](https://github.com/trtmn/testrail_api_module/commit/cdae5046e5bf3c67581260d1e7a356cb554d05f5)), closes [#171](https://github.com/trtmn/testrail_api_module/issues/171)
+* remove orphaned __main__.pyi and sync stub __all__ lists ([#177](https://github.com/trtmn/testrail_api_module/issues/177)) ([36935eb](https://github.com/trtmn/testrail_api_module/commit/36935ebfd551bfe208c70015a8faa3b0d3e64260))
+* stop tracking generated docs/ and remove stale publishing guide ([#174](https://github.com/trtmn/testrail_api_module/issues/174)) ([af9682e](https://github.com/trtmn/testrail_api_module/commit/af9682e6e2c5c6b2b823c8ce2bc58eb40f282f51))
+* untrack stale dist/ artifacts and fix .gitignore ([#158](https://github.com/trtmn/testrail_api_module/issues/158)) ([bf8a6d5](https://github.com/trtmn/testrail_api_module/commit/bf8a6d5ea8eb7f076f6cd9a88774dd1e279772c1))
+
 ## [0.7.6](https://github.com/trtmn/testrail_api_module/compare/v0.7.5...v0.7.6) (2026-05-22)
 
 
