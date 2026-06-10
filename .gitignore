@@ -28,8 +28,8 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Override global gitignore to track dist directory
-!dist/
+# Build artifacts
+dist/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -91,7 +91,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 .venv-*/
 env/
@@ -153,6 +152,3 @@ bandit-report.html
 
 # Git worktrees
 .worktrees/
-
-# 1Password local environment config
-.1password/
