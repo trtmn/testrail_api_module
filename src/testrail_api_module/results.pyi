@@ -9,15 +9,16 @@ class ResultsAPI(BaseAPI):
     def get_results(
         self,
         test_id: int,
-        status_id: int | list[int] | None = ...,
+        defects_filter: str | None = ...,
         limit: int | None = ...,
         offset: int | None = ...,
+        status_id: int | list[int] | None = ...,
     ) -> list[dict[str, Any]]:
         """Get all results for a specific test."""
     def add_result(
         self,
         test_id: int,
-        status_id: int,
+        status_id: int | None = ...,
         comment: str | None = ...,
         version: str | None = ...,
         elapsed: str | None = ...,
@@ -30,7 +31,7 @@ class ResultsAPI(BaseAPI):
         self,
         run_id: int,
         case_id: int,
-        status_id: int,
+        status_id: int | None = ...,
         comment: str | None = ...,
         version: str | None = ...,
         elapsed: str | None = ...,
@@ -44,19 +45,25 @@ class ResultsAPI(BaseAPI):
     ) -> list[dict[str, Any]]:
         """Add multiple test results for test cases in a test run."""
     def get_results_for_case(
-        self, run_id: int, case_id: int
+        self,
+        run_id: int,
+        case_id: int,
+        defects_filter: str | None = ...,
+        limit: int | None = ...,
+        offset: int | None = ...,
+        status_id: int | list[int] | None = ...,
     ) -> list[dict[str, Any]]:
         """Get all test results for a specific test case in a test run."""
     def get_results_for_run(
         self,
         run_id: int,
-        status_id: int | list[int] | None = ...,
         created_after: int | None = ...,
         created_before: int | None = ...,
         created_by: int | list[int] | None = ...,
         defects_filter: str | None = ...,
         limit: int | None = ...,
         offset: int | None = ...,
+        status_id: int | list[int] | None = ...,
     ) -> list[dict[str, Any]]:
         """Get all test results for a test run."""
     def add_results(
