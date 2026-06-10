@@ -19,12 +19,35 @@ class VariablesAPI(BaseAPI):
     variables used for parameterized testing in TestRail.
     """
 
-    def get_variables(self, project_id: int) -> list[dict[str, Any]]:
+    def get_variable(self, variable_id: int) -> dict[str, Any]:
+        """
+        Get a variable by ID.
+
+        Args:
+            variable_id: The ID of the variable to retrieve.
+
+        Returns:
+            Dict containing the variable data.
+
+        Raises:
+            TestRailAPIError: If the API request fails.
+        """
+        return self._get(f"get_variable/{variable_id}")
+
+    def get_variables(
+        self,
+        project_id: int,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get all variables for a project.
 
         Args:
             project_id: The ID of the project to get variables for.
+            limit: Optional maximum number of variables to return.
+            offset: Optional number of variables to skip for
+                pagination.
 
         Returns:
             List of dictionaries containing variable data.
@@ -32,14 +55,17 @@ class VariablesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_variables/{project_id}")
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        return self._get(f"get_variables/{project_id}", params=params)
 
     def add_variable(
         self,
         project_id: int,
         name: str,
-        value: str,
-        description: str | None = None,
     ) -> dict[str, Any]:
         """
         Add a new variable.
@@ -48,8 +74,6 @@ class VariablesAPI(BaseAPI):
             project_id: The ID of the project to add the variable
                 to.
             name: The name of the variable.
-            value: The value of the variable.
-            description: Optional description of the variable.
 
         Returns:
             Dict containing the created variable data.
@@ -57,23 +81,21 @@ class VariablesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data = {"name": name, "value": value}
-        if description:
-            data["description"] = description
+        data: dict[str, Any] = {"name": name}
 
-        return self._api_request(
-            "POST", f"add_variable/{project_id}", data=data
-        )
+        return self._post(f"add_variable/{project_id}", data=data)
 
     def update_variable(
-        self, variable_id: int, **kwargs: Any
+        self,
+        variable_id: int,
+        name: str,
     ) -> dict[str, Any]:
         """
         Update a variable.
 
         Args:
             variable_id: The ID of the variable to update.
-            **kwargs: Fields to update (name, value, description).
+            name: The new name for the variable.
 
         Returns:
             Dict containing the updated variable data.
@@ -81,10 +103,11 @@ class VariablesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request(
-            "POST",
+        data: dict[str, Any] = {"name": name}
+
+        return self._post(
             f"update_variable/{variable_id}",
-            data=kwargs,
+            data=data,
         )
 
     def delete_variable(self, variable_id: int) -> dict[str, Any]:
@@ -100,4 +123,4 @@ class VariablesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("POST", f"delete_variable/{variable_id}")
+        return self._post(f"delete_variable/{variable_id}")
