@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["UsersAPI"]
+
 class UsersAPI(BaseAPI):
     def get_user(self, user_id: int) -> dict[str, Any]: ...
     def get_users(

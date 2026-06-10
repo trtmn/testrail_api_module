@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["DatasetsAPI"]
+
 class DatasetsAPI(BaseAPI):
     def get_dataset(self, dataset_id: int) -> dict[str, Any]: ...
     def get_datasets(self, project_id: int) -> list[dict[str, Any]]: ...

@@ -1,6 +1,8 @@
 from typing import Any
 
-from .base import BaseAPI
+from .base import BaseAPI as BaseAPI
+
+__all__ = ["ConfigurationsAPI"]
 
 class ConfigurationsAPI(BaseAPI):
     def get_configs(self, project_id: int) -> list[dict[str, Any]]: ...

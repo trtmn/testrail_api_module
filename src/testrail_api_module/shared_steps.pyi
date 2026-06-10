@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["SharedStepsAPI"]
+
 class SharedStepsAPI(BaseAPI):
     def get_shared_step(self, shared_step_id: int) -> dict[str, Any]: ...
     def get_shared_steps(self, project_id: int) -> list[dict[str, Any]]: ...

@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["ProjectsAPI"]
+
 class ProjectsAPI(BaseAPI):
     def get_project(self, project_id: int) -> dict[str, Any]: ...
     def get_projects(self) -> list[dict[str, Any]]: ...
