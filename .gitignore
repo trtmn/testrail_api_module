@@ -147,6 +147,9 @@ bandit-report.html
 .claude/agent-memory/
 .claude/agents/
 
+# Cursor IDE
+.cursor/
+
 # 1Password CLI local config
 .1password/
 
