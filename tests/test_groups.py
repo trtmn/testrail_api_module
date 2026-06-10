@@ -58,13 +58,13 @@ class TestGroupsAPI:
         """Test get_groups method."""
         with patch.object(groups_api, "_get") as mock_get:
             mock_get.return_value = [
-                {"id": 1, "name": "Group 1"},
-                {"id": 2, "name": "Group 2"},
+                {"id": 1, "name": "Group 1", "user_ids": [1, 2]},
+                {"id": 2, "name": "Group 2", "user_ids": [3]},
             ]
 
-            result = groups_api.get_groups(project_id=1)
+            result = groups_api.get_groups()
 
-            mock_get.assert_called_once_with("get_groups/1")
+            mock_get.assert_called_once_with("get_groups")
             assert len(result) == 2
 
     def test_add_group_minimal(self, groups_api: GroupsAPI) -> None:
@@ -72,30 +72,39 @@ class TestGroupsAPI:
         with patch.object(groups_api, "_post") as mock_post:
             mock_post.return_value = {"id": 1, "name": "New Group"}
 
-            result = groups_api.add_group(project_id=1, name="New Group")
+            result = groups_api.add_group(name="New Group")
 
             expected_data = {"name": "New Group"}
-            mock_post.assert_called_once_with(
-                "add_group/1", data=expected_data
-            )
+            mock_post.assert_called_once_with("add_group", data=expected_data)
             assert result == {"id": 1, "name": "New Group"}
 
-    def test_add_group_with_description(self, groups_api: GroupsAPI) -> None:
-        """Test add_group with description."""
+    def test_add_group_with_user_ids(self, groups_api: GroupsAPI) -> None:
+        """Test add_group with user_ids."""
         with patch.object(groups_api, "_post") as mock_post:
-            mock_post.return_value = {"id": 1, "name": "New Group"}
+            mock_post.return_value = {
+                "id": 1,
+                "name": "New Group",
+                "user_ids": [1, 2, 3],
+            }
 
-            groups_api.add_group(
-                project_id=1, name="New Group", description="Group description"
-            )
+            result = groups_api.add_group(name="New Group", user_ids=[1, 2, 3])
 
             expected_data = {
                 "name": "New Group",
-                "description": "Group description",
+                "user_ids": [1, 2, 3],
             }
-            mock_post.assert_called_once_with(
-                "add_group/1", data=expected_data
-            )
+            mock_post.assert_called_once_with("add_group", data=expected_data)
+            assert result["user_ids"] == [1, 2, 3]
+
+    def test_add_group_with_none_user_ids(self, groups_api: GroupsAPI) -> None:
+        """Test add_group with None user_ids is excluded."""
+        with patch.object(groups_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 1, "name": "New Group"}
+
+            groups_api.add_group(name="New Group", user_ids=None)
+
+            expected_data = {"name": "New Group"}
+            mock_post.assert_called_once_with("add_group", data=expected_data)
 
     def test_update_group_minimal(self, groups_api: GroupsAPI) -> None:
         """Test update_group with minimal parameters."""
@@ -114,18 +123,37 @@ class TestGroupsAPI:
     ) -> None:
         """Test update_group with all optional parameters."""
         with patch.object(groups_api, "_post") as mock_post:
-            mock_post.return_value = {"id": 1, "name": "Updated Group"}
+            mock_post.return_value = {
+                "id": 1,
+                "name": "Updated Group",
+                "user_ids": [1, 2, 3],
+            }
 
-            groups_api.update_group(
+            result = groups_api.update_group(
                 group_id=1,
                 name="Updated Group",
-                description="Updated description",
+                user_ids=[1, 2, 3],
             )
 
             expected_data = {
                 "name": "Updated Group",
-                "description": "Updated description",
+                "user_ids": [1, 2, 3],
             }
+            mock_post.assert_called_once_with(
+                "update_group/1", data=expected_data
+            )
+            assert result["user_ids"] == [1, 2, 3]
+
+    def test_update_group_with_none_values(
+        self, groups_api: GroupsAPI
+    ) -> None:
+        """Test update_group with explicit None values excludes them."""
+        with patch.object(groups_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 1}
+
+            groups_api.update_group(group_id=1, name=None, user_ids=None)
+
+            expected_data = {}
             mock_post.assert_called_once_with(
                 "update_group/1", data=expected_data
             )
