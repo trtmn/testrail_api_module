@@ -1563,7 +1563,7 @@ wheels = [
 
 [[package]]
 name = "testrail-api-module"
-version = "0.7.6"
+version = "0.8.0b1"
 source = { editable = "." }
 dependencies = [
     { name = "requests" },
