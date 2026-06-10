@@ -54,6 +54,85 @@ class TestRailAPIException(TestRailAPIError):
         self.response_text = response_text
 
 
+class _TestRailRetry(Retry):
+    """
+    Retry policy tailored to the TestRail API.
+
+    TestRail performs *all* write operations (including deletes) via
+    POST, and those writes are not idempotent. Replaying a POST whose
+    request may already have reached the server could duplicate data,
+    so POSTs are only retried when it is safe to do so:
+
+    - 429 responses (the server refused the request without acting
+      on it)
+    - connection errors (the request never reached the server)
+
+    All other methods (reads) retry on connection errors, read errors,
+    and the configured ``status_forcelist`` (429/5xx).
+    """
+
+    def _is_method_retryable(self, method: str) -> bool:
+        # Gates read-error retries: a read error means the request may
+        # have been received by the server, so never replay a POST.
+        if method.upper() == "POST":
+            return False
+        return super()._is_method_retryable(method)
+
+    def is_retry(
+        self, method: str, status_code: int, has_retry_after: bool = False
+    ) -> bool:
+        # Gates status-based retries: POSTs are only safe to retry on
+        # 429, where the server rejected the request without acting.
+        if method.upper() == "POST":
+            return status_code == 429
+        return super().is_retry(method, status_code, has_retry_after)
+
+
+def _create_session() -> requests.Session:
+    """
+    Create a ``requests.Session`` configured with the TestRail retry
+    policy (3 retries, backoff factor 1, ``raise_on_status=False`` so
+    the final response always flows into ``_handle_response`` for
+    correct exception mapping).
+
+    Returns:
+        A configured ``requests.Session``.
+    """
+    session = requests.Session()
+    retry_strategy = _TestRailRetry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=None,
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
+
+def _serialize_param_value(value: Any) -> str:
+    """
+    Serialize a single query parameter value for the TestRail API.
+
+    Booleans become ``"1"``/``"0"`` (TestRail's PHP backend treats
+    ``"True"`` as 0, silently inverting filters) and lists/tuples
+    become comma-separated strings as required by multi-value filters.
+
+    Args:
+        value: The parameter value to serialize.
+
+    Returns:
+        The serialized string value.
+    """
+    if isinstance(value, bool):
+        return str(int(value))
+    if isinstance(value, list | tuple):
+        return ",".join(_serialize_param_value(item) for item in value)
+    return str(value)
+
+
 class BaseAPI:
     """
     Base class for all TestRail API modules.
@@ -65,28 +144,31 @@ class BaseAPI:
         """
         Initialize the base API class with a client instance.
 
+        If the client provides a ``requests.Session`` (as
+        ``TestRailAPI`` does), it is shared so that all submodules use
+        a single connection pool. Otherwise (standalone usage) a new
+        session with the TestRail retry policy is created.
+
         Args:
             client: The TestRailAPI client instance
         """
         self.client = client
         self.logger = logging.getLogger(__name__)
 
-        # Set up session with retry strategy
-        self.session = requests.Session()
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
+        client_session = getattr(client, "session", None)
+        if isinstance(client_session, requests.Session):
+            self.session = client_session
+        else:
+            self.session = _create_session()
 
     def _build_url(
         self, endpoint: str, params: dict[str, Any] | None = None
     ) -> str:
         """
         Build the complete URL for an API request.
+
+        Booleans are rendered as ``1``/``0`` and lists/tuples as
+        comma-separated values, as expected by the TestRail API.
 
         Args:
             endpoint: The API endpoint path
@@ -97,9 +179,11 @@ class BaseAPI:
         """
         url = f"{self.client.base_url}/index.php?/api/v2/{endpoint}"
         if params:
-            # Filter out None values and convert to strings
+            # Filter out None values and serialize the rest
             filtered_params = {
-                k: str(v) for k, v in params.items() if v is not None
+                k: _serialize_param_value(v)
+                for k, v in params.items()
+                if v is not None
             }
             if filtered_params:
                 url += f"&{urlencode(filtered_params)}"
@@ -124,21 +208,29 @@ class BaseAPI:
                 "No valid authentication method found. Please provide either an API key or password."
             )
 
-    def _handle_response(self, response: requests.Response) -> Any:
+    def _handle_response(
+        self, response: requests.Response, raw: bool = False
+    ) -> Any:
         """
         Handle API response and raise appropriate exceptions.
 
         Args:
             response: The HTTP response object
+            raw: If True, return the raw response body as bytes on
+                success instead of parsing it as JSON (for binary
+                endpoints such as ``get_attachment`` and ``get_bdd``).
 
         Returns:
-            Parsed JSON response data
+            Parsed JSON response data, or raw bytes when ``raw=True``
 
         Raises:
             TestRailRateLimitError: If rate limit is exceeded
             TestRailAPIException: For other API errors
         """
-        if response.status_code == 200:
+        if 200 <= response.status_code < 300:
+            if raw:
+                return response.content
+
             # Handle empty responses (common for delete operations)
             response_text = response.text.strip()
             if not response_text:
@@ -197,6 +289,8 @@ class BaseAPI:
         endpoint: str,
         data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        *,
+        raw: bool = False,
         **kwargs: Any,
     ) -> Any:
         """
@@ -207,10 +301,13 @@ class BaseAPI:
             endpoint: The API endpoint to send the request to.
             data: The data to send with the request, if any.
             params: Query parameters for the request.
+            raw: If True, return the raw response body as bytes
+                instead of parsing it as JSON.
             **kwargs: Additional arguments to pass to the request.
 
         Returns:
-            Parsed JSON response from the API.
+            Parsed JSON response from the API, or raw bytes when
+            ``raw=True``.
 
         Raises:
             TestRailAPIError: For various API-related errors
@@ -243,7 +340,7 @@ class BaseAPI:
                 **kwargs,
             )
 
-            return self._handle_response(response)
+            return self._handle_response(response, raw=raw)
 
         except requests.exceptions.RequestException as e:
             raise TestRailAPIException(f"Request failed: {e}") from e
@@ -257,10 +354,14 @@ class BaseAPI:
         self,
         endpoint: str,
         params: dict[str, Any] | None = None,
+        *,
+        raw: bool = False,
         **kwargs: Any,
     ) -> Any:
         """Make a GET request to the TestRail API."""
-        return self._api_request("GET", endpoint, params=params, **kwargs)
+        return self._api_request(
+            "GET", endpoint, params=params, raw=raw, **kwargs
+        )
 
     def _post(
         self,
@@ -270,3 +371,56 @@ class BaseAPI:
     ) -> Any:
         """Make a POST request to the TestRail API."""
         return self._api_request("POST", endpoint, data=data, **kwargs)
+
+    def _post_multipart(
+        self,
+        endpoint: str,
+        file_path: str,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        Make a multipart/form-data POST request uploading a file.
+
+        TestRail's file-upload endpoints (``add_attachment_to_*`` and
+        ``add_bdd``) expect the file bytes in an ``attachment`` form
+        field. The JSON Content-Type header must not be set so that
+        requests can generate the multipart boundary header.
+
+        Args:
+            endpoint: The API endpoint to send the request to.
+            file_path: Path to the file to upload.
+            **kwargs: Additional arguments to pass to the request.
+
+        Returns:
+            Parsed JSON response from the API.
+
+        Raises:
+            FileNotFoundError: If ``file_path`` does not exist.
+            TestRailAPIError: For various API-related errors
+        """
+        url = self._build_url(endpoint)
+        auth = self._get_auth()
+        timeout = (
+            self.client.timeout if hasattr(self.client, "timeout") else 30
+        )
+
+        with open(file_path, "rb") as attachment:
+            try:
+                response = self.session.request(
+                    method="POST",
+                    url=url,
+                    auth=auth,
+                    files={"attachment": attachment},
+                    timeout=timeout,
+                    **kwargs,
+                )
+
+                return self._handle_response(response)
+
+            except requests.exceptions.RequestException as e:
+                raise TestRailAPIException(f"Request failed: {e}") from e
+            except TestRailAPIError:
+                # Re-raise our custom exceptions
+                raise
+            except Exception as e:
+                raise TestRailAPIException(f"Unexpected error: {e}") from e
