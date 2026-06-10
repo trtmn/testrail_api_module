@@ -208,20 +208,47 @@ api.runs.close_run(run_id=new_run['id'])
 
 ### Managing Attachments
 
+The attachments API uses per-entity methods that mirror the TestRail API
+endpoints directly. Files are uploaded as multipart form data.
+
 ```python
 # Add an attachment to a test case
-api.attachments.add_attachment(
-    entity_type='case',
-    entity_id=123,
-    file_path='path/to/screenshot.png',
-    description='Screenshot of the error'
+result = api.attachments.add_attachment_to_case(
+    case_id=123,
+    file_path="path/to/screenshot.png"
+)
+print(f"Created attachment ID: {result['attachment_id']}")
+
+# Add an attachment to a test run
+api.attachments.add_attachment_to_run(run_id=456, file_path="report.html")
+
+# Add an attachment to a test plan or a specific plan entry
+api.attachments.add_attachment_to_plan(plan_id=10, file_path="spec.pdf")
+api.attachments.add_attachment_to_plan_entry(
+    plan_id=10, entry_id=5, file_path="entry_log.txt"
 )
 
-# Get attachments for a test case
-attachments = api.attachments.get_attachments(
-    entity_type='case',
-    entity_id=123
+# Add an attachment to a test result
+api.attachments.add_attachment_to_result(
+    result_id=789, file_path="screenshot.png"
 )
+
+# Get all attachments for various entity types (supports limit/offset pagination)
+attachments = api.attachments.get_attachments_for_case(case_id=123)
+attachments = api.attachments.get_attachments_for_run(run_id=456, limit=50)
+attachments = api.attachments.get_attachments_for_plan(plan_id=10)
+attachments = api.attachments.get_attachments_for_plan_entry(
+    plan_id=10, entry_id=5
+)
+attachments = api.attachments.get_attachments_for_test(test_id=321)
+
+# Download the raw bytes of an attachment (ID is int or UUID string)
+data = api.attachments.get_attachment(attachment_id=443)
+with open("downloaded.png", "wb") as f:
+    f.write(data)
+
+# Delete an attachment
+api.attachments.delete_attachment(attachment_id=443)
 ```
 
 ### Working with BDD Scenarios
