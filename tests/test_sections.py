@@ -81,6 +81,56 @@ class TestSectionsAPI:
                 "get_sections/1", params=expected_params
             )
 
+    def test_get_sections_with_all_parameters(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test get_sections with all optional parameters."""
+        with patch.object(sections_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1, "name": "Section 1"}]
+
+            result = sections_api.get_sections(
+                project_id=1, suite_id=2, limit=50, offset=100
+            )
+
+            expected_params = {"suite_id": 2, "limit": 50, "offset": 100}
+            mock_get.assert_called_once_with(
+                "get_sections/1", params=expected_params
+            )
+            assert result == [{"id": 1, "name": "Section 1"}]
+
+    def test_get_sections_with_none_values(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test get_sections with None values for optional parameters."""
+        with patch.object(sections_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1, "name": "Section 1"}]
+
+            result = sections_api.get_sections(
+                project_id=1, suite_id=None, limit=None, offset=None
+            )
+
+            mock_get.assert_called_once_with("get_sections/1", params={})
+            assert result == [{"id": 1, "name": "Section 1"}]
+
+    def test_get_sections_pagination_envelope(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test get_sections returns the TestRail 6.7+ envelope as-is."""
+        with patch.object(sections_api, "_get") as mock_get:
+            envelope = {
+                "offset": 0,
+                "limit": 250,
+                "size": 1,
+                "_links": {"next": None, "prev": None},
+                "sections": [{"id": 1, "name": "Section 1"}],
+            }
+            mock_get.return_value = envelope
+
+            result = sections_api.get_sections(project_id=1)
+
+            mock_get.assert_called_once_with("get_sections/1", params={})
+            assert result == envelope
+
     def test_add_section_minimal(self, sections_api: SectionsAPI) -> None:
         """Test add_section with minimal required parameters."""
         with patch.object(sections_api, "_post") as mock_post:
@@ -190,6 +240,118 @@ class TestSectionsAPI:
             mock_post.assert_called_once_with(
                 "update_section/1", data=expected_data
             )
+
+    def test_move_section_minimal(self, sections_api: SectionsAPI) -> None:
+        """Test move_section with minimal required parameters."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 10, "parent_id": 5}
+
+            result = sections_api.move_section(section_id=10)
+
+            mock_post.assert_called_once_with("move_section/10", data={})
+            assert result == {"id": 10, "parent_id": 5}
+
+    def test_move_section_with_all_parameters(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test move_section with all optional parameters."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 10, "parent_id": 5}
+
+            result = sections_api.move_section(
+                section_id=10, parent_id=5, after_id=8
+            )
+
+            expected_data = {"parent_id": 5, "after_id": 8}
+            mock_post.assert_called_once_with(
+                "move_section/10", data=expected_data
+            )
+            assert result == {"id": 10, "parent_id": 5}
+
+    def test_move_section_with_none_values(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test move_section sends explicit None values as JSON null."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 10, "parent_id": None}
+
+            result = sections_api.move_section(
+                section_id=10, parent_id=None, after_id=None
+            )
+
+            expected_data = {"parent_id": None, "after_id": None}
+            mock_post.assert_called_once_with(
+                "move_section/10", data=expected_data
+            )
+            assert result == {"id": 10, "parent_id": None}
+
+    def test_move_section_with_parent_id_only(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test move_section omits after_id when not provided."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 10, "parent_id": 5}
+
+            result = sections_api.move_section(section_id=10, parent_id=5)
+
+            expected_data = {"parent_id": 5}
+            mock_post.assert_called_once_with(
+                "move_section/10", data=expected_data
+            )
+            assert result == {"id": 10, "parent_id": 5}
+
+    def test_move_section_with_after_id_none_only(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test move_section sends only an explicit null after_id."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 10, "parent_id": 5}
+
+            result = sections_api.move_section(section_id=10, after_id=None)
+
+            expected_data = {"after_id": None}
+            mock_post.assert_called_once_with(
+                "move_section/10", data=expected_data
+            )
+            assert result == {"id": 10, "parent_id": 5}
+
+    def test_move_section_api_request_failure(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test move_section behavior when API request fails."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API request failed")
+
+            with pytest.raises(TestRailAPIError, match="API request failed"):
+                sections_api.move_section(section_id=10, parent_id=5)
+
+    def test_move_section_authentication_error(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test move_section behavior when authentication fails."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
+
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                sections_api.move_section(section_id=10, parent_id=5)
+
+    def test_move_section_rate_limit_error(
+        self, sections_api: SectionsAPI
+    ) -> None:
+        """Test move_section behavior when rate limit is exceeded."""
+        with patch.object(sections_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
+
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                sections_api.move_section(section_id=10, parent_id=5)
 
     def test_delete_section(self, sections_api: SectionsAPI) -> None:
         """Test delete_section method."""
