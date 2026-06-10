@@ -49,16 +49,13 @@ class LabelsAPI(BaseAPI):
         """
         return self._get(f"get_labels/{project_id}")
 
-    def add_label(
-        self, project_id: int, name: str, color: str | None = None
-    ) -> dict[str, Any]:
+    def add_label(self, project_id: int, title: str) -> dict[str, Any]:
         """
         Add a new label.
 
         Args:
             project_id: The ID of the project to add the label to.
-            name: The name of the label.
-            color: Optional color for the label (hex code).
+            title: The title of the label (maximum 20 characters).
 
         Returns:
             Dict containing the created label data.
@@ -66,9 +63,7 @@ class LabelsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data = {"name": name}
-        if color is not None:
-            data["color"] = color
+        data = {"title": title}
 
         return self._post(f"add_label/{project_id}", data=data)
 
@@ -78,7 +73,9 @@ class LabelsAPI(BaseAPI):
 
         Args:
             label_id: The ID of the label to update.
-            **kwargs: The fields to update (name, color).
+            **kwargs: The fields to update. TestRail accepts
+                ``title`` (maximum 20 characters) and may also
+                require ``project_id``.
 
         Returns:
             Dict containing the updated label data.
