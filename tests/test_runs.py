@@ -56,29 +56,45 @@ class TestRunsAPI:
     def test_get_runs_minimal(self, runs_api: RunsAPI) -> None:
         """Test get_runs with minimal required parameters."""
         with patch.object(runs_api, "_get") as mock_get:
-            mock_get.return_value = [
-                {"id": 1, "name": "Run 1"},
-                {"id": 2, "name": "Run 2"},
-            ]
+            envelope = {
+                "offset": 0,
+                "limit": 250,
+                "size": 2,
+                "_links": {"next": None, "prev": None},
+                "runs": [
+                    {"id": 1, "name": "Run 1"},
+                    {"id": 2, "name": "Run 2"},
+                ],
+            }
+            mock_get.return_value = envelope
 
             result = runs_api.get_runs(project_id=1)
 
             mock_get.assert_called_once_with("get_runs/1", params={})
-            assert len(result) == 2
-            assert result[0]["id"] == 1
+            assert result == envelope
+            assert len(result["runs"]) == 2
+            assert result["runs"][0]["id"] == 1
 
     def test_get_runs_with_all_parameters(self, runs_api: RunsAPI) -> None:
         """Test get_runs with all optional parameters."""
         with patch.object(runs_api, "_get") as mock_get:
-            mock_get.return_value = [{"id": 1, "name": "Run 1"}]
+            envelope = {
+                "offset": 0,
+                "limit": 10,
+                "size": 1,
+                "_links": {"next": None, "prev": None},
+                "runs": [{"id": 1, "name": "Run 1"}],
+            }
+            mock_get.return_value = envelope
 
-            runs_api.get_runs(
+            result = runs_api.get_runs(
                 project_id=1,
                 suite_id=2,
                 created_after=1000000,
                 created_before=2000000,
                 created_by=1,
                 is_completed=True,
+                milestone_id=5,
                 limit=10,
                 offset=0,
             )
@@ -89,30 +105,62 @@ class TestRunsAPI:
                 "created_before": 2000000,
                 "created_by": 1,
                 "is_completed": True,
+                "milestone_id": 5,
                 "limit": 10,
                 "offset": 0,
             }
             mock_get.assert_called_once_with(
                 "get_runs/1", params=expected_params
             )
+            assert result == envelope
 
     def test_get_runs_with_none_values(self, runs_api: RunsAPI) -> None:
         """Test get_runs with None values for optional parameters."""
         with patch.object(runs_api, "_get") as mock_get:
-            mock_get.return_value = [{"id": 1}]
+            envelope = {
+                "offset": 0,
+                "limit": 250,
+                "size": 1,
+                "_links": {"next": None, "prev": None},
+                "runs": [{"id": 1}],
+            }
+            mock_get.return_value = envelope
 
-            runs_api.get_runs(
+            result = runs_api.get_runs(
                 project_id=1,
                 suite_id=None,
                 created_after=None,
                 created_before=None,
                 created_by=None,
                 is_completed=None,
+                milestone_id=None,
                 limit=None,
                 offset=None,
             )
 
             mock_get.assert_called_once_with("get_runs/1", params={})
+            assert result == envelope
+
+    def test_get_runs_with_milestone_id_filter(
+        self, runs_api: RunsAPI
+    ) -> None:
+        """Test get_runs with only the milestone_id filter."""
+        with patch.object(runs_api, "_get") as mock_get:
+            envelope = {
+                "offset": 0,
+                "limit": 250,
+                "size": 1,
+                "_links": {"next": None, "prev": None},
+                "runs": [{"id": 1, "milestone_id": 7}],
+            }
+            mock_get.return_value = envelope
+
+            result = runs_api.get_runs(project_id=1, milestone_id=7)
+
+            mock_get.assert_called_once_with(
+                "get_runs/1", params={"milestone_id": 7}
+            )
+            assert result == envelope
 
     def test_add_run_minimal(self, runs_api: RunsAPI) -> None:
         """Test add_run with minimal required parameters."""
@@ -130,7 +178,7 @@ class TestRunsAPI:
         with patch.object(runs_api, "_post") as mock_post:
             mock_post.return_value = {"id": 1, "name": "Test Run"}
 
-            runs_api.add_run(
+            result = runs_api.add_run(
                 project_id=1,
                 name="Test Run",
                 description="Test description",
@@ -139,6 +187,7 @@ class TestRunsAPI:
                 assignedto_id=4,
                 include_all=False,
                 case_ids=[1, 2, 3],
+                refs="JIRA-1,JIRA-2",
             )
 
             expected_data = {
@@ -149,15 +198,17 @@ class TestRunsAPI:
                 "milestone_id": 3,
                 "assignedto_id": 4,
                 "case_ids": [1, 2, 3],
+                "refs": "JIRA-1,JIRA-2",
             }
             mock_post.assert_called_once_with("add_run/1", data=expected_data)
+            assert result == {"id": 1, "name": "Test Run"}
 
     def test_add_run_with_none_values(self, runs_api: RunsAPI) -> None:
         """Test add_run with None values for optional parameters."""
         with patch.object(runs_api, "_post") as mock_post:
             mock_post.return_value = {"id": 1, "name": "Test Run"}
 
-            runs_api.add_run(
+            result = runs_api.add_run(
                 project_id=1,
                 name="Test Run",
                 description=None,
@@ -165,10 +216,12 @@ class TestRunsAPI:
                 milestone_id=None,
                 assignedto_id=None,
                 case_ids=None,
+                refs=None,
             )
 
             expected_data = {"name": "Test Run", "include_all": True}
             mock_post.assert_called_once_with("add_run/1", data=expected_data)
+            assert result == {"id": 1, "name": "Test Run"}
 
     def test_update_run_minimal(self, runs_api: RunsAPI) -> None:
         """Test update_run with minimal parameters (only run_id)."""
@@ -188,12 +241,15 @@ class TestRunsAPI:
         with patch.object(runs_api, "_post") as mock_post:
             mock_post.return_value = {"id": 1, "name": "Updated Run"}
 
-            runs_api.update_run(
+            result = runs_api.update_run(
                 run_id=1,
                 name="Updated Run",
                 description="Updated description",
                 milestone_id=2,
                 assignedto_id=3,
+                include_all=False,
+                case_ids=[10, 20, 30],
+                refs="JIRA-9",
             )
 
             expected_data = {
@@ -201,28 +257,96 @@ class TestRunsAPI:
                 "description": "Updated description",
                 "milestone_id": 2,
                 "assignedto_id": 3,
+                "include_all": False,
+                "case_ids": [10, 20, 30],
+                "refs": "JIRA-9",
             }
             mock_post.assert_called_once_with(
                 "update_run/1", data=expected_data
             )
+            assert result == {"id": 1, "name": "Updated Run"}
 
     def test_update_run_with_none_values(self, runs_api: RunsAPI) -> None:
         """Test update_run with None values for optional parameters."""
         with patch.object(runs_api, "_post") as mock_post:
             mock_post.return_value = {"id": 1}
 
-            runs_api.update_run(
+            result = runs_api.update_run(
                 run_id=1,
                 name=None,
                 description=None,
                 milestone_id=None,
                 assignedto_id=None,
+                include_all=None,
+                case_ids=None,
+                refs=None,
             )
 
             expected_data = {}
             mock_post.assert_called_once_with(
                 "update_run/1", data=expected_data
             )
+            assert result == {"id": 1}
+
+    def test_update_run_change_case_selection(self, runs_api: RunsAPI) -> None:
+        """Test update_run can change the case selection of a run."""
+        with patch.object(runs_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 1, "include_all": False}
+
+            result = runs_api.update_run(
+                run_id=1, include_all=False, case_ids=[1, 2, 4]
+            )
+
+            expected_data = {"include_all": False, "case_ids": [1, 2, 4]}
+            mock_post.assert_called_once_with(
+                "update_run/1", data=expected_data
+            )
+            assert result == {"id": 1, "include_all": False}
+
+    def test_update_run_include_all_true_sent(self, runs_api: RunsAPI) -> None:
+        """Test update_run sends include_all when explicitly True."""
+        with patch.object(runs_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 1, "include_all": True}
+
+            result = runs_api.update_run(run_id=1, include_all=True)
+
+            expected_data = {"include_all": True}
+            mock_post.assert_called_once_with(
+                "update_run/1", data=expected_data
+            )
+            assert result == {"id": 1, "include_all": True}
+
+    def test_update_run_api_error(self, runs_api: RunsAPI) -> None:
+        """Test update_run raises TestRailAPIError on failure."""
+        with patch.object(runs_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API request failed")
+
+            with pytest.raises(TestRailAPIError, match="API request failed"):
+                runs_api.update_run(run_id=1, name="Updated Run")
+
+    def test_update_run_authentication_error(self, runs_api: RunsAPI) -> None:
+        """Test update_run raises TestRailAuthenticationError on 401."""
+        with patch.object(runs_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAuthenticationError(
+                "Authentication failed"
+            )
+
+            with pytest.raises(
+                TestRailAuthenticationError, match="Authentication failed"
+            ):
+                runs_api.update_run(run_id=1, name="Updated Run")
+
+    def test_update_run_rate_limit_error(self, runs_api: RunsAPI) -> None:
+        """Test update_run raises TestRailRateLimitError on 429."""
+        with patch.object(runs_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailRateLimitError(
+                "Rate limit exceeded"
+            )
+
+            with pytest.raises(
+                TestRailRateLimitError, match="Rate limit exceeded"
+            ):
+                runs_api.update_run(run_id=1, name="Updated Run")
 
     def test_close_run(self, runs_api: RunsAPI) -> None:
         """Test close_run method."""
