@@ -28,4 +28,4 @@ class RolesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", "get_roles")
+        return self._get("get_roles")

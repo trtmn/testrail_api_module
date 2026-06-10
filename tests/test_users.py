@@ -59,46 +59,46 @@ class TestUsersAPI:
         self, users_api: UsersAPI, sample_user_data: dict
     ) -> None:
         """Test get_user method."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = sample_user_data
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = sample_user_data
 
             result = users_api.get_user(user_id=1)
 
-            mock_request.assert_called_once_with("GET", "get_user/1")
+            mock_get.assert_called_once_with("get_user/1")
             assert result == sample_user_data
 
     def test_get_users_minimal(self, users_api: UsersAPI) -> None:
         """Test get_users with minimal required parameters."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = [
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = [
                 {"id": 1, "name": "User 1"},
                 {"id": 2, "name": "User 2"},
             ]
 
             result = users_api.get_users()
 
-            mock_request.assert_called_once_with("GET", "get_users")
+            mock_get.assert_called_once_with("get_users")
             assert len(result) == 2
             assert result[0]["id"] == 1
 
     def test_get_users_with_project_id(self, users_api: UsersAPI) -> None:
         """Test get_users with the optional project_id parameter."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = [{"id": 1, "name": "User 1"}]
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1, "name": "User 1"}]
 
             result = users_api.get_users(project_id=5)
 
-            mock_request.assert_called_once_with("GET", "get_users/5")
+            mock_get.assert_called_once_with("get_users/5")
             assert result == [{"id": 1, "name": "User 1"}]
 
     def test_get_users_with_none_project_id(self, users_api: UsersAPI) -> None:
         """Test get_users with project_id explicitly set to None."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = [{"id": 1, "name": "User 1"}]
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1, "name": "User 1"}]
 
             result = users_api.get_users(project_id=None)
 
-            mock_request.assert_called_once_with("GET", "get_users")
+            mock_get.assert_called_once_with("get_users")
             assert result == [{"id": 1, "name": "User 1"}]
 
     @pytest.mark.parametrize("project_id", [1, 42, 999999])
@@ -106,28 +106,26 @@ class TestUsersAPI:
         self, users_api: UsersAPI, project_id: int
     ) -> None:
         """Test get_users builds the endpoint for different project IDs."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = []
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = []
 
             result = users_api.get_users(project_id=project_id)
 
-            mock_request.assert_called_once_with(
-                "GET", f"get_users/{project_id}"
-            )
+            mock_get.assert_called_once_with(f"get_users/{project_id}")
             assert result == []
 
     def test_get_users_api_request_failure(self, users_api: UsersAPI) -> None:
         """Test get_users behavior when API request fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 users_api.get_users()
 
     def test_get_users_authentication_error(self, users_api: UsersAPI) -> None:
         """Test get_users behavior when authentication fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -138,8 +136,8 @@ class TestUsersAPI:
 
     def test_get_users_rate_limit_error(self, users_api: UsersAPI) -> None:
         """Test get_users behavior when rate limit is exceeded."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 
@@ -152,20 +150,20 @@ class TestUsersAPI:
         self, users_api: UsersAPI, sample_user_data: dict
     ) -> None:
         """Test get_current_user method."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = sample_user_data
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = sample_user_data
 
             result = users_api.get_current_user()
 
-            mock_request.assert_called_once_with("GET", "get_current_user")
+            mock_get.assert_called_once_with("get_current_user")
             assert result == sample_user_data
 
     def test_get_current_user_api_request_failure(
         self, users_api: UsersAPI
     ) -> None:
         """Test get_current_user behavior when API request fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 users_api.get_current_user()
@@ -174,8 +172,8 @@ class TestUsersAPI:
         self, users_api: UsersAPI
     ) -> None:
         """Test get_current_user behavior when authentication fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -188,8 +186,8 @@ class TestUsersAPI:
         self, users_api: UsersAPI
     ) -> None:
         """Test get_current_user behavior when rate limit is exceeded."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 
@@ -200,13 +198,12 @@ class TestUsersAPI:
 
     def test_get_user_by_email(self, users_api: UsersAPI) -> None:
         """Test get_user_by_email passes the email via params."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = {"id": 1, "email": "test@example.com"}
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = {"id": 1, "email": "test@example.com"}
 
             result = users_api.get_user_by_email(email="test@example.com")
 
-            mock_request.assert_called_once_with(
-                "GET",
+            mock_get.assert_called_once_with(
                 "get_user_by_email",
                 params={"email": "test@example.com"},
             )
@@ -222,16 +219,15 @@ class TestUsersAPI:
         decoded server-side as a space. Passing the email via params lets
         _build_url urlencode it correctly.
         """
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.return_value = {
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.return_value = {
                 "id": 2,
                 "email": "user+qa@example.com",
             }
 
             result = users_api.get_user_by_email(email="user+qa@example.com")
 
-            mock_request.assert_called_once_with(
-                "GET",
+            mock_get.assert_called_once_with(
                 "get_user_by_email",
                 params={"email": "user+qa@example.com"},
             )
@@ -253,8 +249,8 @@ class TestUsersAPI:
         self, users_api: UsersAPI
     ) -> None:
         """Test get_user_by_email behavior when API request fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 users_api.get_user_by_email(email="test@example.com")
@@ -263,8 +259,8 @@ class TestUsersAPI:
         self, users_api: UsersAPI
     ) -> None:
         """Test get_user_by_email behavior when authentication fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -277,8 +273,8 @@ class TestUsersAPI:
         self, users_api: UsersAPI
     ) -> None:
         """Test get_user_by_email behavior when rate limit is exceeded."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 
@@ -289,16 +285,16 @@ class TestUsersAPI:
 
     def test_api_request_failure(self, users_api: UsersAPI) -> None:
         """Test behavior when API request fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 users_api.get_user(user_id=1)
 
     def test_authentication_error(self, users_api: UsersAPI) -> None:
         """Test behavior when authentication fails."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -309,8 +305,8 @@ class TestUsersAPI:
 
     def test_rate_limit_error(self, users_api: UsersAPI) -> None:
         """Test behavior when rate limit is exceeded."""
-        with patch.object(users_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(users_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 
