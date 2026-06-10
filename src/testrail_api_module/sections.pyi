@@ -1,8 +1,15 @@
-from typing import Any
+from typing import Any, Final
 
 from .base import BaseAPI
 
 __all__ = ["SectionsAPI"]
+
+class _UnsetType:
+    """Sentinel type distinguishing omitted arguments from ``None``."""
+
+    def __repr__(self) -> str: ...
+
+UNSET: Final[_UnsetType]
 
 class SectionsAPI(BaseAPI):
     """
@@ -29,24 +36,36 @@ class SectionsAPI(BaseAPI):
             >>> print(f"Section: {section[\'name\']}")
         """
     def get_sections(
-        self, project_id: int, suite_id: int | None = None
-    ) -> list[dict[str, Any]]:
+        self,
+        project_id: int,
+        suite_id: int | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[dict[str, Any]] | dict[str, Any]:
         """
         Get all sections for a project and optionally a specific suite.
 
         Args:
             project_id: The ID of the project to get sections for.
             suite_id: Optional ID of the suite to get sections for.
+            limit: Optional limit on number of results to return
+                (TestRail returns up to 250 by default).
+            offset: Optional offset for pagination.
 
         Returns:
-            List of dictionaries containing section data.
+            On TestRail 6.7+ this endpoint returns a pagination
+            envelope ``{"offset": ..., "limit": ..., "size": ...,
+            "_links": ..., "sections": [...]}``; older TestRail
+            versions return a plain list of section dictionaries.
 
         Raises:
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> sections = api.sections.get_sections(project_id=1, suite_id=2)
-            >>> for section in sections:
+            >>> response = api.sections.get_sections(
+            ...     project_id=1, suite_id=2
+            ... )
+            >>> for section in response["sections"]:
             ...     print(f"Section: {section[\'name\']}")
         """
     def add_section(
@@ -113,10 +132,17 @@ class SectionsAPI(BaseAPI):
     def move_section(
         self,
         section_id: int,
-        parent_id: int | None = None,
-        after_id: int | None = None,
+        parent_id: int | None | _UnsetType = ...,
+        after_id: int | None | _UnsetType = ...,
     ) -> dict[str, Any]:
-        """Move a section to a different parent or position. Requires TestRail 6.5.2+."""
+        """
+        Move a section to a different parent or position.
+
+        Requires TestRail 6.5.2+. Arguments left at their defaults are
+        omitted from the request body; an explicit ``None`` is sent as
+        JSON ``null`` (``parent_id=None`` moves to top level,
+        ``after_id=None`` places the section first).
+        """
     def delete_section(self, section_id: int) -> dict[str, Any]:
         """
         Delete a section.
