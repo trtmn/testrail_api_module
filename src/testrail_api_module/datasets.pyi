@@ -12,6 +12,9 @@ class DatasetsAPI(BaseAPI):
         variables: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]: ...
     def update_dataset(
-        self, dataset_id: int, **kwargs: Any
+        self,
+        dataset_id: int,
+        name: str | None = None,
+        variables: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]: ...
     def delete_dataset(self, dataset_id: int) -> dict[str, Any]: ...
