@@ -31,19 +31,23 @@ class ReportsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_reports/{project_id}")
+        return self._get(f"get_reports/{project_id}")
 
-    def run_report(self, report_id: int) -> dict[str, Any]:
+    def run_report(self, report_template_id: int) -> dict[str, Any]:
         """
         Run a report to generate results.
 
+        The TestRail API requires POST for this endpoint. Returns URLs
+        to the generated report in HTML and PDF formats.
+
         Args:
-            report_id: The ID of the report to run.
+            report_template_id: The ID of the report template to run.
 
         Returns:
-            Dict containing the report results.
+            Dict containing the report results including URLs to the
+            generated report.
 
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("POST", f"run_report/{report_id}")
+        return self._post(f"run_report/{report_template_id}", data={})
