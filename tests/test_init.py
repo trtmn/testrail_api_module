@@ -5,9 +5,13 @@ This module contains comprehensive tests for the TestRailAPI class,
 including initialization, validation, and submodule setup.
 """
 
+import subprocess
+import sys
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
+import requests
 
 from testrail_api_module import (
     TestRailAPI,
@@ -273,3 +277,118 @@ class TestTestRailAPI:
                 api_key=None,
                 password=None,
             )
+
+    def test_init_creates_shared_session(self) -> None:
+        """Test TestRailAPI creates a single shared requests.Session."""
+        api = TestRailAPI(
+            base_url="https://testrail.example.com",
+            username="testuser@example.com",
+            api_key="test_api_key",
+        )
+
+        assert isinstance(api.session, requests.Session)
+        api.close()
+
+    def test_submodules_share_client_session(self) -> None:
+        """Test all submodules reuse the client's session (one
+        connection pool per client, not 24)."""
+        api = TestRailAPI(
+            base_url="https://testrail.example.com",
+            username="testuser@example.com",
+            api_key="test_api_key",
+        )
+
+        assert api.attachments.session is api.session
+        assert api.bdd.session is api.session
+        assert api.cases.session is api.session
+        assert api.results.session is api.session
+        assert api.runs.session is api.session
+        assert api.variables.session is api.session
+        api.close()
+
+    def test_close_closes_session(self) -> None:
+        """Test TestRailAPI.close() closes the shared session."""
+        api = TestRailAPI(
+            base_url="https://testrail.example.com",
+            username="testuser@example.com",
+            api_key="test_api_key",
+        )
+
+        with patch.object(api.session, "close") as mock_close:
+            api.close()
+
+        mock_close.assert_called_once_with()
+
+    def test_context_manager_returns_self(self) -> None:
+        """Test TestRailAPI.__enter__ returns the client itself."""
+        api = TestRailAPI(
+            base_url="https://testrail.example.com",
+            username="testuser@example.com",
+            api_key="test_api_key",
+        )
+
+        with api as entered:
+            assert entered is api
+
+    def test_context_manager_closes_on_exit(self) -> None:
+        """Test TestRailAPI.__exit__ closes the shared session."""
+        api = TestRailAPI(
+            base_url="https://testrail.example.com",
+            username="testuser@example.com",
+            api_key="test_api_key",
+        )
+
+        with patch.object(api, "close") as mock_close:
+            with api:
+                mock_close.assert_not_called()
+
+        mock_close.assert_called_once_with()
+
+    def test_context_manager_closes_on_exception(self) -> None:
+        """Test TestRailAPI.__exit__ closes the session on errors and
+        does not suppress the exception."""
+        api = TestRailAPI(
+            base_url="https://testrail.example.com",
+            username="testuser@example.com",
+            api_key="test_api_key",
+        )
+
+        with patch.object(api, "close") as mock_close:
+            with pytest.raises(RuntimeError, match="boom"):
+                with api:
+                    raise RuntimeError("boom")
+
+        mock_close.assert_called_once_with()
+
+    def test_submodules_importable_without_instantiation(self) -> None:
+        """Test submodules are reachable right after a fresh import,
+        without constructing a TestRailAPI client first."""
+        code = (
+            "import testrail_api_module as t; "
+            "assert t.cases.CasesAPI; "
+            "assert t.attachments.AttachmentsAPI; "
+            "assert t.variables.VariablesAPI"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stderr
+
+    def test_import_under_python_oo(self) -> None:
+        """Test the package imports under `python -OO` (docstrings are
+        stripped, so __doc__ is None and must not be .format()ed)."""
+        result = subprocess.run(
+            [sys.executable, "-OO", "-c", "import testrail_api_module"],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stderr
+
+    def test_version_attribute(self) -> None:
+        """Test __version__ is exposed as a non-empty string."""
+        import testrail_api_module
+
+        assert isinstance(testrail_api_module.__version__, str)
+        assert testrail_api_module.__version__

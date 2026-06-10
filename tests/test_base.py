@@ -18,6 +18,7 @@ from testrail_api_module.base import (
     TestRailAPIException,
     TestRailAuthenticationError,
     TestRailRateLimitError,
+    _TestRailRetry,
 )
 
 if TYPE_CHECKING:
@@ -103,6 +104,90 @@ class TestBaseAPI:
         assert "http://" in api.session.adapters
         assert "https://" in api.session.adapters
 
+    def test_init_shares_client_session(self) -> None:
+        """Test BaseAPI reuses the client's requests.Session when provided."""
+        shared_session = requests.Session()
+        client = Mock()
+        client.session = shared_session
+        api = BaseAPI(client)
+        assert api.session is shared_session
+        shared_session.close()
+
+    def test_init_creates_own_session_without_client_session(
+        self, mock_client: Mock
+    ) -> None:
+        """Test BaseAPI creates its own session when the client has none.
+
+        A Mock attribute is not a real requests.Session, so standalone
+        usage falls back to creating a configured session.
+        """
+        api = BaseAPI(mock_client)
+        assert isinstance(api.session, requests.Session)
+        assert api.session is not mock_client.session
+
+    def test_session_retry_configuration(self, base_api: BaseAPI) -> None:
+        """Test the mounted adapter uses the TestRail retry policy."""
+        adapter = base_api.session.get_adapter("https://testrail.example.com")
+        retry = adapter.max_retries
+        assert isinstance(retry, _TestRailRetry)
+        assert retry.total == 3
+        assert retry.backoff_factor == 1
+        assert retry.raise_on_status is False
+        assert retry.allowed_methods is None
+        assert set(retry.status_forcelist) == {429, 500, 502, 503, 504}
+
+    def test_retry_policy_get_retries_on_429_and_5xx(self) -> None:
+        """Test the retry policy retries GETs on 429 and 5xx statuses."""
+        retry = _TestRailRetry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=None,
+            raise_on_status=False,
+        )
+        assert retry.is_retry("GET", 429) is True
+        assert retry.is_retry("GET", 500) is True
+        assert retry.is_retry("GET", 503) is True
+        assert retry.is_retry("GET", 200) is False
+        assert retry._is_method_retryable("GET") is True
+
+    def test_retry_policy_post_retries_only_on_429(self) -> None:
+        """Test the retry policy retries POSTs on 429 only (writes are
+        not idempotent in TestRail, so 5xx must not be replayed)."""
+        retry = _TestRailRetry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=None,
+            raise_on_status=False,
+        )
+        assert retry.is_retry("POST", 429) is True
+        assert retry.is_retry("POST", 500) is False
+        assert retry.is_retry("POST", 502) is False
+        assert retry.is_retry("POST", 503) is False
+        assert retry.is_retry("POST", 503, has_retry_after=True) is False
+        assert retry.is_retry("post", 500) is False
+        # Read errors (request may have reached the server) must not
+        # be retried for POSTs either.
+        assert retry._is_method_retryable("POST") is False
+
+    def test_retry_policy_survives_increment(self) -> None:
+        """Test the retry policy class is preserved across increment()
+        (urllib3 creates a new Retry instance per attempt)."""
+        retry = _TestRailRetry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=None,
+            raise_on_status=False,
+        )
+        bumped = retry.increment(
+            method="GET", url="/", response=None, error=None
+        )
+        assert isinstance(bumped, _TestRailRetry)
+        assert bumped.total == 2
+        assert bumped.is_retry("POST", 500) is False
+
     def test_build_url_without_params(self, base_api: BaseAPI) -> None:
         """Test _build_url without parameters."""
         url = base_api._build_url("get_case/1")
@@ -135,9 +220,58 @@ class TestBaseAPI:
         """Test _build_url with complex parameter values."""
         params = {"ids": [1, 2, 3], "name": "test case"}
         url = base_api._build_url("get_cases/1", params=params)
-        # All values should be converted to strings
-        assert "ids" in url
-        assert "name" in url
+        # Lists are comma-joined ("," url-encodes to %2C)
+        assert "ids=1%2C2%2C3" in url
+        assert "name=test+case" in url
+
+    def test_build_url_serializes_true_as_1(self, base_api: BaseAPI) -> None:
+        """Test _build_url serializes True as 1 (TestRail's PHP backend
+        treats "True" as 0, silently inverting filters)."""
+        url = base_api._build_url("get_runs/1", params={"is_completed": True})
+        assert "is_completed=1" in url
+        assert "True" not in url
+
+    def test_build_url_serializes_false_as_0(self, base_api: BaseAPI) -> None:
+        """Test _build_url serializes False as 0."""
+        url = base_api._build_url("get_runs/1", params={"is_completed": False})
+        assert "is_completed=0" in url
+        assert "False" not in url
+
+    def test_build_url_serializes_list_as_comma_joined(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _build_url comma-joins list filter values."""
+        url = base_api._build_url("get_cases/1", params={"created_by": [1, 2]})
+        assert "created_by=1%2C2" in url
+        assert "%5B" not in url  # no "[" from a Python repr
+
+    def test_build_url_serializes_tuple_as_comma_joined(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _build_url comma-joins tuple filter values."""
+        url = base_api._build_url(
+            "get_cases/1", params={"priority_id": (4, 5)}
+        )
+        assert "priority_id=4%2C5" in url
+
+    def test_build_url_preserves_prejoined_string(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _build_url leaves pre-joined string filters intact
+        (results.py/tests.py already comma-join their list params)."""
+        url = base_api._build_url(
+            "get_results/1", params={"status_id": "1,2,3"}
+        )
+        assert "status_id=1%2C2%2C3" in url
+
+    def test_build_url_serializes_bools_inside_lists(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _build_url serializes booleans inside list values."""
+        url = base_api._build_url(
+            "get_cases/1", params={"flags": [True, False]}
+        )
+        assert "flags=1%2C0" in url
 
     def test_build_url_with_all_none_params(self, base_api: BaseAPI) -> None:
         """Test _build_url when all params are None (edge case)."""
@@ -270,6 +404,62 @@ class TestBaseAPI:
         result = base_api._handle_response(response)
         # Whitespace-only responses should be treated as empty
         assert result == {}
+
+    def test_handle_response_201_created(self, base_api: BaseAPI) -> None:
+        """Test _handle_response accepts 201 as success."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 201
+        response.text = '{"id": 1}'
+        response.json.return_value = {"id": 1}
+
+        result = base_api._handle_response(response)
+        assert result == {"id": 1}
+
+    def test_handle_response_204_no_content(self, base_api: BaseAPI) -> None:
+        """Test _handle_response accepts 204 with empty body as success."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 204
+        response.text = ""
+
+        result = base_api._handle_response(response)
+        assert result == {}
+
+    def test_handle_response_raw_returns_bytes(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _handle_response with raw=True returns response.content."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 200
+        response.content = b"\x89PNG binary data"
+
+        result = base_api._handle_response(response, raw=True)
+        assert result == b"\x89PNG binary data"
+
+    def test_handle_response_raw_skips_json_parsing(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _handle_response with raw=True never parses JSON, so
+        non-JSON bodies (e.g. .feature files) succeed."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 200
+        response.content = b"Feature: Login"
+        response.json.side_effect = json.JSONDecodeError(
+            "Invalid JSON", "Feature: Login", 0
+        )
+
+        result = base_api._handle_response(response, raw=True)
+        assert result == b"Feature: Login"
+        response.json.assert_not_called()
+
+    def test_handle_response_raw_error_still_raises(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _handle_response with raw=True still maps error codes."""
+        response = Mock(spec=requests.Response)
+        response.status_code = 401
+
+        with pytest.raises(TestRailAuthenticationError):
+            base_api._handle_response(response, raw=True)
 
     def test_handle_response_invalid_json(self, base_api: BaseAPI) -> None:
         """Test _handle_response with invalid JSON (non-empty but malformed)."""
@@ -607,9 +797,21 @@ class TestBaseAPI:
         result = base_api._get("get_case/1", params={"limit": 10})
 
         mock_api_request.assert_called_once_with(
-            "GET", "get_case/1", params={"limit": 10}
+            "GET", "get_case/1", params={"limit": 10}, raw=False
         )
         assert result == {"id": 1}
+
+    @patch.object(BaseAPI, "_api_request")
+    def test_get_method_raw(self, mock_api_request, base_api: BaseAPI) -> None:
+        """Test _get method passes raw=True through to _api_request."""
+        mock_api_request.return_value = b"Feature: Login"
+
+        result = base_api._get("get_bdd/1", raw=True)
+
+        mock_api_request.assert_called_once_with(
+            "GET", "get_bdd/1", params=None, raw=True
+        )
+        assert result == b"Feature: Login"
 
     @patch.object(BaseAPI, "_api_request")
     def test_post_method(self, mock_api_request, base_api: BaseAPI) -> None:
@@ -634,7 +836,7 @@ class TestBaseAPI:
         result = base_api._get("get_case/1", params={"limit": 10}, timeout=60)
 
         mock_api_request.assert_called_once_with(
-            "GET", "get_case/1", params={"limit": 10}, timeout=60
+            "GET", "get_case/1", params={"limit": 10}, raw=False, timeout=60
         )
         assert result == {"id": 1}
 
@@ -652,3 +854,116 @@ class TestBaseAPI:
             "POST", "add_case/1", data=data, timeout=60
         )
         assert result == {"id": 1}
+
+    def test_api_request_raw_returns_bytes(self, base_api: BaseAPI) -> None:
+        """Test _api_request with raw=True returns raw bytes and does
+        not forward 'raw' to the session request."""
+        mock_response = Mock(spec=requests.Response)
+        mock_response.status_code = 200
+        mock_response.content = b"binary content"
+        base_api.session.request = Mock(return_value=mock_response)
+
+        result = base_api._api_request("GET", "get_attachment/1", raw=True)
+
+        assert result == b"binary content"
+        call_kwargs = base_api.session.request.call_args[1]
+        assert "raw" not in call_kwargs
+        assert call_kwargs["method"] == "GET"
+
+    def test_post_multipart_success(self, base_api: BaseAPI, tmp_path) -> None:
+        """Test _post_multipart uploads the opened file in an
+        'attachment' form field without the JSON Content-Type header."""
+        file_path = tmp_path / "evidence.png"
+        file_path.write_bytes(b"\x89PNG fake image bytes")
+
+        mock_response = Mock(spec=requests.Response)
+        mock_response.status_code = 200
+        mock_response.text = '{"attachment_id": 443}'
+        mock_response.json.return_value = {"attachment_id": 443}
+        base_api.session.request = Mock(return_value=mock_response)
+
+        result = base_api._post_multipart(
+            "add_attachment_to_case/1", str(file_path)
+        )
+
+        assert result == {"attachment_id": 443}
+        call_kwargs = base_api.session.request.call_args[1]
+        assert call_kwargs["method"] == "POST"
+        assert "add_attachment_to_case/1" in call_kwargs["url"]
+        assert call_kwargs["auth"] == ("testuser", "test_api_key")
+        assert call_kwargs["timeout"] == 30
+        # The file handle must be sent as the 'attachment' form field
+        assert "attachment" in call_kwargs["files"]
+        assert call_kwargs["files"]["attachment"].name == str(file_path)
+        # No JSON Content-Type header: requests must generate the
+        # multipart boundary header itself
+        assert "headers" not in call_kwargs
+        assert "json" not in call_kwargs
+
+    def test_post_multipart_missing_file(self, base_api: BaseAPI) -> None:
+        """Test _post_multipart raises FileNotFoundError for a missing
+        file (not a wrapped TestRailAPIException)."""
+        base_api.session.request = Mock()
+
+        with pytest.raises(FileNotFoundError):
+            base_api._post_multipart(
+                "add_attachment_to_case/1", "/nonexistent/file.png"
+            )
+        base_api.session.request.assert_not_called()
+
+    def test_post_multipart_authentication_error(
+        self, base_api: BaseAPI, tmp_path
+    ) -> None:
+        """Test _post_multipart maps 401 to TestRailAuthenticationError."""
+        file_path = tmp_path / "evidence.png"
+        file_path.write_bytes(b"data")
+
+        mock_response = Mock(spec=requests.Response)
+        mock_response.status_code = 401
+        base_api.session.request = Mock(return_value=mock_response)
+
+        with pytest.raises(
+            TestRailAuthenticationError, match="Authentication failed"
+        ):
+            base_api._post_multipart(
+                "add_attachment_to_case/1", str(file_path)
+            )
+
+    def test_post_multipart_rate_limit_error(
+        self, base_api: BaseAPI, tmp_path
+    ) -> None:
+        """Test _post_multipart maps 429 to TestRailRateLimitError."""
+        file_path = tmp_path / "evidence.png"
+        file_path.write_bytes(b"data")
+
+        mock_response = Mock(spec=requests.Response)
+        mock_response.status_code = 429
+        mock_response.headers = {}
+        base_api.session.request = Mock(return_value=mock_response)
+
+        with pytest.raises(
+            TestRailRateLimitError, match="Rate limit exceeded"
+        ):
+            base_api._post_multipart(
+                "add_attachment_to_case/1", str(file_path)
+            )
+
+    def test_post_multipart_request_exception(
+        self, base_api: BaseAPI, tmp_path
+    ) -> None:
+        """Test _post_multipart wraps RequestException."""
+        file_path = tmp_path / "evidence.png"
+        file_path.write_bytes(b"data")
+
+        base_api.session.request = Mock(
+            side_effect=requests.exceptions.RequestException(
+                "Connection error"
+            )
+        )
+
+        with pytest.raises(
+            TestRailAPIException, match="Request failed: Connection error"
+        ):
+            base_api._post_multipart(
+                "add_attachment_to_case/1", str(file_path)
+            )
