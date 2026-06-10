@@ -64,13 +64,13 @@ TESTRAIL_API_KEY=your-api-key
 
 ## API Access Pattern
 
-All 23 modules are properties on the `api` object:
+All 24 modules are properties on the `api` object:
 
 ```python
 api.projects.get_projects()
 api.cases.get_case(case_id=123)
 api.runs.add_run(project_id=1, name="Sprint 42")
-api.results.add_result(run_id=1, case_id=123, status_id=1)
+api.results.add_result_for_case(run_id=1, case_id=123, status_id=1)
 ```
 
 ## Return Types
@@ -175,8 +175,8 @@ cases = api.cases.get_cases(project_id=1, suite_id=2)
 # Create a run
 run = api.runs.add_run(project_id=1, name="Regression", suite_id=2, include_all=True)
 
-# Record a result
-api.results.add_result(run_id=run['id'], case_id=123, status_id=1, comment="Passed")
+# Record a result by case ID within a run
+api.results.add_result_for_case(run_id=run['id'], case_id=123, status_id=1, comment="Passed")
 
 # Bulk results
 api.results.add_results_for_cases(run_id=run['id'], results=[
@@ -187,8 +187,9 @@ api.results.add_results_for_cases(run_id=run['id'], results=[
 # Close a run
 api.runs.close_run(run_id=run['id'])
 
-# Get run stats
-stats = api.runs.get_run_stats(run_id=run['id'])
+# Get run pass/fail counts (fields on the run object itself)
+run_data = api.runs.get_run(run_id=run['id'])
+print(f"Passed: {run_data['passed_count']}, Failed: {run_data['failed_count']}")
 ```
 
 ## Elapsed Time Format
@@ -199,6 +200,7 @@ Use strings: `"30s"`, `"2m"`, `"1h 30m"`, `"2h 15m 30s"`
 
 For detailed information, consult these reference files as needed:
 
-- **`references/modules-quick-reference.md`** -- All 23 modules with methods and required params
+- **`references/modules-quick-reference.md`** -- All 24 modules with methods and required params
 - **`references/cases-and-custom-fields.md`** -- Custom field types, validation, and complete examples
 - **`references/workflows.md`** -- Full Python script examples for common multi-step workflows
+- **[USAGE.md](../../../../USAGE.md)** -- Canonical human-facing consumer usage guide (auth, workflows, gotchas)

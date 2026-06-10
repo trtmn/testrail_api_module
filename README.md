@@ -8,6 +8,11 @@
 
 TRAM is a comprehensive Python wrapper for the TestRail API that provides easy access to all TestRail functionalities.
 
+## Usage
+
+For a full consumer usage guide covering authentication, client initialization, common workflows,
+response shapes, exception handling, and gotchas, see **[USAGE.md](USAGE.md)**.
+
 ## Features
 
 - **NEW**: Comprehensive exception handling with specific error types

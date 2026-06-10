@@ -11,6 +11,7 @@ All methods use keyword arguments. Return types are `dict` or `list[dict]`.
 - [configurations](#apiconfigurations)
 - [datasets](#apidatasets)
 - [groups](#apigroups)
+- [labels](#apilabels)
 - [milestones](#apimilestones)
 - [plans](#apiplans)
 - [priorities](#apipriorities)
@@ -33,13 +34,18 @@ All methods use keyword arguments. Return types are `dict` or `list[dict]`.
 
 | Method | Required Params | Description |
 |--------|----------------|-------------|
-| `add_attachment(entity_type, entity_id, file_path)` | entity_type, entity_id, file_path | Upload attachment |
+| `add_attachment_to_case(case_id, file_path)` | case_id, file_path | Upload attachment to a case |
+| `add_attachment_to_plan(plan_id, file_path)` | plan_id, file_path | Upload attachment to a plan |
+| `add_attachment_to_plan_entry(plan_id, entry_id, file_path)` | plan_id, entry_id, file_path | Upload attachment to a plan entry |
+| `add_attachment_to_result(result_id, file_path)` | result_id, file_path | Upload attachment to a result |
+| `add_attachment_to_run(run_id, file_path)` | run_id, file_path | Upload attachment to a run |
+| `get_attachments_for_case(case_id)` | case_id | List attachments on a case |
+| `get_attachments_for_plan(plan_id)` | plan_id | List attachments on a plan |
+| `get_attachments_for_plan_entry(plan_id, entry_id)` | plan_id, entry_id | List attachments on a plan entry |
+| `get_attachments_for_run(run_id)` | run_id | List attachments on a run |
+| `get_attachments_for_test(test_id)` | test_id | List attachments on a test |
+| `get_attachment(attachment_id)` | attachment_id | Download attachment (returns bytes) |
 | `delete_attachment(attachment_id)` | attachment_id | Delete attachment |
-| `get_attachment(attachment_id)` | attachment_id | Get attachment metadata |
-| `get_attachment_content(attachment_id)` | attachment_id | Download attachment content |
-| `get_attachments(entity_type, entity_id)` | entity_type, entity_id | List attachments |
-
-Entity types: `"case"`, `"run"`, `"plan"`, `"result"`, `"test"`
 
 ## api.bdd
 
@@ -70,13 +76,17 @@ Optional params for `add_case`/`update_case`: `type_id`, `priority_id`, `estimat
 
 ## api.configurations
 
+Configurations are two-level: groups contain individual configs.
+
 | Method | Required Params | Description |
 |--------|----------------|-------------|
-| `add_configuration(project_id, name)` | project_id, name | Create configuration |
-| `delete_configuration(config_id)` | config_id | Delete configuration |
-| `get_configuration(config_id)` | config_id | Get configuration |
-| `get_configurations(project_id)` | project_id | List configurations |
-| `update_configuration(config_id, **kwargs)` | config_id | Update configuration |
+| `get_configs(project_id)` | project_id | List all config groups (each has a `configs` list) |
+| `add_config_group(project_id, name)` | project_id, name | Create a config group |
+| `add_config(config_group_id, name)` | config_group_id, name | Create a config within a group |
+| `update_config_group(config_group_id, name)` | config_group_id, name | Update a config group |
+| `update_config(config_id, name)` | config_id, name | Update a config |
+| `delete_config_group(config_group_id)` | config_group_id | Delete a config group |
+| `delete_config(config_id)` | config_id | Delete a config |
 
 ## api.datasets
 
@@ -87,17 +97,25 @@ Optional params for `add_case`/`update_case`: `type_id`, `priority_id`, `estimat
 
 ## api.groups
 
+Groups are instance-level (not project-scoped). Requires TestRail 7.5+.
+
 | Method | Required Params | Description |
 |--------|----------------|-------------|
-| `add_group(project_id, name)` | project_id, name | Create group |
-| `add_group_to_suite(group_id, suite_id)` | group_id, suite_id | Associate group with suite |
-| `delete_group(group_id)` | group_id | Delete group |
 | `get_group(group_id)` | group_id | Get group |
-| `get_group_cases(group_id)` | group_id | Get cases in group |
-| `get_group_suites(group_id)` | group_id | Get suites for group |
-| `get_groups(project_id)` | project_id | List groups |
-| `remove_group_from_suite(group_id, suite_id)` | group_id, suite_id | Disassociate group from suite |
+| `get_groups()` | (none) | List all groups on the instance |
+| `add_group(name)` | name | Create group (optional: user_ids) |
 | `update_group(group_id)` | group_id | Update group |
+| `delete_group(group_id)` | group_id | Delete group |
+
+## api.labels
+
+| Method | Required Params | Description |
+|--------|----------------|-------------|
+| `get_label(label_id)` | label_id | Get label |
+| `get_labels(project_id)` | project_id | List labels for a project |
+| `add_label(project_id, title)` | project_id, title | Create label |
+| `update_label(label_id)` | label_id | Update label |
+| `delete_label(label_id)` | label_id | Delete label |
 
 ## api.milestones
 
@@ -114,13 +132,18 @@ Optional params for `add_case`/`update_case`: `type_id`, `priority_id`, `estimat
 
 | Method | Required Params | Description |
 |--------|----------------|-------------|
+| `get_plan(plan_id)` | plan_id | Get plan with entries |
+| `get_plans(project_id)` | project_id | List plans |
 | `add_plan(project_id, name)` | project_id, name | Create test plan |
+| `update_plan(plan_id)` | plan_id | Update plan metadata |
 | `close_plan(plan_id)` | plan_id | Close test plan |
 | `delete_plan(plan_id)` | plan_id | Delete test plan |
-| `get_plan(plan_id)` | plan_id | Get plan with entries |
-| `get_plan_stats(plan_id)` | plan_id | Get plan statistics |
-| `get_plans(project_id)` | project_id | List plans |
-| `update_plan(plan_id)` | plan_id | Update plan / add entries |
+| `add_plan_entry(plan_id, suite_id)` | plan_id, suite_id | Add an entry (run group) to a plan |
+| `update_plan_entry(plan_id, entry_id)` | plan_id, entry_id | Update a plan entry |
+| `delete_plan_entry(plan_id, entry_id)` | plan_id, entry_id | Delete a plan entry |
+| `add_run_to_plan_entry(plan_id, entry_id, config_ids)` | plan_id, entry_id, config_ids | Add a run to a plan entry |
+| `update_run_in_plan_entry(run_id)` | run_id | Update a run within a plan entry |
+| `delete_run_from_plan_entry(run_id)` | run_id | Delete a run from a plan entry |
 
 ## api.priorities
 
@@ -171,15 +194,15 @@ Optional params for `add_case`/`update_case`: `type_id`, `priority_id`, `estimat
 
 | Method | Required Params | Description |
 |--------|----------------|-------------|
-| `add_result(run_id, case_id, status_id)` | run_id, case_id, status_id | Record single result |
-| `add_result_for_run(run_id, status_id)` | run_id, status_id | Add result for run |
-| `add_results(run_id, results)` | run_id, results | Batch add results |
+| `add_result(test_id, status_id)` | test_id, status_id | Record result by test instance ID |
+| `add_result_for_case(run_id, case_id, status_id)` | run_id, case_id, status_id | Record result by case ID within a run |
+| `add_results(run_id, results)` | run_id, results | Batch add results by test instance ID |
 | `add_results_for_cases(run_id, results)` | run_id, results | Batch add results by case_id |
-| `get_results(run_id)` | run_id | Get results |
-| `get_results_for_case(run_id, case_id)` | run_id, case_id | Get results for specific case |
+| `get_results(test_id)` | test_id | Get results for a test instance |
+| `get_results_for_case(run_id, case_id)` | run_id, case_id | Get results for a case in a run |
 | `get_results_for_run(run_id)` | run_id | Get all results for a run |
 
-Optional params for `add_result`: `comment`, `version`, `elapsed`, `defects`
+Optional params for `add_result` / `add_result_for_case`: `comment`, `version`, `elapsed`, `defects`
 
 ## api.roles
 
