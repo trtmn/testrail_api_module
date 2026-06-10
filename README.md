@@ -67,18 +67,6 @@ The old single-level API has been replaced with the correct two-level group/conf
 - **Statuses**: `get_case_statuses()`
 - **Datasets**: `add_dataset(...)`, `update_dataset(...)`, `delete_dataset(...)`
 
-## 🚨 Breaking Changes in v0.4.x
-
-**This is a major version update with breaking changes.** Please read the [Migration Guide](MIGRATION_GUIDE.md) before upgrading from v0.3.x.
-
-### Key Changes
-
-- **Enhanced Error Handling**: Methods now raise specific exceptions instead of returning `None`
-- **Consistent Return Types**: No more `Optional` wrappers - methods return data directly
-- **Better Type Safety**: Comprehensive type annotations throughout
-- **Performance Improvements**: Connection pooling, retry logic, and efficient requests
-- **Official Compliance**: Follows TestRail API best practices
-
 ## Installation
 
 ### For Consumers
@@ -92,8 +80,8 @@ pip install testrail-api-module
 
 ```bash
 # Clone the repository
-git clone https://github.com/trtmn/testrail-api-module.git
-cd testrail-api-module
+git clone https://github.com/trtmn/testrail_api_module.git
+cd testrail_api_module
 
 # Create virtual environment and install dependencies using uv
 uv venv .venv
@@ -112,7 +100,7 @@ uv sync --all-extras
 # Run tests with the current Python version
 uv run pytest
 
-# Run tests across all supported Python versions (3.11, 3.12, 3.13)
+# Run tests across all supported Python versions (3.11, 3.12, 3.13, 3.14)
 tox
 ```
 
@@ -131,14 +119,17 @@ api = TestRailAPI(
 
 try:
     # Get a list of projects
-    projects = api.projects.get_projects()
+    # Note: recent TestRail versions return a pagination envelope
+    # ({offset, limit, size, _links, projects}) instead of a plain list.
+    response = api.projects.get_projects()
+    projects = response.get("projects", response)
     print(f"Found {len(projects)} projects")
 
     # Create a new test case
     new_case = api.cases.add_case(
         section_id=123,
         title='Test Login Functionality',
-        type_id=1,  # Functional test
+        type_id=2,  # Functional test (1 = Other)
         priority_id=3,  # Medium priority
         estimate='30m',  # 30 minutes
         refs='JIRA-123'
@@ -180,7 +171,7 @@ try:
     updated_case = api.cases.update_case(
         case_id=123,
         title='Updated Test Case Title',
-        type_id=2,  # Performance test
+        type_id=3,  # Performance test
         priority_id=1  # Critical priority
     )
     print(f"Updated case: {updated_case['title']}")
@@ -206,8 +197,10 @@ new_run = api.runs.add_run(
     include_all=True
 )
 
-# Get test run results
-results = api.runs.get_run_stats(run_id=new_run['id'])
+# Get the run's result counts (returned on the run itself)
+run = api.runs.get_run(run_id=new_run['id'])
+print(f"Passed: {run['passed_count']}, Failed: {run['failed_count']}, "
+      f"Untested: {run['untested_count']}")
 
 # Close a test run
 api.runs.close_run(run_id=new_run['id'])
@@ -272,16 +265,13 @@ except Exception as e:
 - **`TestRailRateLimitError`**: Rate limit exceeded (429 errors)
 - **`TestRailAPIException`**: General API errors with status codes and response details
 
-## Migration Guide
+## Historical migrations
 
-**Upgrading from v0.3.x?** Please read our comprehensive [Migration Guide](MIGRATION_GUIDE.md) for detailed instructions on updating your code to work with v0.4.0.
-
-### Quick Migration Summary
-
-1. **Update error handling**: Wrap API calls in try/except blocks
-2. **Remove None checks**: Methods now return data directly or raise exceptions
-3. **Import exception classes**: Add `TestRailAPIError`, `TestRailAuthenticationError`, `TestRailRateLimitError` to your imports
-4. **Update method calls**: Use explicit parameters instead of `**kwargs` where applicable
+Upgrading from an older version (e.g., v0.3.x's `None`-returning API or
+pre-v0.6.3 endpoint names)? See the
+[CHANGELOG](https://github.com/trtmn/testrail_api_module/blob/main/CHANGELOG.md)
+and [GitHub releases](https://github.com/trtmn/testrail_api_module/releases)
+for the breaking changes in each version.
 
 ## Documentation
 

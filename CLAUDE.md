@@ -95,7 +95,7 @@ uv run python utilities/generate_docs.py
 
 ### API Wrapper Pattern
 
-`TestRailAPI` (in `__init__.py`) is the entry point. It instantiates 23 submodule APIs as attributes, passing `self` as the client:
+`TestRailAPI` (in `__init__.py`) is the entry point. It instantiates 24 submodule APIs as attributes, passing `self` as the client:
 
 ```python
 api = TestRailAPI(base_url=..., username=..., api_key=...)
@@ -106,7 +106,7 @@ api.results.add_result(...)    # ResultsAPI
 
 ### BaseAPI (`base.py`)
 
-All 23 submodules inherit from `BaseAPI`, which provides:
+All 24 submodules inherit from `BaseAPI`, which provides:
 
 - `_get(endpoint, params)` / `_post(endpoint, data)` — HTTP helpers with Basic Auth
 - `requests.Session` with connection pooling and retry on 429/5xx (3 retries, backoff=1)
@@ -172,7 +172,7 @@ uv version 0.7.0
 
 ## Changelog
 
-`CHANGELOG.md` must be updated whenever code changes are made. Add entries under `## [Unreleased]` at the top of the file. Use [Keep a Changelog](https://keepachangelog.com/) categories: `### ✨ Added`, `### 🔧 Changed`, `### 🐛 Fixed`, `### 🚨 Breaking Changes`, `### 🔄 Maintenance`. Entries are ordered newest version first. When releasing, the `[Unreleased]` section gets renamed to the version number.
+`CHANGELOG.md` is generated and maintained by release-please — never edit it by hand. See the [Release process](#release-process) section above.
 
 ## Code Style
 
