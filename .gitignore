@@ -156,3 +156,6 @@ bandit-report.html
 
 # 1Password local environment config
 .1password/
+
+# Generated API docs (built and deployed by CI; see utilities/generate_docs.py)
+docs/

@@ -79,6 +79,17 @@ bump that the commit history doesn't justify), edit
 `.github/.release-please-manifest.json` on a feature branch and PR it to
 `development`. release-please will pick up the new floor on the next run.
 
+### PyPI token setup (one-time)
+
+The publish jobs authenticate with the `PYPI_API_TOKEN` repository
+secret. If it's missing or revoked:
+
+1. Create a token at [PyPI Account Settings](https://pypi.org/manage/account/)
+   → API tokens → Add API token, scoped to the `testrail-api-module`
+   project (token starts with `pypi-`).
+2. Add it on GitHub: **Settings → Secrets and variables → Actions →
+   New repository secret**, name `PYPI_API_TOKEN`.
+
 ### Recover from a botched release
 
 If the publish job fails after release-please has tagged + created the
