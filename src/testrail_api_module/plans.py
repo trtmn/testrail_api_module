@@ -32,7 +32,7 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_plan/{plan_id}")
+        return self._get(f"get_plan/{plan_id}")
 
     def get_plans(
         self,
@@ -86,9 +86,7 @@ class PlansAPI(BaseAPI):
         if offset is not None:
             params["offset"] = offset
 
-        return self._api_request(
-            "GET", f"get_plans/{project_id}", params=params
-        )
+        return self._get(f"get_plans/{project_id}", params=params)
 
     def add_plan(
         self,
@@ -127,7 +125,7 @@ class PlansAPI(BaseAPI):
         if entries:
             data["entries"] = entries
 
-        return self._api_request("POST", f"add_plan/{project_id}", data=data)
+        return self._post(f"add_plan/{project_id}", data=data)
 
     def update_plan(self, plan_id: int, **kwargs: Any) -> dict[str, Any]:
         """
@@ -144,7 +142,7 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("POST", f"update_plan/{plan_id}", data=kwargs)
+        return self._post(f"update_plan/{plan_id}", data=kwargs)
 
     def close_plan(self, plan_id: int) -> dict[str, Any]:
         """
@@ -159,7 +157,7 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("POST", f"close_plan/{plan_id}")
+        return self._post(f"close_plan/{plan_id}")
 
     def delete_plan(self, plan_id: int) -> dict[str, Any]:
         """
@@ -174,7 +172,7 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("POST", f"delete_plan/{plan_id}")
+        return self._post(f"delete_plan/{plan_id}")
 
     def add_plan_entry(
         self,
@@ -228,9 +226,7 @@ class PlansAPI(BaseAPI):
         if runs is not None:
             data["runs"] = runs
 
-        return self._api_request(
-            "POST", f"add_plan_entry/{plan_id}", data=data
-        )
+        return self._post(f"add_plan_entry/{plan_id}", data=data)
 
     def update_plan_entry(
         self, plan_id: int, entry_id: str, **kwargs: Any
@@ -250,8 +246,7 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request(
-            "POST",
+        return self._post(
             f"update_plan_entry/{plan_id}/{entry_id}",
             data=kwargs,
         )
@@ -270,10 +265,7 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request(
-            "POST",
-            f"delete_plan_entry/{plan_id}/{entry_id}",
-        )
+        return self._post(f"delete_plan_entry/{plan_id}/{entry_id}")
 
     def add_run_to_plan_entry(
         self,
@@ -324,8 +316,7 @@ class PlansAPI(BaseAPI):
         if refs is not None:
             data["refs"] = refs
 
-        return self._api_request(
-            "POST",
+        return self._post(
             f"add_run_to_plan_entry/{plan_id}/{entry_id}",
             data=data,
         )
@@ -373,8 +364,7 @@ class PlansAPI(BaseAPI):
         if refs is not None:
             data["refs"] = refs
 
-        return self._api_request(
-            "POST",
+        return self._post(
             f"update_run_in_plan_entry/{run_id}",
             data=data,
         )
@@ -394,7 +384,4 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request(
-            "POST",
-            f"delete_run_from_plan_entry/{run_id}",
-        )
+        return self._post(f"delete_run_from_plan_entry/{run_id}")
