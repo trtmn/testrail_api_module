@@ -155,3 +155,6 @@ bandit-report.html
 
 # Git worktrees
 .worktrees/
+
+# Generated API docs (built and deployed by CI; see utilities/generate_docs.py)
+docs/
