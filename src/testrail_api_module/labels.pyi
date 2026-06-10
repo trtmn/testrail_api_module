@@ -1,6 +1,8 @@
 from typing import Any
 
-from .base import BaseAPI
+from .base import BaseAPI as BaseAPI
+
+__all__ = ["LabelsAPI"]
 
 class LabelsAPI(BaseAPI):
     def get_label(self, label_id: int) -> dict[str, Any]: ...

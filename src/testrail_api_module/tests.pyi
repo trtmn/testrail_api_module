@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["TestsAPI"]
+
 class TestsAPI(BaseAPI):
     def get_test(
         self, test_id: int, with_data: int | None = None

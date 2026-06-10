@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["ResultFieldsAPI"]
+
 class ResultFieldsAPI(BaseAPI):
     """API for managing custom result fields in TestRail."""
     def get_result_fields(self) -> list[dict[str, Any]]:

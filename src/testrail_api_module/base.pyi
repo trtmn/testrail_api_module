@@ -4,6 +4,14 @@ from typing import Any, Literal, overload
 import requests
 from urllib3.util.retry import Retry
 
+__all__ = [
+    "BaseAPI",
+    "TestRailAPIError",
+    "TestRailAuthenticationError",
+    "TestRailRateLimitError",
+    "TestRailAPIException",
+]
+
 class TestRailAPIError(Exception):
     """Base exception class for TestRail API errors."""
 

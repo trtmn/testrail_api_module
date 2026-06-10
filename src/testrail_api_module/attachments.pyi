@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["AttachmentsAPI"]
+
 class AttachmentsAPI(BaseAPI):
     def add_attachment_to_case(
         self, case_id: int, file_path: str

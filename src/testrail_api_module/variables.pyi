@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["VariablesAPI"]
+
 class VariablesAPI(BaseAPI):
     def get_variables(self, project_id: int) -> list[dict[str, Any]]: ...
     def add_variable(

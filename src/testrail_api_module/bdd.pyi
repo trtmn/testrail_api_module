@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["BDDAPI"]
+
 class BDDAPI(BaseAPI):
     """API for managing BDD scenarios in TestRail."""
     def get_bdd(self, case_id: int) -> bytes:
