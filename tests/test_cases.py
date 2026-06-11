@@ -109,14 +109,17 @@ class TestCasesAPI:
                 created_after=1000000,
                 created_before=2000000,
                 created_by=[1, 2],
+                filter="login",
+                limit=10,
                 milestone_id=[1, 2],
+                offset=0,
                 priority_id=[1, 2],
+                refs_filter="REF-1",
+                template_id=[1, 2],
                 type_id=[1, 2],
                 updated_after=1000000,
                 updated_before=2000000,
                 updated_by=[1, 2],
-                limit=10,
-                offset=0,
             )
 
             expected_params = {
@@ -125,14 +128,17 @@ class TestCasesAPI:
                 "created_after": 1000000,
                 "created_before": 2000000,
                 "created_by": [1, 2],
+                "filter": "login",
+                "limit": 10,
                 "milestone_id": [1, 2],
+                "offset": 0,
                 "priority_id": [1, 2],
+                "refs_filter": "REF-1",
+                "template_id": [1, 2],
                 "type_id": [1, 2],
                 "updated_after": 1000000,
                 "updated_before": 2000000,
                 "updated_by": [1, 2],
-                "limit": 10,
-                "offset": 0,
             }
             mock_get.assert_called_once_with(
                 "get_cases/1", params=expected_params
@@ -148,6 +154,7 @@ class TestCasesAPI:
                 created_by=1,
                 milestone_id=1,
                 priority_id=1,
+                template_id=1,
                 type_id=1,
                 updated_by=1,
             )
@@ -156,8 +163,30 @@ class TestCasesAPI:
                 "created_by": 1,
                 "milestone_id": 1,
                 "priority_id": 1,
+                "template_id": 1,
                 "type_id": 1,
                 "updated_by": 1,
+            }
+            mock_get.assert_called_once_with(
+                "get_cases/1", params=expected_params
+            )
+
+    def test_get_cases_filter_and_refs_filter(
+        self, cases_api: CasesAPI
+    ) -> None:
+        """Test get_cases with filter and refs_filter parameters."""
+        with patch.object(cases_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1}]
+
+            cases_api.get_cases(
+                project_id=1,
+                filter="login test",
+                refs_filter="REF-42",
+            )
+
+            expected_params = {
+                "filter": "login test",
+                "refs_filter": "REF-42",
             }
             mock_get.assert_called_once_with(
                 "get_cases/1", params=expected_params
@@ -383,13 +412,25 @@ class TestCasesAPI:
             )
 
     def test_delete_case(self, cases_api: CasesAPI) -> None:
-        """Test delete_case method."""
+        """Test delete_case with no optional parameters."""
         with patch.object(cases_api, "_post") as mock_post:
             mock_post.return_value = {}
 
             result = cases_api.delete_case(case_id=1)
 
-            mock_post.assert_called_once_with("delete_case/1")
+            mock_post.assert_called_once_with("delete_case/1", data={})
+            assert result == {}
+
+    def test_delete_case_with_soft(self, cases_api: CasesAPI) -> None:
+        """Test delete_case with soft-delete flag."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.return_value = {}
+
+            result = cases_api.delete_case(case_id=1, soft=1)
+
+            mock_post.assert_called_once_with(
+                "delete_case/1", data={"soft": 1}
+            )
             assert result == {}
 
     def test_get_case_fields(self, cases_api: CasesAPI) -> None:
@@ -421,7 +462,7 @@ class TestCasesAPI:
             assert result[0]["id"] == 1
 
     def test_get_history_for_case(self, cases_api: CasesAPI) -> None:
-        """Test get_history_for_case method."""
+        """Test get_history_for_case with minimal parameters."""
         with patch.object(cases_api, "_get") as mock_get:
             mock_get.return_value = [
                 {"id": 1, "user": "user1", "created_on": 1000000},
@@ -430,12 +471,32 @@ class TestCasesAPI:
 
             result = cases_api.get_history_for_case(case_id=1)
 
-            mock_get.assert_called_once_with("get_history_for_case/1")
+            mock_get.assert_called_once_with(
+                "get_history_for_case/1", params={}
+            )
             assert len(result) == 2
             assert result[0]["user"] == "user1"
 
+    def test_get_history_for_case_with_pagination(
+        self, cases_api: CasesAPI
+    ) -> None:
+        """Test get_history_for_case with limit and offset."""
+        with patch.object(cases_api, "_get") as mock_get:
+            mock_get.return_value = [
+                {"id": 1, "user": "user1", "created_on": 1000000},
+            ]
+
+            result = cases_api.get_history_for_case(
+                case_id=1, limit=10, offset=5
+            )
+
+            mock_get.assert_called_once_with(
+                "get_history_for_case/1", params={"limit": 10, "offset": 5}
+            )
+            assert len(result) == 1
+
     def test_copy_cases_to_section(self, cases_api: CasesAPI) -> None:
-        """Test copy_cases_to_section method."""
+        """Test copy_cases_to_section with required parameters."""
         with patch.object(cases_api, "_post") as mock_post:
             mock_post.return_value = [
                 {"id": 1, "title": "Case 1"},
@@ -443,7 +504,7 @@ class TestCasesAPI:
             ]
 
             result = cases_api.copy_cases_to_section(
-                case_ids=[1, 2, 3], section_id=5
+                section_id=5, case_ids=[1, 2, 3]
             )
 
             expected_data = {"case_ids": [1, 2, 3]}
@@ -452,8 +513,19 @@ class TestCasesAPI:
             )
             assert len(result) == 2
 
+    def test_move_cases_to_section_minimal(self, cases_api: CasesAPI) -> None:
+        """Test move_cases_to_section with only section_id."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.return_value = []
+
+            cases_api.move_cases_to_section(section_id=5)
+
+            mock_post.assert_called_once_with(
+                "move_cases_to_section/5", data={}
+            )
+
     def test_move_cases_to_section(self, cases_api: CasesAPI) -> None:
-        """Test move_cases_to_section method."""
+        """Test move_cases_to_section with all parameters."""
         with patch.object(cases_api, "_post") as mock_post:
             mock_post.return_value = [
                 {"id": 1, "title": "Case 1"},
@@ -461,14 +533,27 @@ class TestCasesAPI:
             ]
 
             result = cases_api.move_cases_to_section(
-                case_ids=[1, 2, 3], section_id=5
+                section_id=5, suite_id=2, case_ids=[1, 2, 3]
             )
 
-            expected_data = {"case_ids": [1, 2, 3]}
+            expected_data = {"suite_id": 2, "case_ids": [1, 2, 3]}
             mock_post.assert_called_once_with(
                 "move_cases_to_section/5", data=expected_data
             )
             assert len(result) == 2
+
+    def test_move_cases_to_section_with_suite_id(
+        self, cases_api: CasesAPI
+    ) -> None:
+        """Test move_cases_to_section with suite_id only."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.return_value = []
+
+            cases_api.move_cases_to_section(section_id=5, suite_id=2)
+
+            mock_post.assert_called_once_with(
+                "move_cases_to_section/5", data={"suite_id": 2}
+            )
 
     def test_api_request_failure(self, cases_api: CasesAPI) -> None:
         """Test behavior when API request fails."""
@@ -581,7 +666,7 @@ class TestCasesAPI:
         with patch.object(cases_api, "_post") as mock_post:
             mock_post.return_value = []
 
-            result = cases_api.copy_cases_to_section(case_ids=[], section_id=1)
+            result = cases_api.copy_cases_to_section(section_id=1, case_ids=[])
 
             expected_data = {"case_ids": []}
             mock_post.assert_called_once_with(
@@ -834,6 +919,64 @@ class TestCasesAPI:
             assert "custom_automation_type" in field_names
             assert "custom_steps_separated" in field_names
             assert "custom_optional_field" not in field_names
+
+    def test_update_cases(self, cases_api: CasesAPI) -> None:
+        """Test update_cases sends cases list in payload."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.return_value = {"updated": 2}
+
+            cases = [{"id": 1, "priority_id": 2}, {"id": 2, "priority_id": 1}]
+            result = cases_api.update_cases(suite_id=10, cases=cases)
+
+            mock_post.assert_called_once_with(
+                "update_cases/10", data={"cases": cases}
+            )
+            assert result == {"updated": 2}
+
+    def test_update_cases_error_handling(self, cases_api: CasesAPI) -> None:
+        """Test update_cases raises on API error."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
+
+            with pytest.raises(TestRailAPIError):
+                cases_api.update_cases(suite_id=10, cases=[{"id": 1}])
+
+    def test_delete_cases(self, cases_api: CasesAPI) -> None:
+        """Test delete_cases with required parameters."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.return_value = {}
+
+            result = cases_api.delete_cases(
+                project_id=1, suite_id=2, cases=[10, 20, 30]
+            )
+
+            mock_post.assert_called_once_with(
+                "delete_cases/1",
+                data={"cases": [10, 20, 30], "suite_id": 2},
+            )
+            assert result == {}
+
+    def test_delete_cases_with_soft(self, cases_api: CasesAPI) -> None:
+        """Test delete_cases with soft-delete flag."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.return_value = {}
+
+            cases_api.delete_cases(
+                project_id=1, suite_id=2, cases=[10, 20], soft=1
+            )
+
+            mock_post.assert_called_once_with(
+                "delete_cases/1",
+                data={"cases": [10, 20], "suite_id": 2, "soft": 1},
+            )
+
+    def test_delete_cases_error_handling(self, cases_api: CasesAPI) -> None:
+        """Test delete_cases raises on API error."""
+        with patch.object(cases_api, "_post") as mock_post:
+            mock_post.side_effect = TestRailAPIError("API error")
+
+            with pytest.raises(TestRailAPIError):
+                cases_api.delete_cases(project_id=1, suite_id=2, cases=[1])
 
 
 class TestGetRequiredCaseFields:

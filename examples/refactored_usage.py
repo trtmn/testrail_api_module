@@ -6,8 +6,7 @@ This script shows how to use the improved TestRail API module with proper
 error handling, type safety, and following official TestRail API patterns.
 """
 
-import os
-import sys
+from typing import Any
 
 from testrail_api_module import (
     TestRailAPI,
@@ -15,8 +14,18 @@ from testrail_api_module import (
     TestRailAuthenticationError,
 )
 
-# Add the src directory to the path so we can import the module
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+def unwrap(response: Any, key: str) -> list[dict[str, Any]]:
+    """Unwrap a TestRail pagination envelope into a plain list.
+
+    Current TestRail versions return bulk GET results wrapped in a
+    pagination envelope, e.g. ``{"offset": 0, "limit": 250, "size": 1,
+    "_links": {...}, "projects": [...]}``. Older versions return a
+    plain list. This handles both.
+    """
+    if isinstance(response, dict):
+        return response.get(key, response)
+    return response
 
 
 def main() -> None:
@@ -41,7 +50,7 @@ def main() -> None:
         # Example 1: Get all projects
         print("\n📋 Getting all projects...")
         try:
-            projects = api.projects.get_projects()
+            projects = unwrap(api.projects.get_projects(), "projects")
             print(f"Found {len(projects)} projects:")
             for project in projects:
                 print(f"  - {project['name']} (ID: {project['id']})")
@@ -54,9 +63,12 @@ def main() -> None:
             project_id = projects[0]["id"]
             print(f"\n🧪 Getting test cases for project {project_id}...")
             try:
-                cases = api.cases.get_cases(
-                    project_id=project_id,
-                    limit=10,  # Limit results for demo
+                cases = unwrap(
+                    api.cases.get_cases(
+                        project_id=project_id,
+                        limit=10,  # Limit results for demo
+                    ),
+                    "cases",
                 )
                 print(f"Found {len(cases)} test cases:")
                 for case in cases[:5]:  # Show first 5 cases
@@ -70,11 +82,17 @@ def main() -> None:
             print(f"\n➕ Creating a test case in project {project_id}...")
             try:
                 # First, get suites to find a section
-                suites = api.suites.get_suites(project_id=project_id)
+                suites = unwrap(
+                    api.suites.get_suites(project_id=project_id),
+                    "suites",
+                )
                 if suites:
                     suite_id = suites[0]["id"]
-                    sections = api.sections.get_sections(
-                        project_id=project_id, suite_id=suite_id
+                    sections = unwrap(
+                        api.sections.get_sections(
+                            project_id=project_id, suite_id=suite_id
+                        ),
+                        "sections",
                     )
                     if sections:
                         section_id = sections[0]["id"]
@@ -88,10 +106,11 @@ def main() -> None:
                             preconditions="TestRail API access is available",
                             postconditions="Test case is created and visible in TestRail",
                         )
+                        case_title = new_case["title"]
+                        case_id = new_case["id"]
                         print(
-                            f"✅ Created test case: {new_case['title']} (ID: {
-                                new_case['id']
-                            })"
+                            f"✅ Created test case: {case_title} "
+                            f"(ID: {case_id})"
                         )
                     else:
                         print("⚠️  No sections found in the first suite")
@@ -128,11 +147,9 @@ def main() -> None:
                     description="Test run created by the refactored API module",
                     include_all=True,
                 )
-                print(
-                    f"✅ Created test run: {test_run['name']} (ID: {
-                        test_run['id']
-                    })"
-                )
+                run_name = test_run["name"]
+                run_id = test_run["id"]
+                print(f"✅ Created test run: {run_name} (ID: {run_id})")
 
                 # Add multiple results at once
                 # Note: This will only work if there are actual test cases in the run

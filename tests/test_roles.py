@@ -46,29 +46,29 @@ class TestRolesAPI:
 
     def test_get_roles(self, roles_api: RolesAPI) -> None:
         """Test get_roles method."""
-        with patch.object(roles_api, "_api_request") as mock_request:
-            mock_request.return_value = [
+        with patch.object(roles_api, "_get") as mock_get:
+            mock_get.return_value = [
                 {"id": 1, "name": "Admin"},
                 {"id": 2, "name": "User"},
             ]
 
             result = roles_api.get_roles()
 
-            mock_request.assert_called_once_with("GET", "get_roles")
+            mock_get.assert_called_once_with("get_roles")
             assert len(result) == 2
 
     def test_api_request_failure(self, roles_api: RolesAPI) -> None:
         """Test behavior when API request fails."""
-        with patch.object(roles_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(roles_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 roles_api.get_roles()
 
     def test_authentication_error(self, roles_api: RolesAPI) -> None:
         """Test behavior when authentication fails."""
-        with patch.object(roles_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(roles_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -79,8 +79,8 @@ class TestRolesAPI:
 
     def test_rate_limit_error(self, roles_api: RolesAPI) -> None:
         """Test behavior when rate limit is exceeded."""
-        with patch.object(roles_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(roles_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 

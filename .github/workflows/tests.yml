@@ -10,6 +10,43 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Lint (ruff + mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Mypy (stubs)
+        run: uv run mypy src/
+
+      # Stub-shadowing means `mypy src/` only builds the .pyi files; an
+      # explicit .py file list is required to type-check implementations.
+      # Non-blocking until pre-existing implementation errors are fixed —
+      # see https://github.com/trtmn/testrail_api_module/issues/149
+      - name: Mypy (implementations, non-blocking)
+        run: uv run mypy src/testrail_api_module/*.py
+        continue-on-error: true
+
   test:
     name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
@@ -32,6 +69,9 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --extra dev
+
+      - name: Validate OpenAPI spec and check for drift
+        run: uv run python openapi/check_spec.py
 
       - name: Run tests
         run: uv run pytest

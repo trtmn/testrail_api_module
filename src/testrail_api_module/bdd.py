@@ -19,7 +19,7 @@ class BDDAPI(BaseAPI):
     for test cases in TestRail.
     """
 
-    def get_bdd(self, case_id: int) -> dict[str, Any]:
+    def get_bdd(self, case_id: int) -> bytes:
         """
         Export a BDD scenario from a test case as a .feature file.
 
@@ -27,32 +27,29 @@ class BDDAPI(BaseAPI):
             case_id: The ID of the test case to export.
 
         Returns:
-            Dict containing the BDD scenario data in .feature
-            file format.
+            The raw .feature file content as bytes (Gherkin syntax).
 
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_bdd/{case_id}")
+        return self._get(f"get_bdd/{case_id}", raw=True)
 
-    def add_bdd(
-        self,
-        section_id: int,
-        feature_file: str,
-        description: str | None = None,
-    ) -> dict[str, Any]:
+    def add_bdd(self, section_id: int, feature_file: str) -> dict[str, Any]:
         """
         Import/upload a BDD scenario from a .feature file into a
         section.
+
+        The file is uploaded as ``multipart/form-data`` with the file
+        bytes in an ``attachment`` form field, matching the official
+        TestRail API contract.
 
         Args:
             section_id: The ID of the section to import the BDD
                 scenario into.
             feature_file: The path to the .feature file to import.
-            description: Optional description for the BDD scenario.
 
         Returns:
-            Dict containing the created BDD scenario data.
+            Dict containing the created test case data.
 
         Raises:
             FileNotFoundError: If the specified feature file does
@@ -60,11 +57,7 @@ class BDDAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
         """
         try:
-            with open(feature_file) as file:
-                data = {"file": file.read()}
-                if description:
-                    data["description"] = description
-                return self._api_request("POST", f"add_bdd/{section_id}", data)
+            return self._post_multipart(f"add_bdd/{section_id}", feature_file)
         except FileNotFoundError as e:
             raise FileNotFoundError(
                 f"Feature file not found: {feature_file}"

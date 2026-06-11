@@ -58,14 +58,17 @@ class CasesAPI(BaseAPI):
         created_after: int | None = None,
         created_before: int | None = None,
         created_by: int | list[int] | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
         milestone_id: int | list[int] | None = None,
+        offset: int | None = None,
         priority_id: int | list[int] | None = None,
+        refs_filter: str | None = None,
+        template_id: int | list[int] | None = None,
         type_id: int | list[int] | None = None,
         updated_after: int | None = None,
         updated_before: int | None = None,
         updated_by: int | list[int] | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get all test cases for a project and optionally a specific suite or section.
@@ -77,14 +80,17 @@ class CasesAPI(BaseAPI):
             created_after: Optional timestamp to filter cases created after this time.
             created_before: Optional timestamp to filter cases created before this time.
             created_by: Optional user ID(s) to filter cases created by specific users.
+            filter: Optional string to filter cases by title.
+            limit: Optional limit on number of results to return.
             milestone_id: Optional milestone ID(s) to filter cases by milestone.
+            offset: Optional offset for pagination.
             priority_id: Optional priority ID(s) to filter cases by priority.
+            refs_filter: Optional string to filter cases by references.
+            template_id: Optional template ID(s) to filter cases by template.
             type_id: Optional type ID(s) to filter cases by type.
             updated_after: Optional timestamp to filter cases updated after this time.
             updated_before: Optional timestamp to filter cases updated before this time.
             updated_by: Optional user ID(s) to filter cases updated by specific users.
-            limit: Optional limit on number of results to return.
-            offset: Optional offset for pagination.
 
         Returns:
             List of dictionaries containing test case data.
@@ -108,10 +114,20 @@ class CasesAPI(BaseAPI):
             params["created_before"] = created_before
         if created_by is not None:
             params["created_by"] = created_by
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
         if milestone_id is not None:
             params["milestone_id"] = milestone_id
+        if offset is not None:
+            params["offset"] = offset
         if priority_id is not None:
             params["priority_id"] = priority_id
+        if refs_filter is not None:
+            params["refs_filter"] = refs_filter
+        if template_id is not None:
+            params["template_id"] = template_id
         if type_id is not None:
             params["type_id"] = type_id
         if updated_after is not None:
@@ -120,10 +136,6 @@ class CasesAPI(BaseAPI):
             params["updated_before"] = updated_before
         if updated_by is not None:
             params["updated_by"] = updated_by
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
 
         return self._get(f"get_cases/{project_id}", params=params)  # type: ignore[return-value]
 
@@ -2015,12 +2027,16 @@ class CasesAPI(BaseAPI):
 
         return self._post(f"update_case/{case_id}", data=data)  # type: ignore[return-value]
 
-    def delete_case(self, case_id: int) -> dict[str, Any]:
+    def delete_case(
+        self, case_id: int, soft: int | None = None
+    ) -> dict[str, Any]:
         """
         Delete a test case.
 
         Args:
             case_id: The ID of the test case to delete.
+            soft: Optional soft-delete flag. Set to 1 to soft-delete
+                the case (moves to trash) instead of permanently deleting.
 
         Returns:
             Dict containing the response data.
@@ -2030,8 +2046,12 @@ class CasesAPI(BaseAPI):
 
         Example:
             >>> result = api.cases.delete_case(123)
+            >>> result = api.cases.delete_case(123, soft=1)
         """
-        return self._post(f"delete_case/{case_id}")  # type: ignore[return-value]
+        data: dict[str, Any] = {}
+        if soft is not None:
+            data["soft"] = soft
+        return self._post(f"delete_case/{case_id}", data=data)  # type: ignore[return-value]
 
     def get_case_fields(self) -> list[dict[str, Any]]:
         """
@@ -2067,12 +2087,19 @@ class CasesAPI(BaseAPI):
         """
         return self._get("get_case_types")  # type: ignore[return-value]
 
-    def get_history_for_case(self, case_id: int) -> list[dict[str, Any]]:
+    def get_history_for_case(
+        self,
+        case_id: int,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get the change history of a test case.
 
         Args:
             case_id: The ID of the test case to get history for.
+            limit: Optional limit on number of results to return.
+            offset: Optional offset for pagination.
 
         Returns:
             List of dictionaries containing change history data.
@@ -2085,7 +2112,15 @@ class CasesAPI(BaseAPI):
             >>> for change in history:
             ...     print(f"Changed by {change['user']} on {change['created_on']}")
         """
-        return self._get(f"get_history_for_case/{case_id}")  # type: ignore[return-value]
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        return self._get(  # type: ignore[return-value]
+            f"get_history_for_case/{case_id}",
+            params=params,
+        )
 
     def add_case_field(self, **kwargs: Any) -> dict[str, Any]:
         """
@@ -2112,17 +2147,16 @@ class CasesAPI(BaseAPI):
         return self._post("add_case_field", data=kwargs)  # type: ignore[return-value]
 
     def update_cases(
-        self, suite_id: int, case_ids: list[int] | None = None, **kwargs: Any
+        self, suite_id: int, cases: list[dict[str, Any]]
     ) -> dict[str, Any]:
         """
         Update multiple test cases at once (bulk update).
 
         Args:
             suite_id: The ID of the suite containing the cases.
-            case_ids: Optional list of case IDs to update. If None,
-                updates all cases in the suite.
-            **kwargs: Fields to update on all specified cases
-                (e.g., priority_id, type_id, milestone_id, etc.).
+            cases: List of case dicts to update. Each dict must include
+                an ``id`` field and the fields to update
+                (e.g., ``[{"id": 1, "priority_id": 2}]``).
 
         Returns:
             Dict containing the response data.
@@ -2130,21 +2164,25 @@ class CasesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data = dict(kwargs)
-        if case_ids is not None:
-            data["case_ids"] = case_ids
+        data: dict[str, Any] = {"cases": cases}
         return self._post(f"update_cases/{suite_id}", data=data)  # type: ignore[return-value]
 
     def delete_cases(
-        self, suite_id: int, case_ids: list[int], soft: int | None = None
+        self,
+        project_id: int,
+        suite_id: int,
+        cases: list[int],
+        soft: int | None = None,
     ) -> dict[str, Any]:
         """
         Delete multiple test cases at once (bulk delete).
 
         Args:
+            project_id: The ID of the project containing the cases.
             suite_id: The ID of the suite containing the cases.
-            case_ids: List of case IDs to delete.
-            soft: Optional soft-delete flag (1 for soft delete).
+            cases: List of case IDs to delete.
+            soft: Optional soft-delete flag. Set to 1 to soft-delete
+                the cases (moves to trash) instead of permanently deleting.
 
         Returns:
             Dict containing the response data.
@@ -2152,20 +2190,20 @@ class CasesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {"case_ids": case_ids}
+        data: dict[str, Any] = {"cases": cases, "suite_id": suite_id}
         if soft is not None:
             data["soft"] = soft
-        return self._post(f"delete_cases/{suite_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"delete_cases/{project_id}", data=data)  # type: ignore[return-value]
 
     def copy_cases_to_section(
-        self, case_ids: list[int], section_id: int
+        self, section_id: int, case_ids: list[int]
     ) -> list[dict[str, Any]]:
         """
         Copy test cases to a different section.
 
         Args:
-            case_ids: List of test case IDs to copy.
             section_id: The ID of the target section.
+            case_ids: List of test case IDs to copy.
 
         Returns:
             List of dictionaries containing the copied test case data.
@@ -2174,20 +2212,25 @@ class CasesAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> copied_cases = api.cases.copy_cases_to_section([1, 2, 3], 5)
+            >>> copied_cases = api.cases.copy_cases_to_section(5, [1, 2, 3])
         """
-        data = {"case_ids": case_ids}
+        data: dict[str, Any] = {"case_ids": case_ids}
         return self._post(f"copy_cases_to_section/{section_id}", data=data)  # type: ignore[return-value]
 
     def move_cases_to_section(
-        self, case_ids: list[int], section_id: int
+        self,
+        section_id: int,
+        suite_id: int | None = None,
+        case_ids: list[int] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Move test cases to a different section.
 
         Args:
-            case_ids: List of test case IDs to move.
             section_id: The ID of the target section.
+            suite_id: Optional ID of the suite containing the cases.
+            case_ids: Optional list of test case IDs to move. If None,
+                all cases are moved.
 
         Returns:
             List of dictionaries containing the moved test case data.
@@ -2196,7 +2239,11 @@ class CasesAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> moved_cases = api.cases.move_cases_to_section([1, 2, 3], 5)
+            >>> moved_cases = api.cases.move_cases_to_section(5, case_ids=[1, 2, 3])
         """
-        data = {"case_ids": case_ids}
+        data: dict[str, Any] = {}
+        if suite_id is not None:
+            data["suite_id"] = suite_id
+        if case_ids is not None:
+            data["case_ids"] = case_ids
         return self._post(f"move_cases_to_section/{section_id}", data=data)  # type: ignore[return-value]

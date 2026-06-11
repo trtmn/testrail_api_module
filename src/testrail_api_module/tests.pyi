@@ -2,6 +2,8 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["TestsAPI"]
+
 class TestsAPI(BaseAPI):
     def get_test(
         self, test_id: int, with_data: int | None = None
@@ -9,8 +11,10 @@ class TestsAPI(BaseAPI):
     def get_tests(
         self,
         run_id: int,
-        status_id: int | list[int] | None = None,
+        assignedto_id: int | list[int] | None = None,
+        case_id: int | list[int] | None = None,
         limit: int | None = None,
         offset: int | None = None,
-        label_id: int | list[int] | None = None,
+        status_id: int | list[int] | None = None,
+        with_data: int | None = None,
     ) -> list[dict[str, Any]]: ...

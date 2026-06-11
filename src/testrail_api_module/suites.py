@@ -33,7 +33,7 @@ class SuitesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_suite/{suite_id}")
+        return self._get(f"get_suite/{suite_id}")
 
     def get_suites(self, project_id: int) -> list[dict[str, Any]]:
         """
@@ -49,14 +49,13 @@ class SuitesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_suites/{project_id}")
+        return self._get(f"get_suites/{project_id}")
 
     def add_suite(
         self,
         project_id: int,
         name: str,
         description: str | None = None,
-        url: str | None = None,
     ) -> dict[str, Any]:
         """
         Add a new test suite.
@@ -65,7 +64,6 @@ class SuitesAPI(BaseAPI):
             project_id: The ID of the project to add the suite to.
             name: The name of the test suite.
             description: Optional description of the test suite.
-            url: Optional URL of the test suite.
 
         Returns:
             Dict containing the created test suite data.
@@ -73,21 +71,25 @@ class SuitesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data = {"name": name}
-        if description:
+        data: dict[str, Any] = {"name": name}
+        if description is not None:
             data["description"] = description
-        if url:
-            data["url"] = url
 
-        return self._api_request("POST", f"add_suite/{project_id}", data=data)
+        return self._post(f"add_suite/{project_id}", data=data)
 
-    def update_suite(self, suite_id: int, **kwargs: Any) -> dict[str, Any]:
+    def update_suite(
+        self,
+        suite_id: int,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> dict[str, Any]:
         """
         Update a test suite.
 
         Args:
             suite_id: The ID of the test suite to update.
-            **kwargs: Fields to update (name, description, url).
+            name: Optional new name for the test suite.
+            description: Optional description of the test suite.
 
         Returns:
             Dict containing the updated test suite data.
@@ -95,9 +97,13 @@ class SuitesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request(
-            "POST", f"update_suite/{suite_id}", data=kwargs
-        )
+        data: dict[str, Any] = {}
+        if name is not None:
+            data["name"] = name
+        if description is not None:
+            data["description"] = description
+
+        return self._post(f"update_suite/{suite_id}", data=data)
 
     def delete_suite(self, suite_id: int) -> dict[str, Any]:
         """
@@ -112,4 +118,4 @@ class SuitesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("POST", f"delete_suite/{suite_id}")
+        return self._post(f"delete_suite/{suite_id}")

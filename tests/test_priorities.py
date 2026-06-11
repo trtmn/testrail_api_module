@@ -46,8 +46,8 @@ class TestPrioritiesAPI:
 
     def test_get_priorities(self, priorities_api: PrioritiesAPI) -> None:
         """Test get_priorities method."""
-        with patch.object(priorities_api, "_api_request") as mock_request:
-            mock_request.return_value = [
+        with patch.object(priorities_api, "_get") as mock_get:
+            mock_get.return_value = [
                 {"id": 1, "name": "High"},
                 {"id": 2, "name": "Medium"},
                 {"id": 3, "name": "Low"},
@@ -55,22 +55,22 @@ class TestPrioritiesAPI:
 
             result = priorities_api.get_priorities()
 
-            mock_request.assert_called_once_with("GET", "get_priorities")
+            mock_get.assert_called_once_with("get_priorities")
             assert len(result) == 3
             assert result[0]["id"] == 1
 
     def test_api_request_failure(self, priorities_api: PrioritiesAPI) -> None:
         """Test behavior when API request fails."""
-        with patch.object(priorities_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(priorities_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 priorities_api.get_priorities()
 
     def test_authentication_error(self, priorities_api: PrioritiesAPI) -> None:
         """Test behavior when authentication fails."""
-        with patch.object(priorities_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(priorities_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -81,8 +81,8 @@ class TestPrioritiesAPI:
 
     def test_rate_limit_error(self, priorities_api: PrioritiesAPI) -> None:
         """Test behavior when rate limit is exceeded."""
-        with patch.object(priorities_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(priorities_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 

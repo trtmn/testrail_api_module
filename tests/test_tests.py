@@ -103,26 +103,66 @@ class TestTestsAPI:
                 "get_tests/1", params=expected_params
             )
 
-    def test_get_tests_with_single_label_id(self, tests_api: TestsAPI) -> None:
-        """Test get_tests with single label_id (int)."""
+    def test_get_tests_with_single_assignedto_id(
+        self, tests_api: TestsAPI
+    ) -> None:
+        """Test get_tests with single assignedto_id (int)."""
         with patch.object(tests_api, "_get") as mock_get:
             mock_get.return_value = [{"id": 1}]
 
-            tests_api.get_tests(run_id=1, label_id=1)
+            tests_api.get_tests(run_id=1, assignedto_id=5)
 
-            expected_params = {"label_id": 1}
+            expected_params = {"assignedto_id": 5}
             mock_get.assert_called_once_with(
                 "get_tests/1", params=expected_params
             )
 
-    def test_get_tests_with_list_label_id(self, tests_api: TestsAPI) -> None:
-        """Test get_tests with list label_id."""
+    def test_get_tests_with_list_assignedto_id(
+        self, tests_api: TestsAPI
+    ) -> None:
+        """Test get_tests with list assignedto_id."""
         with patch.object(tests_api, "_get") as mock_get:
             mock_get.return_value = [{"id": 1}]
 
-            tests_api.get_tests(run_id=1, label_id=[1, 2, 3])
+            tests_api.get_tests(run_id=1, assignedto_id=[1, 2, 3])
 
-            expected_params = {"label_id": "1,2,3"}
+            expected_params = {"assignedto_id": "1,2,3"}
+            mock_get.assert_called_once_with(
+                "get_tests/1", params=expected_params
+            )
+
+    def test_get_tests_with_single_case_id(self, tests_api: TestsAPI) -> None:
+        """Test get_tests with single case_id (int)."""
+        with patch.object(tests_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1}]
+
+            tests_api.get_tests(run_id=1, case_id=42)
+
+            expected_params = {"case_id": 42}
+            mock_get.assert_called_once_with(
+                "get_tests/1", params=expected_params
+            )
+
+    def test_get_tests_with_list_case_id(self, tests_api: TestsAPI) -> None:
+        """Test get_tests with list case_id."""
+        with patch.object(tests_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1}]
+
+            tests_api.get_tests(run_id=1, case_id=[10, 20, 30])
+
+            expected_params = {"case_id": "10,20,30"}
+            mock_get.assert_called_once_with(
+                "get_tests/1", params=expected_params
+            )
+
+    def test_get_tests_with_with_data(self, tests_api: TestsAPI) -> None:
+        """Test get_tests with with_data parameter."""
+        with patch.object(tests_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1, "data": {}}]
+
+            tests_api.get_tests(run_id=1, with_data=1)
+
+            expected_params = {"with_data": 1}
             mock_get.assert_called_once_with(
                 "get_tests/1", params=expected_params
             )
@@ -134,21 +174,42 @@ class TestTestsAPI:
 
             tests_api.get_tests(
                 run_id=1,
-                status_id=[1, 5],
+                assignedto_id=[1, 2],
+                case_id=[10, 20],
                 limit=50,
                 offset=10,
-                label_id=[1, 2],
+                status_id=[1, 5],
+                with_data=1,
             )
 
             expected_params = {
-                "status_id": "1,5",
+                "assignedto_id": "1,2",
+                "case_id": "10,20",
                 "limit": 50,
                 "offset": 10,
-                "label_id": "1,2",
+                "status_id": "1,5",
+                "with_data": 1,
             }
             mock_get.assert_called_once_with(
                 "get_tests/1", params=expected_params
             )
+
+    def test_get_tests_with_none_values(self, tests_api: TestsAPI) -> None:
+        """Test get_tests with None values for all optional parameters."""
+        with patch.object(tests_api, "_get") as mock_get:
+            mock_get.return_value = []
+
+            tests_api.get_tests(
+                run_id=1,
+                assignedto_id=None,
+                case_id=None,
+                limit=None,
+                offset=None,
+                status_id=None,
+                with_data=None,
+            )
+
+            mock_get.assert_called_once_with("get_tests/1", params={})
 
     def test_api_request_failure(self, tests_api: TestsAPI) -> None:
         """Test behavior when API request fails."""

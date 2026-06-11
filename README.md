@@ -8,6 +8,11 @@
 
 TRAM is a comprehensive Python wrapper for the TestRail API that provides easy access to all TestRail functionalities.
 
+## Usage
+
+For a full consumer usage guide covering authentication, client initialization, common workflows,
+response shapes, exception handling, and gotchas, see **[USAGE.md](USAGE.md)**.
+
 ## Features
 
 - **NEW**: Comprehensive exception handling with specific error types
@@ -67,18 +72,6 @@ The old single-level API has been replaced with the correct two-level group/conf
 - **Statuses**: `get_case_statuses()`
 - **Datasets**: `add_dataset(...)`, `update_dataset(...)`, `delete_dataset(...)`
 
-## 🚨 Breaking Changes in v0.4.x
-
-**This is a major version update with breaking changes.** Please read the [Migration Guide](MIGRATION_GUIDE.md) before upgrading from v0.3.x.
-
-### Key Changes
-
-- **Enhanced Error Handling**: Methods now raise specific exceptions instead of returning `None`
-- **Consistent Return Types**: No more `Optional` wrappers - methods return data directly
-- **Better Type Safety**: Comprehensive type annotations throughout
-- **Performance Improvements**: Connection pooling, retry logic, and efficient requests
-- **Official Compliance**: Follows TestRail API best practices
-
 ## Installation
 
 ### For Consumers
@@ -92,8 +85,8 @@ pip install testrail-api-module
 
 ```bash
 # Clone the repository
-git clone https://github.com/trtmn/testrail-api-module.git
-cd testrail-api-module
+git clone https://github.com/trtmn/testrail_api_module.git
+cd testrail_api_module
 
 # Create virtual environment and install dependencies using uv
 uv venv .venv
@@ -112,7 +105,7 @@ uv sync --all-extras
 # Run tests with the current Python version
 uv run pytest
 
-# Run tests across all supported Python versions (3.11, 3.12, 3.13)
+# Run tests across all supported Python versions (3.11, 3.12, 3.13, 3.14)
 tox
 ```
 
@@ -131,14 +124,17 @@ api = TestRailAPI(
 
 try:
     # Get a list of projects
-    projects = api.projects.get_projects()
+    # Note: recent TestRail versions return a pagination envelope
+    # ({offset, limit, size, _links, projects}) instead of a plain list.
+    response = api.projects.get_projects()
+    projects = response.get("projects", response)
     print(f"Found {len(projects)} projects")
 
     # Create a new test case
     new_case = api.cases.add_case(
         section_id=123,
         title='Test Login Functionality',
-        type_id=1,  # Functional test
+        type_id=2,  # Functional test (1 = Other)
         priority_id=3,  # Medium priority
         estimate='30m',  # 30 minutes
         refs='JIRA-123'
@@ -180,7 +176,7 @@ try:
     updated_case = api.cases.update_case(
         case_id=123,
         title='Updated Test Case Title',
-        type_id=2,  # Performance test
+        type_id=3,  # Performance test
         priority_id=1  # Critical priority
     )
     print(f"Updated case: {updated_case['title']}")
@@ -206,8 +202,10 @@ new_run = api.runs.add_run(
     include_all=True
 )
 
-# Get test run results
-results = api.runs.get_run_stats(run_id=new_run['id'])
+# Get the run's result counts (returned on the run itself)
+run = api.runs.get_run(run_id=new_run['id'])
+print(f"Passed: {run['passed_count']}, Failed: {run['failed_count']}, "
+      f"Untested: {run['untested_count']}")
 
 # Close a test run
 api.runs.close_run(run_id=new_run['id'])
@@ -215,20 +213,47 @@ api.runs.close_run(run_id=new_run['id'])
 
 ### Managing Attachments
 
+The attachments API uses per-entity methods that mirror the TestRail API
+endpoints directly. Files are uploaded as multipart form data.
+
 ```python
 # Add an attachment to a test case
-api.attachments.add_attachment(
-    entity_type='case',
-    entity_id=123,
-    file_path='path/to/screenshot.png',
-    description='Screenshot of the error'
+result = api.attachments.add_attachment_to_case(
+    case_id=123,
+    file_path="path/to/screenshot.png"
+)
+print(f"Created attachment ID: {result['attachment_id']}")
+
+# Add an attachment to a test run
+api.attachments.add_attachment_to_run(run_id=456, file_path="report.html")
+
+# Add an attachment to a test plan or a specific plan entry
+api.attachments.add_attachment_to_plan(plan_id=10, file_path="spec.pdf")
+api.attachments.add_attachment_to_plan_entry(
+    plan_id=10, entry_id=5, file_path="entry_log.txt"
 )
 
-# Get attachments for a test case
-attachments = api.attachments.get_attachments(
-    entity_type='case',
-    entity_id=123
+# Add an attachment to a test result
+api.attachments.add_attachment_to_result(
+    result_id=789, file_path="screenshot.png"
 )
+
+# Get all attachments for various entity types (supports limit/offset pagination)
+attachments = api.attachments.get_attachments_for_case(case_id=123)
+attachments = api.attachments.get_attachments_for_run(run_id=456, limit=50)
+attachments = api.attachments.get_attachments_for_plan(plan_id=10)
+attachments = api.attachments.get_attachments_for_plan_entry(
+    plan_id=10, entry_id=5
+)
+attachments = api.attachments.get_attachments_for_test(test_id=321)
+
+# Download the raw bytes of an attachment (ID is int or UUID string)
+data = api.attachments.get_attachment(attachment_id=443)
+with open("downloaded.png", "wb") as f:
+    f.write(data)
+
+# Delete an attachment
+api.attachments.delete_attachment(attachment_id=443)
 ```
 
 ### Working with BDD Scenarios
@@ -272,21 +297,52 @@ except Exception as e:
 - **`TestRailRateLimitError`**: Rate limit exceeded (429 errors)
 - **`TestRailAPIException`**: General API errors with status codes and response details
 
-## Migration Guide
+## Historical migrations
 
-**Upgrading from v0.3.x?** Please read our comprehensive [Migration Guide](MIGRATION_GUIDE.md) for detailed instructions on updating your code to work with v0.4.0.
-
-### Quick Migration Summary
-
-1. **Update error handling**: Wrap API calls in try/except blocks
-2. **Remove None checks**: Methods now return data directly or raise exceptions
-3. **Import exception classes**: Add `TestRailAPIError`, `TestRailAuthenticationError`, `TestRailRateLimitError` to your imports
-4. **Update method calls**: Use explicit parameters instead of `**kwargs` where applicable
+Upgrading from an older version (e.g., v0.3.x's `None`-returning API or
+pre-v0.6.3 endpoint names)? See the
+[CHANGELOG](https://github.com/trtmn/testrail_api_module/blob/main/CHANGELOG.md)
+and [GitHub releases](https://github.com/trtmn/testrail_api_module/releases)
+for the breaking changes in each version.
 
 ## Documentation
 
 For complete documentation, visit our
 [docs](https://trtmn.github.io/testrail_api_module/).
+
+## OpenAPI Specification
+
+This repository ships a hand-authored OpenAPI 3.1 description of the TestRail
+v2 HTTP API at [`openapi/testrail.yaml`](openapi/testrail.yaml). It covers every
+endpoint reachable from `TestRailAPI.*` (107 operations across 24 resource
+groups), including request bodies, query parameters, response schemas, the
+HTTP Basic auth scheme, the `{offset, limit, size, _links, <entity>}`
+pagination envelope, and error responses mapped to this package's exception
+hierarchy.
+
+> [!IMPORTANT]
+> **This spec is community-authored and is not produced or endorsed by Gurock /
+> TestRail.** Gurock has never published an official machine-readable contract
+> for the TestRail API (the community request in
+> [`gurock/testrail-api#6`](https://github.com/gurock/testrail-api/issues/6)
+> has been open since 2017). This document is maintained here as a community
+> resource and may lag behind, or diverge from, the behaviour of any particular
+> TestRail server version. Always verify against your own instance for
+> production use.
+
+Per-instance custom fields (`custom_*` keys) cannot be enumerated statically,
+so the `Case` and `Result` schemas use `additionalProperties: true`; discover
+the live definitions at runtime via `get_case_fields` / `get_result_fields`.
+Operations whose exact response envelope has not been re-confirmed against a
+live instance are tagged `x-verified: docs-only`.
+
+Validate the spec and check it for drift against the wrapper:
+
+```bash
+# Validates against the OpenAPI 3.1 meta-schema and asserts every wrapper
+# endpoint has a matching spec path. Runs in CI on every push/PR.
+uv run python openapi/check_spec.py
+```
 
 ## Dependency Management
 

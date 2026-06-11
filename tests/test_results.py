@@ -90,15 +90,17 @@ class TestResultsAPI:
 
             result = results_api.get_results(
                 test_id=42,
-                status_id=[1, 5],
+                defects_filter="TR-1",
                 limit=50,
                 offset=10,
+                status_id=[1, 5],
             )
 
             expected_params = {
-                "status_id": "1,5",
+                "defects_filter": "TR-1",
                 "limit": 50,
                 "offset": 10,
+                "status_id": "1,5",
             }
             mock_get.assert_called_once_with(
                 "get_results/42", params=expected_params
@@ -114,13 +116,28 @@ class TestResultsAPI:
 
             result = results_api.get_results(
                 test_id=42,
-                status_id=None,
+                defects_filter=None,
                 limit=None,
                 offset=None,
+                status_id=None,
             )
 
             mock_get.assert_called_once_with("get_results/42", params={})
             assert result == [{"id": 1, "status_id": 1}]
+
+    def test_get_results_with_defects_filter(
+        self, results_api: ResultsAPI
+    ) -> None:
+        """Test get_results with defects_filter parameter."""
+        with patch.object(results_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1, "status_id": 5}]
+
+            results_api.get_results(test_id=42, defects_filter="TR-42")
+
+            expected_params = {"defects_filter": "TR-42"}
+            mock_get.assert_called_once_with(
+                "get_results/42", params=expected_params
+            )
 
     def test_get_results_with_single_status_id(
         self, results_api: ResultsAPI
@@ -205,7 +222,17 @@ class TestResultsAPI:
     # -------------------------------------------------------------------------
 
     def test_add_result_minimal(self, results_api: ResultsAPI) -> None:
-        """Test add_result with minimal required parameters."""
+        """Test add_result with no parameters (status_id is optional)."""
+        with patch.object(results_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 1}
+
+            result = results_api.add_result(test_id=101)
+
+            mock_post.assert_called_once_with("add_result/101", data={})
+            assert result == {"id": 1}
+
+    def test_add_result_with_status_id(self, results_api: ResultsAPI) -> None:
+        """Test add_result with status_id provided."""
         with patch.object(results_api, "_post") as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
 
@@ -252,13 +279,13 @@ class TestResultsAPI:
     def test_add_result_with_none_values(
         self, results_api: ResultsAPI
     ) -> None:
-        """Test add_result with None values for optional parameters."""
+        """Test add_result with None values for all optional parameters."""
         with patch.object(results_api, "_post") as mock_post:
-            mock_post.return_value = {"id": 1, "status_id": 1}
+            mock_post.return_value = {"id": 1}
 
             result = results_api.add_result(
                 test_id=101,
-                status_id=1,
+                status_id=None,
                 comment=None,
                 version=None,
                 elapsed=None,
@@ -267,11 +294,8 @@ class TestResultsAPI:
                 custom_fields=None,
             )
 
-            expected_data = {"status_id": 1}
-            mock_post.assert_called_once_with(
-                "add_result/101", data=expected_data
-            )
-            assert result == {"id": 1, "status_id": 1}
+            mock_post.assert_called_once_with("add_result/101", data={})
+            assert result == {"id": 1}
 
     def test_add_result_with_custom_fields(
         self, results_api: ResultsAPI
@@ -389,7 +413,21 @@ class TestResultsAPI:
     def test_add_result_for_case_minimal(
         self, results_api: ResultsAPI
     ) -> None:
-        """Test add_result_for_case with minimal required parameters."""
+        """Test add_result_for_case with only required parameters."""
+        with patch.object(results_api, "_post") as mock_post:
+            mock_post.return_value = {"id": 1}
+
+            result = results_api.add_result_for_case(run_id=1, case_id=123)
+
+            mock_post.assert_called_once_with(
+                "add_result_for_case/1/123", data={}
+            )
+            assert result == {"id": 1}
+
+    def test_add_result_for_case_with_status_id(
+        self, results_api: ResultsAPI
+    ) -> None:
+        """Test add_result_for_case with status_id provided."""
         with patch.object(results_api, "_post") as mock_post:
             mock_post.return_value = {"id": 1, "status_id": 1}
 
@@ -439,14 +477,14 @@ class TestResultsAPI:
     def test_add_result_for_case_with_none_values(
         self, results_api: ResultsAPI
     ) -> None:
-        """Test add_result_for_case with None values for optional parameters."""
+        """Test add_result_for_case with None values for all parameters."""
         with patch.object(results_api, "_post") as mock_post:
-            mock_post.return_value = {"id": 1, "status_id": 1}
+            mock_post.return_value = {"id": 1}
 
             result = results_api.add_result_for_case(
                 run_id=1,
                 case_id=123,
-                status_id=1,
+                status_id=None,
                 comment=None,
                 version=None,
                 elapsed=None,
@@ -455,11 +493,10 @@ class TestResultsAPI:
                 custom_fields=None,
             )
 
-            expected_data = {"status_id": 1}
             mock_post.assert_called_once_with(
-                "add_result_for_case/1/123", data=expected_data
+                "add_result_for_case/1/123", data={}
             )
-            assert result == {"id": 1, "status_id": 1}
+            assert result == {"id": 1}
 
     def test_add_result_for_case_with_custom_fields(
         self, results_api: ResultsAPI
@@ -651,11 +688,92 @@ class TestResultsAPI:
 
             result = results_api.get_results_for_case(run_id=1, case_id=123)
 
-            mock_get.assert_called_once_with("get_results_for_case/1/123")
+            mock_get.assert_called_once_with(
+                "get_results_for_case/1/123", params={}
+            )
             assert result == [
                 {"id": 1, "status_id": 1, "case_id": 123},
                 {"id": 2, "status_id": 5, "case_id": 123},
             ]
+
+    def test_get_results_for_case_with_all_parameters(
+        self, results_api: ResultsAPI
+    ) -> None:
+        """Test get_results_for_case with all optional filter parameters."""
+        with patch.object(results_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1, "status_id": 1}]
+
+            result = results_api.get_results_for_case(
+                run_id=1,
+                case_id=123,
+                defects_filter="TR-1",
+                limit=50,
+                offset=10,
+                status_id=[1, 5],
+            )
+
+            expected_params = {
+                "defects_filter": "TR-1",
+                "limit": 50,
+                "offset": 10,
+                "status_id": "1,5",
+            }
+            mock_get.assert_called_once_with(
+                "get_results_for_case/1/123", params=expected_params
+            )
+            assert result == [{"id": 1, "status_id": 1}]
+
+    def test_get_results_for_case_with_none_values(
+        self, results_api: ResultsAPI
+    ) -> None:
+        """Test get_results_for_case with None values for optional params."""
+        with patch.object(results_api, "_get") as mock_get:
+            mock_get.return_value = []
+
+            results_api.get_results_for_case(
+                run_id=1,
+                case_id=123,
+                defects_filter=None,
+                limit=None,
+                offset=None,
+                status_id=None,
+            )
+
+            mock_get.assert_called_once_with(
+                "get_results_for_case/1/123", params={}
+            )
+
+    def test_get_results_for_case_with_status_id(
+        self, results_api: ResultsAPI
+    ) -> None:
+        """Test get_results_for_case with status_id filter."""
+        with patch.object(results_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1}]
+
+            results_api.get_results_for_case(
+                run_id=1, case_id=123, status_id=1
+            )
+
+            expected_params = {"status_id": 1}
+            mock_get.assert_called_once_with(
+                "get_results_for_case/1/123", params=expected_params
+            )
+
+    def test_get_results_for_case_with_pagination(
+        self, results_api: ResultsAPI
+    ) -> None:
+        """Test get_results_for_case with pagination parameters."""
+        with patch.object(results_api, "_get") as mock_get:
+            mock_get.return_value = [{"id": 1}]
+
+            results_api.get_results_for_case(
+                run_id=1, case_id=123, limit=25, offset=50
+            )
+
+            expected_params = {"limit": 25, "offset": 50}
+            mock_get.assert_called_once_with(
+                "get_results_for_case/1/123", params=expected_params
+            )
 
     def test_get_results_for_case_api_error(
         self, results_api: ResultsAPI
@@ -705,7 +823,7 @@ class TestResultsAPI:
             results_api.get_results_for_case(run_id=999999, case_id=999999)
 
             mock_get.assert_called_once_with(
-                "get_results_for_case/999999/999999"
+                "get_results_for_case/999999/999999", params={}
             )
 
     # -------------------------------------------------------------------------

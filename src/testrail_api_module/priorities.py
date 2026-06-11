@@ -28,4 +28,4 @@ class PrioritiesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", "get_priorities")
+        return self._get("get_priorities")

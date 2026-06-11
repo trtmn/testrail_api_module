@@ -17,12 +17,40 @@ Attributes:
 """
 
 import os
+from typing import Self
 
+from . import (
+    attachments,
+    bdd,
+    cases,
+    configurations,
+    datasets,
+    groups,
+    labels,
+    milestones,
+    plans,
+    priorities,
+    projects,
+    reports,
+    result_fields,
+    results,
+    roles,
+    runs,
+    sections,
+    shared_steps,
+    statuses,
+    suites,
+    templates,
+    tests,
+    users,
+    variables,
+)
 from .base import (
     TestRailAPIError,
     TestRailAPIException,
     TestRailAuthenticationError,
     TestRailRateLimitError,
+    _create_session,
 )
 
 
@@ -74,8 +102,10 @@ __version__ = _get_version()
 """The version of the module, used for compatibility checks and logging."""
 __author__ = "Matt Troutman, Christian Thompson, Andrew Tipper"
 
-# Update the docstring with the current version
-__doc__ = __doc__.format(version=__version__)
+# Update the docstring with the current version. Under `python -OO`
+# docstrings are stripped and __doc__ is None, so guard the format call.
+if __doc__:
+    __doc__ = __doc__.format(version=__version__)
 
 
 class TestRailAPI:
@@ -130,33 +160,8 @@ class TestRailAPI:
         self.timeout = timeout
         """Request timeout in seconds."""
 
-        # Initialize all submodules
-        from . import (
-            attachments,
-            bdd,
-            cases,
-            configurations,
-            datasets,
-            groups,
-            labels,
-            milestones,
-            plans,
-            priorities,
-            projects,
-            reports,
-            result_fields,
-            results,
-            roles,
-            runs,
-            sections,
-            shared_steps,
-            statuses,
-            suites,
-            templates,
-            tests,
-            users,
-            variables,
-        )
+        self.session = _create_session()
+        """Shared requests.Session used by all submodule APIs."""
 
         # Create instances of each submodule
         self.attachments = attachments.AttachmentsAPI(self)
@@ -230,6 +235,21 @@ class TestRailAPI:
 
         self.variables = variables.VariablesAPI(self)
         """API for managing variables in TestRail. See [VariablesAPI](testrail_api_module/variables.html) for details."""
+
+    def close(self) -> None:
+        """
+        Close the shared HTTP session and release its connection
+        pools. The client should not be used after calling this.
+        """
+        self.session.close()
+
+    def __enter__(self) -> Self:
+        """Enter the runtime context (returns the client itself)."""
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        """Exit the runtime context, closing the shared session."""
+        self.close()
 
 
 # Import exception classes for easy access

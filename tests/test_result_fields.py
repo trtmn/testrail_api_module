@@ -48,15 +48,15 @@ class TestResultFieldsAPI:
         self, result_fields_api: ResultFieldsAPI
     ) -> None:
         """Test get_result_fields method."""
-        with patch.object(result_fields_api, "_api_request") as mock_request:
-            mock_request.return_value = [
+        with patch.object(result_fields_api, "_get") as mock_get:
+            mock_get.return_value = [
                 {"id": 1, "name": "Field 1"},
                 {"id": 2, "name": "Field 2"},
             ]
 
             result = result_fields_api.get_result_fields()
 
-            mock_request.assert_called_once_with("GET", "get_result_fields")
+            mock_get.assert_called_once_with("get_result_fields")
             assert len(result) == 2
             assert result[0]["id"] == 1
 
@@ -64,8 +64,8 @@ class TestResultFieldsAPI:
         self, result_fields_api: ResultFieldsAPI
     ) -> None:
         """Test behavior when API request fails."""
-        with patch.object(result_fields_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(result_fields_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 result_fields_api.get_result_fields()
@@ -74,8 +74,8 @@ class TestResultFieldsAPI:
         self, result_fields_api: ResultFieldsAPI
     ) -> None:
         """Test behavior when authentication fails."""
-        with patch.object(result_fields_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(result_fields_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -88,8 +88,8 @@ class TestResultFieldsAPI:
         self, result_fields_api: ResultFieldsAPI
     ) -> None:
         """Test behavior when rate limit is exceeded."""
-        with patch.object(result_fields_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(result_fields_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 

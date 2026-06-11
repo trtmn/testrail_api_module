@@ -2,9 +2,21 @@ from typing import Any
 
 from .base import BaseAPI as BaseAPI
 
+__all__ = ["PlansAPI"]
+
 class PlansAPI(BaseAPI):
     def get_plan(self, plan_id: int) -> dict[str, Any]: ...
-    def get_plans(self, project_id: int) -> list[dict[str, Any]]: ...
+    def get_plans(
+        self,
+        project_id: int,
+        created_after: int | None = ...,
+        created_before: int | None = ...,
+        created_by: int | None = ...,
+        is_completed: bool | None = ...,
+        milestone_id: int | None = ...,
+        limit: int | None = ...,
+        offset: int | None = ...,
+    ) -> dict[str, Any]: ...
     def add_plan(
         self,
         project_id: int,
@@ -34,3 +46,24 @@ class PlansAPI(BaseAPI):
     def delete_plan_entry(
         self, plan_id: int, entry_id: str
     ) -> dict[str, Any]: ...
+    def add_run_to_plan_entry(
+        self,
+        plan_id: int,
+        entry_id: str,
+        config_ids: list[int],
+        description: str | None = ...,
+        assignedto_id: int | None = ...,
+        include_all: bool = ...,
+        case_ids: list[int] | None = ...,
+        refs: str | None = ...,
+    ) -> dict[str, Any]: ...
+    def update_run_in_plan_entry(
+        self,
+        run_id: int,
+        description: str | None = ...,
+        assignedto_id: int | None = ...,
+        include_all: bool | None = ...,
+        case_ids: list[int] | None = ...,
+        refs: str | None = ...,
+    ) -> dict[str, Any]: ...
+    def delete_run_from_plan_entry(self, run_id: int) -> dict[str, Any]: ...

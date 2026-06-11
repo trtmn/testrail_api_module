@@ -41,14 +41,17 @@ class CasesAPI(BaseAPI):
         created_after: int | None = None,
         created_before: int | None = None,
         created_by: int | list[int] | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
         milestone_id: int | list[int] | None = None,
+        offset: int | None = None,
         priority_id: int | list[int] | None = None,
+        refs_filter: str | None = None,
+        template_id: int | list[int] | None = None,
         type_id: int | list[int] | None = None,
         updated_after: int | None = None,
         updated_before: int | None = None,
         updated_by: int | list[int] | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get all test cases for a project and optionally a specific suite or section.
@@ -60,14 +63,17 @@ class CasesAPI(BaseAPI):
             created_after: Optional timestamp to filter cases created after this time.
             created_before: Optional timestamp to filter cases created before this time.
             created_by: Optional user ID(s) to filter cases created by specific users.
+            filter: Optional string to filter cases by title.
+            limit: Optional limit on number of results to return.
             milestone_id: Optional milestone ID(s) to filter cases by milestone.
+            offset: Optional offset for pagination.
             priority_id: Optional priority ID(s) to filter cases by priority.
+            refs_filter: Optional string to filter cases by references.
+            template_id: Optional template ID(s) to filter cases by template.
             type_id: Optional type ID(s) to filter cases by type.
             updated_after: Optional timestamp to filter cases updated after this time.
             updated_before: Optional timestamp to filter cases updated before this time.
             updated_by: Optional user ID(s) to filter cases updated by specific users.
-            limit: Optional limit on number of results to return.
-            offset: Optional offset for pagination.
 
         Returns:
             List of dictionaries containing test case data.
@@ -534,12 +540,16 @@ class CasesAPI(BaseAPI):
             ...     priority_id=1
             ... )
         """
-    def delete_case(self, case_id: int) -> dict[str, Any]:
+    def delete_case(
+        self, case_id: int, soft: int | None = None
+    ) -> dict[str, Any]:
         """
         Delete a test case.
 
         Args:
             case_id: The ID of the test case to delete.
+            soft: Optional soft-delete flag. Set to 1 to soft-delete
+                the case (moves to trash) instead of permanently deleting.
 
         Returns:
             Dict containing the response data.
@@ -549,6 +559,7 @@ class CasesAPI(BaseAPI):
 
         Example:
             >>> result = api.cases.delete_case(123)
+            >>> result = api.cases.delete_case(123, soft=1)
         """
     def get_case_fields(self) -> list[dict[str, Any]]:
         """
@@ -580,12 +591,19 @@ class CasesAPI(BaseAPI):
             >>> for case_type in types:
             ...     print(f"Type {case_type[\'id\']}: {case_type[\'name\']}")
         """
-    def get_history_for_case(self, case_id: int) -> list[dict[str, Any]]:
+    def get_history_for_case(
+        self,
+        case_id: int,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get the change history of a test case.
 
         Args:
             case_id: The ID of the test case to get history for.
+            limit: Optional limit on number of results to return.
+            offset: Optional offset for pagination.
 
         Returns:
             List of dictionaries containing change history data.
@@ -596,22 +614,26 @@ class CasesAPI(BaseAPI):
     def add_case_field(self, **kwargs: Any) -> dict[str, Any]:
         """Add a new test case custom field."""
     def update_cases(
-        self, suite_id: int, case_ids: list[int] | None = None, **kwargs: Any
+        self, suite_id: int, cases: list[dict[str, Any]]
     ) -> dict[str, Any]:
         """Update multiple test cases at once (bulk update)."""
     def delete_cases(
-        self, suite_id: int, case_ids: list[int], soft: int | None = None
+        self,
+        project_id: int,
+        suite_id: int,
+        cases: list[int],
+        soft: int | None = None,
     ) -> dict[str, Any]:
         """Delete multiple test cases at once (bulk delete)."""
     def copy_cases_to_section(
-        self, case_ids: list[int], section_id: int
+        self, section_id: int, case_ids: list[int]
     ) -> list[dict[str, Any]]:
         """
         Copy test cases to a different section.
 
         Args:
-            case_ids: List of test case IDs to copy.
             section_id: The ID of the target section.
+            case_ids: List of test case IDs to copy.
 
         Returns:
             List of dictionaries containing the copied test case data.
@@ -620,17 +642,21 @@ class CasesAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> copied_cases = api.cases.copy_cases_to_section([1, 2, 3], 5)
+            >>> copied_cases = api.cases.copy_cases_to_section(5, [1, 2, 3])
         """
     def move_cases_to_section(
-        self, case_ids: list[int], section_id: int
+        self,
+        section_id: int,
+        suite_id: int | None = None,
+        case_ids: list[int] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Move test cases to a different section.
 
         Args:
-            case_ids: List of test case IDs to move.
             section_id: The ID of the target section.
+            suite_id: Optional ID of the suite containing the cases.
+            case_ids: Optional list of test case IDs to move.
 
         Returns:
             List of dictionaries containing the moved test case data.
@@ -639,5 +665,5 @@ class CasesAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> moved_cases = api.cases.move_cases_to_section([1, 2, 3], 5)
+            >>> moved_cases = api.cases.move_cases_to_section(5, case_ids=[1, 2, 3])
         """

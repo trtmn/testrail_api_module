@@ -36,9 +36,10 @@ class RunsAPI(BaseAPI):
         created_before: int | None = None,
         created_by: int | None = None,
         is_completed: bool | None = None,
+        milestone_id: int | None = None,
         limit: int | None = None,
         offset: int | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> dict[str, Any]:
         """
         Get all test runs for a project and optionally a specific suite.
 
@@ -49,18 +50,21 @@ class RunsAPI(BaseAPI):
             created_before: Optional timestamp to filter runs created before this time.
             created_by: Optional user ID to filter runs created by specific user.
             is_completed: Optional boolean to filter by completion status.
+            milestone_id: Optional milestone ID to filter runs by.
             limit: Optional limit on number of results to return.
             offset: Optional offset for pagination.
 
         Returns:
-            List of dictionaries containing test run data.
+            Dict containing the pagination envelope with keys
+            ``offset``, ``limit``, ``size``, ``_links``, and ``runs``
+            (the list of test run dicts).
 
         Raises:
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> runs = api.runs.get_runs(project_id=1, suite_id=2)
-            >>> for run in runs:
+            >>> response = api.runs.get_runs(project_id=1, suite_id=2)
+            >>> for run in response["runs"]:
             ...     print(f"Run: {run[\'name\']}")
         """
     def add_run(
@@ -73,6 +77,7 @@ class RunsAPI(BaseAPI):
         assignedto_id: int | None = None,
         include_all: bool = True,
         case_ids: list[int] | None = None,
+        refs: str | None = None,
     ) -> dict[str, Any]:
         """
         Add a new test run.
@@ -86,6 +91,8 @@ class RunsAPI(BaseAPI):
             assignedto_id: Optional ID of the user to assign the test run to.
             include_all: Whether to include all test cases from the suite.
             case_ids: Optional list of test case IDs to include in the run.
+            refs: Optional comma-separated list of references
+                (requires TestRail 6.1+).
 
         Returns:
             Dict containing the created test run data.
@@ -109,9 +116,16 @@ class RunsAPI(BaseAPI):
         description: str | None = None,
         milestone_id: int | None = None,
         assignedto_id: int | None = None,
+        include_all: bool | None = None,
+        case_ids: list[int] | None = None,
+        refs: str | None = None,
     ) -> dict[str, Any]:
         """
         Update a test run.
+
+        Supports the same fields as :meth:`add_run` minus ``suite_id``.
+        Only fields that are provided (not None) are sent, so partial
+        updates are supported.
 
         Args:
             run_id: The ID of the test run to update.
@@ -119,6 +133,13 @@ class RunsAPI(BaseAPI):
             description: Optional new description for the test run.
             milestone_id: Optional new milestone ID.
             assignedto_id: Optional new assigned user ID.
+            include_all: Optional flag to include all test cases from
+                the suite (set False and pass case_ids to select a
+                custom case selection).
+            case_ids: Optional list of test case IDs to include in
+                the run.
+            refs: Optional comma-separated list of references
+                (requires TestRail 6.1+).
 
         Returns:
             Dict containing the updated test run data.
@@ -130,7 +151,8 @@ class RunsAPI(BaseAPI):
             >>> updated_run = api.runs.update_run(
             ...     run_id=123,
             ...     name="Updated Run Name",
-            ...     assignedto_id=456
+            ...     include_all=False,
+            ...     case_ids=[1, 2, 3]
             ... )
         """
     def close_run(self, run_id: int) -> dict[str, Any]:

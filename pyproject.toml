@@ -4,16 +4,29 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testrail-api-module"
-version = "0.7.6"
+version = "0.8.0"
 description = "A comprehensive Python wrapper for the TestRail API with enhanced error handling and performance improvements"
 authors = [
     { name = "Matt Troutman", email = "github@trtmn.com" },
-    { name = "Christian Thompson", email = "example@example.com" }
+    { name = "Christian Thompson" },
+    { name = "Andrew Tipper" }
 ]
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
+]
 dependencies = [
     "requests>=2.32.0",
 ]
@@ -32,6 +45,8 @@ dev = [
     "ruff>=0.8.0",
     "bandit>=1.7.0",
     "detect-secrets>=1.5.0",
+    "pyyaml>=6.0",
+    "openapi-spec-validator>=0.7.1",
 ]
 
 # Optional docs extra so consumers can install only what's needed to build docs
@@ -123,6 +138,8 @@ exclude_lines = [
 [tool.ruff]
 line-length = 79
 target-version = "py311"
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -141,5 +158,5 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["testrail_api_module"]

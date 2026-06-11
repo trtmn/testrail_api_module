@@ -29,4 +29,4 @@ class ResultFieldsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", "get_result_fields")
+        return self._get("get_result_fields")

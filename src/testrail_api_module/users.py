@@ -32,11 +32,17 @@ class UsersAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_user/{user_id}")
+        return self._get(f"get_user/{user_id}")
 
-    def get_users(self) -> list[dict[str, Any]]:
+    def get_users(self, project_id: int | None = None) -> list[dict[str, Any]]:
         """
         Get all users.
+
+        Args:
+            project_id: Optional ID of a project. Only users with explicit
+                access to the project are returned. Since TestRail 6.6,
+                non-administrators are required to provide a project_id
+                (administrators may omit it to list all users).
 
         Returns:
             List of dictionaries containing user data.
@@ -44,7 +50,10 @@ class UsersAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", "get_users")
+        endpoint = "get_users"
+        if project_id is not None:
+            endpoint = f"get_users/{project_id}"
+        return self._get(endpoint)
 
     def get_current_user(self) -> dict[str, Any]:
         """
@@ -58,7 +67,7 @@ class UsersAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", "get_current_user")
+        return self._get("get_current_user")
 
     def get_user_by_email(self, email: str) -> dict[str, Any]:
         """
@@ -73,4 +82,4 @@ class UsersAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_user_by_email&email={email}")
+        return self._get("get_user_by_email", params={"email": email})

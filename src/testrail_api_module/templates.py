@@ -31,4 +31,4 @@ class TemplatesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._api_request("GET", f"get_templates/{project_id}")
+        return self._get(f"get_templates/{project_id}")

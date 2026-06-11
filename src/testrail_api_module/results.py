@@ -21,18 +21,21 @@ class ResultsAPI(BaseAPI):
     def get_results(
         self,
         test_id: int,
-        status_id: int | list[int] | None = None,
+        defects_filter: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        status_id: int | list[int] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get all results for a specific test.
 
         Args:
             test_id: The ID of the test.
-            status_id: Optional status ID(s) to filter by.
+            defects_filter: Optional defect ID to filter by
+                (e.g., 'TR-1', '4291').
             limit: Optional limit on number of results.
             offset: Optional offset for pagination.
+            status_id: Optional status ID(s) to filter by.
 
         Returns:
             List of dictionaries containing test result data.
@@ -44,23 +47,25 @@ class ResultsAPI(BaseAPI):
             >>> results = api.results.get_results(test_id=42)
         """
         params: dict[str, Any] = {}
+        if defects_filter is not None:
+            params["defects_filter"] = defects_filter
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
         if status_id is not None:
             params["status_id"] = (
                 ",".join(map(str, status_id))
                 if isinstance(status_id, list)
                 else status_id
             )
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
 
         return self._get(f"get_results/{test_id}", params=params)
 
     def add_result(
         self,
         test_id: int,
-        status_id: int,
+        status_id: int | None = None,
         comment: str | None = None,
         version: str | None = None,
         elapsed: str | None = None,
@@ -73,7 +78,7 @@ class ResultsAPI(BaseAPI):
 
         Args:
             test_id: The ID of the test.
-            status_id: The status ID (1: Passed, 2: Blocked,
+            status_id: Optional status ID (1: Passed, 2: Blocked,
                 3: Untested, 4: Retest, 5: Failed).
             comment: Optional comment for the test result.
             version: Optional version of the software under test.
@@ -95,9 +100,10 @@ class ResultsAPI(BaseAPI):
             ...     comment="Test passed successfully"
             ... )
         """
-        data: dict[str, Any] = {"status_id": status_id}
+        data: dict[str, Any] = {}
 
         optional_fields = {
+            "status_id": status_id,
             "comment": comment,
             "version": version,
             "elapsed": elapsed,
@@ -118,7 +124,7 @@ class ResultsAPI(BaseAPI):
         self,
         run_id: int,
         case_id: int,
-        status_id: int,
+        status_id: int | None = None,
         comment: str | None = None,
         version: str | None = None,
         elapsed: str | None = None,
@@ -132,7 +138,7 @@ class ResultsAPI(BaseAPI):
         Args:
             run_id: The ID of the test run.
             case_id: The ID of the test case.
-            status_id: The status ID (1: Passed, 2: Blocked,
+            status_id: Optional status ID (1: Passed, 2: Blocked,
                 3: Untested, 4: Retest, 5: Failed).
             comment: Optional comment for the test result.
             version: Optional version of the software under test.
@@ -156,9 +162,10 @@ class ResultsAPI(BaseAPI):
             ...     elapsed="30s"
             ... )
         """
-        data: dict[str, Any] = {"status_id": status_id}
+        data: dict[str, Any] = {}
 
         optional_fields = {
+            "status_id": status_id,
             "comment": comment,
             "version": version,
             "elapsed": elapsed,
@@ -212,7 +219,13 @@ class ResultsAPI(BaseAPI):
         )
 
     def get_results_for_case(
-        self, run_id: int, case_id: int
+        self,
+        run_id: int,
+        case_id: int,
+        defects_filter: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        status_id: int | list[int] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get all test results for a specific test case in a test run.
@@ -220,6 +233,11 @@ class ResultsAPI(BaseAPI):
         Args:
             run_id: The ID of the test run.
             case_id: The ID of the test case.
+            defects_filter: Optional defect ID to filter by
+                (e.g., 'TR-1', '4291').
+            limit: Optional limit on number of results to return.
+            offset: Optional offset for pagination.
+            status_id: Optional status ID(s) to filter by.
 
         Returns:
             List of dictionaries containing test result data.
@@ -228,11 +246,26 @@ class ResultsAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
 
         Example:
-            >>> results = api.results.get_results_for_case(run_id=1, case_id=123)
-            >>> for result in results:
-            ...     print(f"Result: {result['status_id']} - {result['comment']}")
+            >>> results = api.results.get_results_for_case(
+            ...     run_id=1, case_id=123
+            ... )
         """
-        return self._get(f"get_results_for_case/{run_id}/{case_id}")
+        params: dict[str, Any] = {}
+        if defects_filter is not None:
+            params["defects_filter"] = defects_filter
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        if status_id is not None:
+            params["status_id"] = (
+                ",".join(map(str, status_id))
+                if isinstance(status_id, list)
+                else status_id
+            )
+        return self._get(
+            f"get_results_for_case/{run_id}/{case_id}", params=params
+        )
 
     def get_results_for_run(
         self,

@@ -27,8 +27,11 @@ class StatusesAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> statuses = api.statuses.get_statuses()
         """
-        return self._api_request("GET", "get_statuses")
+        return self._get("get_statuses")
 
     def get_case_statuses(self) -> list[dict[str, Any]]:
         """
@@ -41,5 +44,8 @@ class StatusesAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> case_statuses = api.statuses.get_case_statuses()
         """
-        return self._api_request("GET", "get_case_statuses")
+        return self._get("get_case_statuses")

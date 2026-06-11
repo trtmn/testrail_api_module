@@ -35,8 +35,11 @@ class DatasetsAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> dataset = api.datasets.get_dataset(dataset_id=1)
         """
-        return self._api_request("GET", f"get_dataset/{dataset_id}")
+        return self._get(f"get_dataset/{dataset_id}")
 
     def get_datasets(self, project_id: int) -> list[dict[str, Any]]:
         """
@@ -50,8 +53,11 @@ class DatasetsAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> datasets = api.datasets.get_datasets(project_id=1)
         """
-        return self._api_request("GET", f"get_datasets/{project_id}")
+        return self._get(f"get_datasets/{project_id}")
 
     def add_dataset(
         self,
@@ -73,31 +79,51 @@ class DatasetsAPI(BaseAPI):
 
         Raises:
             TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> dataset = api.datasets.add_dataset(
+            ...     project_id=1,
+            ...     name="My Dataset",
+            ...     variables=[{"id": 1, "value": "test"}]
+            ... )
         """
         data: dict[str, Any] = {"name": name}
         if variables is not None:
             data["variables"] = variables
-        return self._api_request(
-            "POST", f"add_dataset/{project_id}", data=data
-        )
+        return self._post(f"add_dataset/{project_id}", data=data)
 
-    def update_dataset(self, dataset_id: int, **kwargs: Any) -> dict[str, Any]:
+    def update_dataset(
+        self,
+        dataset_id: int,
+        name: str | None = None,
+        variables: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
         """
         Update a dataset.
 
         Args:
             dataset_id: The ID of the dataset to update.
-            **kwargs: Fields to update (name, variables).
+            name: Optional new name for the dataset.
+            variables: Optional list of variable dicts to update.
 
         Returns:
             Dict containing the updated dataset data.
 
         Raises:
             TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> dataset = api.datasets.update_dataset(
+            ...     dataset_id=1,
+            ...     name="Updated Dataset"
+            ... )
         """
-        return self._api_request(
-            "POST", f"update_dataset/{dataset_id}", data=kwargs
-        )
+        data: dict[str, Any] = {}
+        if name is not None:
+            data["name"] = name
+        if variables is not None:
+            data["variables"] = variables
+        return self._post(f"update_dataset/{dataset_id}", data=data)
 
     def delete_dataset(self, dataset_id: int) -> dict[str, Any]:
         """
@@ -107,9 +133,12 @@ class DatasetsAPI(BaseAPI):
             dataset_id: The ID of the dataset to delete.
 
         Returns:
-            Dict containing the response data.
+            Empty dict (TestRail returns an empty body on success).
 
         Raises:
             TestRailAPIError: If the API request fails.
+
+        Example:
+            >>> api.datasets.delete_dataset(dataset_id=1)
         """
-        return self._api_request("POST", f"delete_dataset/{dataset_id}")
+        return self._post(f"delete_dataset/{dataset_id}")

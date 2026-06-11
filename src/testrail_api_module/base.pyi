@@ -1,6 +1,16 @@
-from typing import Any
+import logging
+from typing import Any, Literal, overload
 
 import requests
+from urllib3.util.retry import Retry
+
+__all__ = [
+    "BaseAPI",
+    "TestRailAPIError",
+    "TestRailAuthenticationError",
+    "TestRailRateLimitError",
+    "TestRailAPIException",
+]
 
 class TestRailAPIError(Exception):
     """Base exception class for TestRail API errors."""
@@ -14,14 +24,28 @@ class TestRailRateLimitError(TestRailAPIError):
 class TestRailAPIException(TestRailAPIError):
     """Raised for general API errors."""
 
-    status_code: Any
-    response_text: Any
+    status_code: int | None
+    response_text: str | None
     def __init__(
         self,
         message: str,
         status_code: int | None = None,
         response_text: str | None = None,
     ) -> None: ...
+
+class _TestRailRetry(Retry):
+    """Retry policy tailored to the TestRail API."""
+
+    def _is_method_retryable(self, method: str) -> bool: ...
+    def is_retry(
+        self, method: str, status_code: int, has_retry_after: bool = False
+    ) -> bool: ...
+
+def _create_session() -> requests.Session:
+    """Create a requests.Session with the TestRail retry policy."""
+
+def _serialize_param_value(value: Any) -> str:
+    """Serialize a single query parameter value for the TestRail API."""
 
 class BaseAPI:
     """
@@ -31,8 +55,8 @@ class BaseAPI:
     """
 
     client: Any
-    logger: Any
-    session: Any
+    logger: logging.Logger
+    session: requests.Session
     def __init__(self, client: Any) -> None:
         """
         Initialize the base API class with a client instance.
@@ -63,54 +87,59 @@ class BaseAPI:
         Raises:
             TestRailAuthenticationError: If no valid authentication is available
         """
+    @overload
     def _handle_response(
-        self, response: requests.Response
-    ) -> dict[str, Any] | list[dict[str, Any]]:
-        """
-        Handle API response and raise appropriate exceptions.
-
-        Args:
-            response: The HTTP response object
-
-        Returns:
-            Parsed JSON response data
-
-        Raises:
-            TestRailRateLimitError: If rate limit is exceeded
-            TestRailAPIException: For other API errors
-        """
+        self, response: requests.Response, raw: Literal[False] = False
+    ) -> dict[str, Any] | list[dict[str, Any]]: ...
+    @overload
+    def _handle_response(
+        self, response: requests.Response, raw: Literal[True]
+    ) -> bytes: ...
+    @overload
     def _api_request(
         self,
         method: str,
         endpoint: str,
         data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        *,
+        raw: Literal[False] = False,
         **kwargs: Any,
-    ) -> dict[str, Any] | list[dict[str, Any]]:
-        """
-        Make an API request to TestRail following official patterns.
-
-        Args:
-            method: The HTTP method to use for the request (e.g., 'GET', 'POST').
-            endpoint: The API endpoint to send the request to.
-            data: The data to send with the request, if any.
-            params: Query parameters for the request.
-            **kwargs: Additional arguments to pass to the request.
-
-        Returns:
-            Parsed JSON response from the API.
-
-        Raises:
-            TestRailAPIError: For various API-related errors
-        """
+    ) -> dict[str, Any] | list[dict[str, Any]]: ...
+    @overload
+    def _api_request(
+        self,
+        method: str,
+        endpoint: str,
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        *,
+        raw: Literal[True],
+        **kwargs: Any,
+    ) -> bytes: ...
+    @overload
     def _get(
         self,
         endpoint: str,
         params: dict[str, Any] | None = None,
+        *,
+        raw: Literal[False] = False,
         **kwargs: Any,
-    ) -> dict[str, Any] | list[dict[str, Any]]:
-        """Make a GET request to the TestRail API."""
+    ) -> dict[str, Any] | list[dict[str, Any]]: ...
+    @overload
+    def _get(
+        self,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
+        *,
+        raw: Literal[True],
+        **kwargs: Any,
+    ) -> bytes: ...
     def _post(
         self, endpoint: str, data: dict[str, Any] | None = None, **kwargs: Any
     ) -> dict[str, Any] | list[dict[str, Any]]:
         """Make a POST request to the TestRail API."""
+    def _post_multipart(
+        self, endpoint: str, file_path: str, **kwargs: Any
+    ) -> dict[str, Any] | list[dict[str, Any]]:
+        """Make a multipart/form-data POST request uploading a file."""

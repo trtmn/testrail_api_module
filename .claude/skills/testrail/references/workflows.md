@@ -98,9 +98,9 @@ print(f"Created run: {run['name']} (ID: {run_id})")
 tests = api.tests.get_tests(run_id=run_id)
 print(f"Run has {len(tests)} tests")
 
-# 3. Record results for individual tests
+# 3. Record results for individual tests by case ID
 for test in tests:
-    result = api.results.add_result(
+    result = api.results.add_result_for_case(
         run_id=run_id,
         case_id=test['case_id'],
         status_id=1,                    # 1=Passed
@@ -109,9 +109,9 @@ for test in tests:
         version="1.2.0"
     )
 
-# 4. Check run progress
-stats = api.runs.get_run_stats(run_id=run_id)
-print(f"Progress: {stats}")
+# 4. Check run progress (pass/fail counts are fields on the run object)
+run_data = api.runs.get_run(run_id=run_id)
+print(f"Passed: {run_data['passed_count']}, Failed: {run_data['failed_count']}, Untested: {run_data['untested_count']}")
 
 # 5. Close the run
 api.runs.close_run(run_id=run_id)
@@ -182,8 +182,13 @@ plan = api.plans.add_plan(
 )
 plan_id = plan['id']
 
-# 2. Monitor plan progress
-stats = api.plans.get_plan_stats(plan_id=plan_id)
+# 2. Add entries (runs) to the plan
+entry = api.plans.add_plan_entry(
+    plan_id=plan_id,
+    suite_id=5,
+    name="Smoke tests",
+    include_all=True,
+)
 
 # 3. Get full plan details (includes entries/runs)
 plan_details = api.plans.get_plan(plan_id=plan_id)
@@ -205,11 +210,9 @@ for r in results:
 # Results for a specific case in a run
 case_results = api.results.get_results_for_case(run_id=1, case_id=123)
 
-# Run statistics
-run_stats = api.runs.get_run_stats(run_id=1)
-
-# Status counts
-status_counts = api.statuses.get_status_counts(run_id=1)
+# Pass/fail counts are fields on the run object itself (not a separate endpoint)
+run = api.runs.get_run(run_id=1)
+print(f"Passed: {run['passed_count']}, Failed: {run['failed_count']}, Untested: {run['untested_count']}")
 ```
 
 ## Create Test Cases

@@ -46,28 +46,28 @@ class TestTemplatesAPI:
 
     def test_get_templates(self, templates_api: TemplatesAPI) -> None:
         """Test get_templates method."""
-        with patch.object(templates_api, "_api_request") as mock_request:
-            mock_request.return_value = [
+        with patch.object(templates_api, "_get") as mock_get:
+            mock_get.return_value = [
                 {"id": 1, "name": "Template 1"},
                 {"id": 2, "name": "Template 2"},
             ]
 
             result = templates_api.get_templates(project_id=1)
-            mock_request.assert_called_once_with("GET", "get_templates/1")
+            mock_get.assert_called_once_with("get_templates/1")
             assert len(result) == 2
 
     def test_api_request_failure(self, templates_api: TemplatesAPI) -> None:
         """Test behavior when API request fails."""
-        with patch.object(templates_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAPIError("API request failed")
+        with patch.object(templates_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAPIError("API request failed")
 
             with pytest.raises(TestRailAPIError, match="API request failed"):
                 templates_api.get_templates(project_id=1)
 
     def test_authentication_error(self, templates_api: TemplatesAPI) -> None:
         """Test behavior when authentication fails."""
-        with patch.object(templates_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailAuthenticationError(
+        with patch.object(templates_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailAuthenticationError(
                 "Authentication failed"
             )
 
@@ -78,8 +78,8 @@ class TestTemplatesAPI:
 
     def test_rate_limit_error(self, templates_api: TemplatesAPI) -> None:
         """Test behavior when rate limit is exceeded."""
-        with patch.object(templates_api, "_api_request") as mock_request:
-            mock_request.side_effect = TestRailRateLimitError(
+        with patch.object(templates_api, "_get") as mock_get:
+            mock_get.side_effect = TestRailRateLimitError(
                 "Rate limit exceeded"
             )
 
