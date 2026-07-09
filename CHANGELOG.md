@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > prepends new blocks above the most recent release based on
 > Conventional Commits.
 
+## [0.8.1](https://github.com/trtmn/testrail_api_module/compare/v0.8.0...v0.8.1) (2026-07-09)
+
+
+### 🔄 Maintenance
+
+* **deps:** bump actions/checkout from 6 to 7 in the actions group ([#190](https://github.com/trtmn/testrail_api_module/issues/190)) ([432b6b0](https://github.com/trtmn/testrail_api_module/commit/432b6b0017c6c4523873f22dd54355bff67f3472))
+* **deps:** bump msgpack from 1.1.2 to 1.2.1 ([#191](https://github.com/trtmn/testrail_api_module/issues/191)) ([4dcd8e8](https://github.com/trtmn/testrail_api_module/commit/4dcd8e86f186d94fc9cca91bc9ae3e6d8b640f64))
+* **deps:** bump pydantic-settings from 2.14.1 to 2.14.2 ([#192](https://github.com/trtmn/testrail_api_module/issues/192)) ([c468d7e](https://github.com/trtmn/testrail_api_module/commit/c468d7e13f84225ae9fa5d0a885b2ad3562a5dc4))
+* **deps:** bump the uv group with 2 updates ([#189](https://github.com/trtmn/testrail_api_module/issues/189)) ([9583b80](https://github.com/trtmn/testrail_api_module/commit/9583b801ea9dd6aeb09413f492b1724c644209ad))
+* gate PyPI publish and docs deploy on the test matrix ([dc31c1a](https://github.com/trtmn/testrail_api_module/commit/dc31c1a14fe94b17a04cf82df12b99b3a515fa32))
+* gate PyPI publish and docs deploy on the test matrix ([0a32f93](https://github.com/trtmn/testrail_api_module/commit/0a32f93a0e8474a3a3f9d20f013b44cd6a4ccf1a))
+
 ## [0.8.0](https://github.com/trtmn/testrail_api_module/compare/v0.7.6...v0.8.0) (2026-06-10)
 
 
