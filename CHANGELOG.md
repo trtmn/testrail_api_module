@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > prepends new blocks above the most recent release based on
 > Conventional Commits.
 
+## [0.8.2](https://github.com/trtmn/testrail_api_module/compare/v0.8.1...v0.8.2) (2026-07-22)
+
+
+### 🔄 Maintenance
+
+* **deps:** bump actions/setup-python from 6 to 7 in the actions group ([#199](https://github.com/trtmn/testrail_api_module/issues/199)) ([9c4a13c](https://github.com/trtmn/testrail_api_module/commit/9c4a13c54c74ffa281ee297b91f8f981a714cbd6))
+* **deps:** bump pip from 26.1 to 26.1.2 ([74e986e](https://github.com/trtmn/testrail_api_module/commit/74e986e28d57663d337338e33177071384361b20))
+* **deps:** bump the uv group with 3 updates ([#198](https://github.com/trtmn/testrail_api_module/issues/198)) ([4c2b3ca](https://github.com/trtmn/testrail_api_module/commit/4c2b3ca7ab74113656a64e968602179ac5a8b3fc))
+* pass a PAT to release-please-action to avoid bot-PR approval gate ([#197](https://github.com/trtmn/testrail_api_module/issues/197)) ([323d70b](https://github.com/trtmn/testrail_api_module/commit/323d70b8cc803c122341e6ed0ebb08e46093851b)), closes [#196](https://github.com/trtmn/testrail_api_module/issues/196)
+
 ## [0.8.1](https://github.com/trtmn/testrail_api_module/compare/v0.8.0...v0.8.1) (2026-07-09)
 
 
