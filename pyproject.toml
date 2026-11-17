@@ -42,7 +42,10 @@ dev = [
     "toml>=0.10.0",
     "python-dotenv>=1.0.0",
     "pre-commit>=3.8.0",
-    "ruff>=0.8.0",
+    # Pinned to one minor series: ruff's formatter (including how it formats
+    # Python code blocks in docs) can change in a minor release, which turns
+    # a routine dependency bump into a repo-wide reformat. Bump deliberately.
+    "ruff>=0.17.5,<0.18",
     "bandit>=1.7.0",
     "detect-secrets>=1.5.0",
     "pyyaml>=6.0",
@@ -138,6 +141,10 @@ exclude_lines = [
 [tool.ruff]
 line-length = 79
 target-version = "py311"
+# Ruff >= 0.16 also formats Python code blocks inside Markdown. Exclude docs
+# so a ruff bump cannot rewrite README/USAGE/skill examples, and so CI and
+# the pre-commit hook (which only receives Python files) stay in agreement.
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = [

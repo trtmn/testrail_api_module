@@ -43,7 +43,10 @@ repos:
 
   # Python code formatting and linting with ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.4
+    # Must match the ruff version range in pyproject.toml. When these drift,
+    # local commits pass while CI's `ruff format --check` fails (or the
+    # reverse) — see issue #247.
+    rev: v0.17.5
     hooks:
       # Run the linter
       - id: ruff
