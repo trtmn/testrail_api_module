@@ -87,9 +87,10 @@ class DatasetsAPI(BaseAPI):
             ...     variables=[{"id": 1, "value": "test"}]
             ... )
         """
-        data: dict[str, Any] = {"name": name}
-        if variables is not None:
-            data["variables"] = variables
+        data = self._build_data(
+            name=name,
+            variables=variables,
+        )
         return self._post(f"add_dataset/{project_id}", data=data)
 
     def update_dataset(
@@ -118,11 +119,10 @@ class DatasetsAPI(BaseAPI):
             ...     name="Updated Dataset"
             ... )
         """
-        data: dict[str, Any] = {}
-        if name is not None:
-            data["name"] = name
-        if variables is not None:
-            data["variables"] = variables
+        data = self._build_data(
+            name=name,
+            variables=variables,
+        )
         return self._post(f"update_dataset/{dataset_id}", data=data)
 
     def delete_dataset(self, dataset_id: int) -> dict[str, Any]:

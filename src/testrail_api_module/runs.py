@@ -76,23 +76,16 @@ class RunsAPI(BaseAPI):
             >>> for run in response["runs"]:
             ...     print(f"Run: {run['name']}")
         """
-        params = {}
-        if suite_id is not None:
-            params["suite_id"] = suite_id
-        if created_after is not None:
-            params["created_after"] = created_after
-        if created_before is not None:
-            params["created_before"] = created_before
-        if created_by is not None:
-            params["created_by"] = created_by
-        if is_completed is not None:
-            params["is_completed"] = is_completed
-        if milestone_id is not None:
-            params["milestone_id"] = milestone_id
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            suite_id=suite_id,
+            created_after=created_after,
+            created_before=created_before,
+            created_by=created_by,
+            is_completed=is_completed,
+            milestone_id=milestone_id,
+            limit=limit,
+            offset=offset,
+        )
 
         return self._get(f"get_runs/{project_id}", params=params)
 

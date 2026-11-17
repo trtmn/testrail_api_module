@@ -156,11 +156,10 @@ class AttachmentsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            limit=limit,
+            offset=offset,
+        )
 
         return self._get(f"get_attachments_for_case/{case_id}", params=params)
 
@@ -185,11 +184,10 @@ class AttachmentsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            limit=limit,
+            offset=offset,
+        )
 
         return self._get(f"get_attachments_for_plan/{plan_id}", params=params)
 
@@ -235,11 +233,10 @@ class AttachmentsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            limit=limit,
+            offset=offset,
+        )
 
         return self._get(f"get_attachments_for_run/{run_id}", params=params)
 

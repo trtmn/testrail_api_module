@@ -41,9 +41,7 @@ class TestsAPI(BaseAPI):
             ...     test_id=123, with_data=1
             ... )
         """
-        params = {}
-        if with_data is not None:
-            params["with_data"] = with_data
+        params = self._build_data(with_data=with_data)
         return self._get(f"get_test/{test_id}", params=params)
 
     def get_tests(
@@ -84,7 +82,11 @@ class TestsAPI(BaseAPI):
             ...     limit=100
             ... )
         """
-        params: dict[str, Any] = {}
+        params = self._build_data(
+            limit=limit,
+            offset=offset,
+            with_data=with_data,
+        )
         if assignedto_id is not None:
             params["assignedto_id"] = (
                 ",".join(map(str, assignedto_id))
@@ -97,17 +99,11 @@ class TestsAPI(BaseAPI):
                 if isinstance(case_id, list)
                 else case_id
             )
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
         if status_id is not None:
             params["status_id"] = (
                 ",".join(map(str, status_id))
                 if isinstance(status_id, list)
                 else status_id
             )
-        if with_data is not None:
-            params["with_data"] = with_data
 
         return self._get(f"get_tests/{run_id}", params=params)

@@ -51,9 +51,7 @@ class ProjectsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params: dict[str, Any] = {}
-        if is_completed is not None:
-            params["is_completed"] = is_completed
+        params = self._build_data(is_completed=is_completed)
         return self._get("get_projects", params=params)
 
     def add_project(
@@ -80,13 +78,12 @@ class ProjectsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {"name": name}
-        if announcement is not None:
-            data["announcement"] = announcement
-        if show_announcement is not None:
-            data["show_announcement"] = show_announcement
-        if suite_mode is not None:
-            data["suite_mode"] = suite_mode
+        data = self._build_data(
+            name=name,
+            announcement=announcement,
+            show_announcement=show_announcement,
+            suite_mode=suite_mode,
+        )
 
         return self._post("add_project", data=data)
 
@@ -116,17 +113,13 @@ class ProjectsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {}
-        if name is not None:
-            data["name"] = name
-        if announcement is not None:
-            data["announcement"] = announcement
-        if show_announcement is not None:
-            data["show_announcement"] = show_announcement
-        if is_completed is not None:
-            data["is_completed"] = is_completed
-        if suite_mode is not None:
-            data["suite_mode"] = suite_mode
+        data = self._build_data(
+            name=name,
+            announcement=announcement,
+            show_announcement=show_announcement,
+            is_completed=is_completed,
+            suite_mode=suite_mode,
+        )
 
         return self._post(f"update_project/{project_id}", data=data)
 

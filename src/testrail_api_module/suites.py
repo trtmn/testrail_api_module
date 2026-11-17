@@ -71,9 +71,10 @@ class SuitesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {"name": name}
-        if description is not None:
-            data["description"] = description
+        data = self._build_data(
+            name=name,
+            description=description,
+        )
 
         return self._post(f"add_suite/{project_id}", data=data)
 
@@ -97,11 +98,10 @@ class SuitesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {}
-        if name is not None:
-            data["name"] = name
-        if description is not None:
-            data["description"] = description
+        data = self._build_data(
+            name=name,
+            description=description,
+        )
 
         return self._post(f"update_suite/{suite_id}", data=data)
 

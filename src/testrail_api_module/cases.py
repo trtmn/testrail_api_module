@@ -48,7 +48,7 @@ class CasesAPI(BaseAPI):
             >>> case = api.cases.get_case(123)
             >>> print(case['title'])
         """
-        return self._get(f"get_case/{case_id}")  # type: ignore[return-value]
+        return self._get(f"get_case/{case_id}")
 
     def get_cases(
         self,
@@ -103,41 +103,26 @@ class CasesAPI(BaseAPI):
             >>> for case in cases:
             ...     print(f"Case {case['id']}: {case['title']}")
         """
-        params: dict[str, Any] = {}
-        if suite_id is not None:
-            params["suite_id"] = suite_id
-        if section_id is not None:
-            params["section_id"] = section_id
-        if created_after is not None:
-            params["created_after"] = created_after
-        if created_before is not None:
-            params["created_before"] = created_before
-        if created_by is not None:
-            params["created_by"] = created_by
-        if filter is not None:
-            params["filter"] = filter
-        if limit is not None:
-            params["limit"] = limit
-        if milestone_id is not None:
-            params["milestone_id"] = milestone_id
-        if offset is not None:
-            params["offset"] = offset
-        if priority_id is not None:
-            params["priority_id"] = priority_id
-        if refs_filter is not None:
-            params["refs_filter"] = refs_filter
-        if template_id is not None:
-            params["template_id"] = template_id
-        if type_id is not None:
-            params["type_id"] = type_id
-        if updated_after is not None:
-            params["updated_after"] = updated_after
-        if updated_before is not None:
-            params["updated_before"] = updated_before
-        if updated_by is not None:
-            params["updated_by"] = updated_by
+        params = self._build_data(
+            suite_id=suite_id,
+            section_id=section_id,
+            created_after=created_after,
+            created_before=created_before,
+            created_by=created_by,
+            filter=filter,
+            limit=limit,
+            milestone_id=milestone_id,
+            offset=offset,
+            priority_id=priority_id,
+            refs_filter=refs_filter,
+            template_id=template_id,
+            type_id=type_id,
+            updated_after=updated_after,
+            updated_before=updated_before,
+            updated_by=updated_by,
+        )
 
-        return self._get(f"get_cases/{project_id}", params=params)  # type: ignore[return-value]
+        return self._get(f"get_cases/{project_id}", params=params)
 
     def add_case(
         self,
@@ -561,7 +546,7 @@ class CasesAPI(BaseAPI):
                 )
                 raise ValueError(error_msg) from e
 
-        return self._post(f"add_case/{section_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"add_case/{section_id}", data=data)
 
     def _is_missing_required_value(self, value: Any) -> bool:
         """
@@ -2025,7 +2010,7 @@ class CasesAPI(BaseAPI):
         if custom_fields:
             data.update(custom_fields)
 
-        return self._post(f"update_case/{case_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"update_case/{case_id}", data=data)
 
     def delete_case(
         self, case_id: int, soft: int | None = None
@@ -2048,10 +2033,8 @@ class CasesAPI(BaseAPI):
             >>> result = api.cases.delete_case(123)
             >>> result = api.cases.delete_case(123, soft=1)
         """
-        data: dict[str, Any] = {}
-        if soft is not None:
-            data["soft"] = soft
-        return self._post(f"delete_case/{case_id}", data=data)  # type: ignore[return-value]
+        data = self._build_data(soft=soft)
+        return self._post(f"delete_case/{case_id}", data=data)
 
     def get_case_fields(self) -> list[dict[str, Any]]:
         """
@@ -2068,7 +2051,7 @@ class CasesAPI(BaseAPI):
             >>> for field in fields:
             ...     print(f"Field: {field['name']}, Type: {field['type']}")
         """
-        return self._get("get_case_fields")  # type: ignore[return-value]
+        return self._get("get_case_fields")
 
     def get_case_types(self) -> list[dict[str, Any]]:
         """
@@ -2085,7 +2068,7 @@ class CasesAPI(BaseAPI):
             >>> for case_type in types:
             ...     print(f"Type {case_type['id']}: {case_type['name']}")
         """
-        return self._get("get_case_types")  # type: ignore[return-value]
+        return self._get("get_case_types")
 
     def get_history_for_case(
         self,
@@ -2112,12 +2095,11 @@ class CasesAPI(BaseAPI):
             >>> for change in history:
             ...     print(f"Changed by {change['user']} on {change['created_on']}")
         """
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
-        return self._get(  # type: ignore[return-value]
+        params = self._build_data(
+            limit=limit,
+            offset=offset,
+        )
+        return self._get(
             f"get_history_for_case/{case_id}",
             params=params,
         )
@@ -2144,7 +2126,7 @@ class CasesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        return self._post("add_case_field", data=kwargs)  # type: ignore[return-value]
+        return self._post("add_case_field", data=kwargs)
 
     def update_cases(
         self, suite_id: int, cases: list[dict[str, Any]]
@@ -2165,7 +2147,7 @@ class CasesAPI(BaseAPI):
             TestRailAPIError: If the API request fails.
         """
         data: dict[str, Any] = {"cases": cases}
-        return self._post(f"update_cases/{suite_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"update_cases/{suite_id}", data=data)
 
     def delete_cases(
         self,
@@ -2190,10 +2172,12 @@ class CasesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {"cases": cases, "suite_id": suite_id}
-        if soft is not None:
-            data["soft"] = soft
-        return self._post(f"delete_cases/{project_id}", data=data)  # type: ignore[return-value]
+        data = self._build_data(
+            cases=cases,
+            suite_id=suite_id,
+            soft=soft,
+        )
+        return self._post(f"delete_cases/{project_id}", data=data)
 
     def copy_cases_to_section(
         self, section_id: int, case_ids: list[int]
@@ -2215,7 +2199,7 @@ class CasesAPI(BaseAPI):
             >>> copied_cases = api.cases.copy_cases_to_section(5, [1, 2, 3])
         """
         data: dict[str, Any] = {"case_ids": case_ids}
-        return self._post(f"copy_cases_to_section/{section_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"copy_cases_to_section/{section_id}", data=data)
 
     def move_cases_to_section(
         self,
@@ -2241,9 +2225,8 @@ class CasesAPI(BaseAPI):
         Example:
             >>> moved_cases = api.cases.move_cases_to_section(5, case_ids=[1, 2, 3])
         """
-        data: dict[str, Any] = {}
-        if suite_id is not None:
-            data["suite_id"] = suite_id
-        if case_ids is not None:
-            data["case_ids"] = case_ids
-        return self._post(f"move_cases_to_section/{section_id}", data=data)  # type: ignore[return-value]
+        data = self._build_data(
+            suite_id=suite_id,
+            case_ids=case_ids,
+        )
+        return self._post(f"move_cases_to_section/{section_id}", data=data)

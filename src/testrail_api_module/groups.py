@@ -80,9 +80,10 @@ class GroupsAPI(BaseAPI):
             ...     user_ids=[1, 2, 3]
             ... )
         """
-        data: dict[str, Any] = {"name": name}
-        if user_ids is not None:
-            data["user_ids"] = user_ids
+        data = self._build_data(
+            name=name,
+            user_ids=user_ids,
+        )
 
         return self._post("add_group", data=data)
 
@@ -115,11 +116,10 @@ class GroupsAPI(BaseAPI):
             ...     user_ids=[1, 2, 3]
             ... )
         """
-        data: dict[str, Any] = {}
-        if name is not None:
-            data["name"] = name
-        if user_ids is not None:
-            data["user_ids"] = user_ids
+        data = self._build_data(
+            name=name,
+            user_ids=user_ids,
+        )
 
         return self._post(f"update_group/{group_id}", data=data)
 

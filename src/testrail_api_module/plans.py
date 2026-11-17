@@ -70,21 +70,15 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params = {}
-        if created_after is not None:
-            params["created_after"] = created_after
-        if created_before is not None:
-            params["created_before"] = created_before
-        if created_by is not None:
-            params["created_by"] = created_by
-        if is_completed is not None:
-            params["is_completed"] = is_completed
-        if milestone_id is not None:
-            params["milestone_id"] = milestone_id
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            created_after=created_after,
+            created_before=created_before,
+            created_by=created_by,
+            is_completed=is_completed,
+            milestone_id=milestone_id,
+            limit=limit,
+            offset=offset,
+        )
 
         return self._get(f"get_plans/{project_id}", params=params)
 
@@ -209,22 +203,16 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {
-            "suite_id": suite_id,
-            "include_all": include_all,
-        }
-        if name is not None:
-            data["name"] = name
-        if description is not None:
-            data["description"] = description
-        if assignedto_id is not None:
-            data["assignedto_id"] = assignedto_id
-        if case_ids is not None:
-            data["case_ids"] = case_ids
-        if config_ids is not None:
-            data["config_ids"] = config_ids
-        if runs is not None:
-            data["runs"] = runs
+        data = self._build_data(
+            suite_id=suite_id,
+            include_all=include_all,
+            name=name,
+            description=description,
+            assignedto_id=assignedto_id,
+            case_ids=case_ids,
+            config_ids=config_ids,
+            runs=runs,
+        )
 
         return self._post(f"add_plan_entry/{plan_id}", data=data)
 
@@ -303,18 +291,14 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {
-            "config_ids": config_ids,
-            "include_all": include_all,
-        }
-        if description is not None:
-            data["description"] = description
-        if assignedto_id is not None:
-            data["assignedto_id"] = assignedto_id
-        if case_ids is not None:
-            data["case_ids"] = case_ids
-        if refs is not None:
-            data["refs"] = refs
+        data = self._build_data(
+            config_ids=config_ids,
+            include_all=include_all,
+            description=description,
+            assignedto_id=assignedto_id,
+            case_ids=case_ids,
+            refs=refs,
+        )
 
         return self._post(
             f"add_run_to_plan_entry/{plan_id}/{entry_id}",
@@ -352,17 +336,13 @@ class PlansAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {}
-        if description is not None:
-            data["description"] = description
-        if assignedto_id is not None:
-            data["assignedto_id"] = assignedto_id
-        if include_all is not None:
-            data["include_all"] = include_all
-        if case_ids is not None:
-            data["case_ids"] = case_ids
-        if refs is not None:
-            data["refs"] = refs
+        data = self._build_data(
+            description=description,
+            assignedto_id=assignedto_id,
+            include_all=include_all,
+            case_ids=case_ids,
+            refs=refs,
+        )
 
         return self._post(
             f"update_run_in_plan_entry/{run_id}",

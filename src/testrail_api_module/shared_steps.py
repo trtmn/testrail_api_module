@@ -71,21 +71,15 @@ class SharedStepsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params: dict[str, Any] = {}
-        if created_after is not None:
-            params["created_after"] = created_after
-        if created_before is not None:
-            params["created_before"] = created_before
-        if created_by is not None:
-            params["created_by"] = created_by
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
-        if updated_after is not None:
-            params["updated_after"] = updated_after
-        if updated_before is not None:
-            params["updated_before"] = updated_before
+        params = self._build_data(
+            created_after=created_after,
+            created_before=created_before,
+            created_by=created_by,
+            limit=limit,
+            offset=offset,
+            updated_after=updated_after,
+            updated_before=updated_before,
+        )
 
         return self._get(f"get_shared_steps/{project_id}", params=params)
 
@@ -112,9 +106,10 @@ class SharedStepsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {"title": title}
-        if custom_steps_separated is not None:
-            data["custom_steps_separated"] = custom_steps_separated
+        data = self._build_data(
+            title=title,
+            custom_steps_separated=custom_steps_separated,
+        )
 
         return self._post(f"add_shared_step/{project_id}", data=data)
 
@@ -140,11 +135,10 @@ class SharedStepsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {}
-        if title is not None:
-            data["title"] = title
-        if custom_steps_separated is not None:
-            data["custom_steps_separated"] = custom_steps_separated
+        data = self._build_data(
+            title=title,
+            custom_steps_separated=custom_steps_separated,
+        )
 
         return self._post(f"update_shared_step/{shared_step_id}", data=data)
 
@@ -168,9 +162,7 @@ class SharedStepsAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {}
-        if keep_in_cases is not None:
-            data["keep_in_cases"] = keep_in_cases
+        data = self._build_data(keep_in_cases=keep_in_cases)
 
         return self._post(
             f"delete_shared_step/{shared_step_id}",

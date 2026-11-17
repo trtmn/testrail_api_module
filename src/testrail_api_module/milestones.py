@@ -56,11 +56,10 @@ class MilestonesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params: dict[str, Any] = {}
-        if is_completed is not None:
-            params["is_completed"] = is_completed
-        if is_started is not None:
-            params["is_started"] = is_started
+        params = self._build_data(
+            is_completed=is_completed,
+            is_started=is_started,
+        )
         return self._get(f"get_milestones/{project_id}", params=params)
 
     def add_milestone(
@@ -92,17 +91,14 @@ class MilestonesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {"name": name}
-        if description is not None:
-            data["description"] = description
-        if due_on is not None:
-            data["due_on"] = due_on
-        if parent_id is not None:
-            data["parent_id"] = parent_id
-        if refs is not None:
-            data["refs"] = refs
-        if start_on is not None:
-            data["start_on"] = start_on
+        data = self._build_data(
+            name=name,
+            description=description,
+            due_on=due_on,
+            parent_id=parent_id,
+            refs=refs,
+            start_on=start_on,
+        )
 
         return self._post(f"add_milestone/{project_id}", data=data)
 
@@ -138,23 +134,16 @@ class MilestonesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        data: dict[str, Any] = {}
-        if name is not None:
-            data["name"] = name
-        if description is not None:
-            data["description"] = description
-        if due_on is not None:
-            data["due_on"] = due_on
-        if is_completed is not None:
-            data["is_completed"] = is_completed
-        if is_started is not None:
-            data["is_started"] = is_started
-        if parent_id is not None:
-            data["parent_id"] = parent_id
-        if refs is not None:
-            data["refs"] = refs
-        if start_on is not None:
-            data["start_on"] = start_on
+        data = self._build_data(
+            name=name,
+            description=description,
+            due_on=due_on,
+            is_completed=is_completed,
+            is_started=is_started,
+            parent_id=parent_id,
+            refs=refs,
+            start_on=start_on,
+        )
 
         return self._post(
             f"update_milestone/{milestone_id}",

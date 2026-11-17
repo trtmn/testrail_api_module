@@ -55,11 +55,10 @@ class VariablesAPI(BaseAPI):
         Raises:
             TestRailAPIError: If the API request fails.
         """
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            limit=limit,
+            offset=offset,
+        )
         return self._get(f"get_variables/{project_id}", params=params)
 
     def add_variable(

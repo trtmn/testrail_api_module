@@ -48,7 +48,7 @@ class SectionsAPI(BaseAPI):
             >>> section = api.sections.get_section(123)
             >>> print(f"Section: {section['name']}")
         """
-        return self._get(f"get_section/{section_id}")  # type: ignore[return-value]
+        return self._get(f"get_section/{section_id}")
 
     def get_sections(
         self,
@@ -83,13 +83,11 @@ class SectionsAPI(BaseAPI):
             >>> for section in response["sections"]:
             ...     print(f"Section: {section['name']}")
         """
-        params = {}
-        if suite_id is not None:
-            params["suite_id"] = suite_id
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            suite_id=suite_id,
+            limit=limit,
+            offset=offset,
+        )
 
         return self._get(f"get_sections/{project_id}", params=params)
 
@@ -139,7 +137,7 @@ class SectionsAPI(BaseAPI):
             if value is not None:
                 data[field] = value
 
-        return self._post(f"add_section/{project_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"add_section/{project_id}", data=data)
 
     def update_section(
         self,
@@ -182,7 +180,7 @@ class SectionsAPI(BaseAPI):
             if value is not None:
                 data[field] = value
 
-        return self._post(f"update_section/{section_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"update_section/{section_id}", data=data)
 
     def move_section(
         self,
@@ -231,7 +229,7 @@ class SectionsAPI(BaseAPI):
         if not isinstance(after_id, _UnsetType):
             data["after_id"] = after_id
 
-        return self._post(f"move_section/{section_id}", data=data)  # type: ignore[return-value]
+        return self._post(f"move_section/{section_id}", data=data)
 
     def delete_section(self, section_id: int) -> dict[str, Any]:
         """
@@ -249,4 +247,4 @@ class SectionsAPI(BaseAPI):
         Example:
             >>> result = api.sections.delete_section(123)
         """
-        return self._post(f"delete_section/{section_id}")  # type: ignore[return-value]
+        return self._post(f"delete_section/{section_id}")

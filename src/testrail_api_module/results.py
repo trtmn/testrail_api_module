@@ -46,13 +46,11 @@ class ResultsAPI(BaseAPI):
         Example:
             >>> results = api.results.get_results(test_id=42)
         """
-        params: dict[str, Any] = {}
-        if defects_filter is not None:
-            params["defects_filter"] = defects_filter
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            defects_filter=defects_filter,
+            limit=limit,
+            offset=offset,
+        )
         if status_id is not None:
             params["status_id"] = (
                 ",".join(map(str, status_id))
@@ -250,13 +248,11 @@ class ResultsAPI(BaseAPI):
             ...     run_id=1, case_id=123
             ... )
         """
-        params: dict[str, Any] = {}
-        if defects_filter is not None:
-            params["defects_filter"] = defects_filter
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params = self._build_data(
+            defects_filter=defects_filter,
+            limit=limit,
+            offset=offset,
+        )
         if status_id is not None:
             params["status_id"] = (
                 ",".join(map(str, status_id))
@@ -307,7 +303,13 @@ class ResultsAPI(BaseAPI):
             ...     limit=50
             ... )
         """
-        params = {}
+        params = self._build_data(
+            created_after=created_after,
+            created_before=created_before,
+            defects_filter=defects_filter,
+            limit=limit,
+            offset=offset,
+        )
         if status_id is not None:
             # Convert list to comma-separated string if needed
             params["status_id"] = (
@@ -315,10 +317,6 @@ class ResultsAPI(BaseAPI):
                 if isinstance(status_id, list)
                 else status_id
             )
-        if created_after is not None:
-            params["created_after"] = created_after
-        if created_before is not None:
-            params["created_before"] = created_before
         if created_by is not None:
             # Convert list to comma-separated string if needed
             params["created_by"] = (
@@ -326,12 +324,6 @@ class ResultsAPI(BaseAPI):
                 if isinstance(created_by, list)
                 else created_by
             )
-        if defects_filter is not None:
-            params["defects_filter"] = defects_filter
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
 
         return self._get(f"get_results_for_run/{run_id}", params=params)
 

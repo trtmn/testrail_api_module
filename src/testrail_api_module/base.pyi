@@ -100,10 +100,15 @@ class BaseAPI:
         Raises:
             TestRailAuthenticationError: If no valid authentication is available
         """
+    # Transport helpers return Any on purpose: the response shape is
+    # endpoint-specific and each submodule's stub declares the precise
+    # type. Declaring dict | list here made the stub disagree with the
+    # implementation, so the contract only held together when base.py
+    # happened to be part of the checked file set (see issue #241).
     @overload
     def _handle_response(
         self, response: requests.Response, raw: Literal[False] = False
-    ) -> dict[str, Any] | list[dict[str, Any]]: ...
+    ) -> Any: ...
     @overload
     def _handle_response(
         self, response: requests.Response, raw: Literal[True]
@@ -118,7 +123,7 @@ class BaseAPI:
         *,
         raw: Literal[False] = False,
         **kwargs: Any,
-    ) -> dict[str, Any] | list[dict[str, Any]]: ...
+    ) -> Any: ...
     @overload
     def _api_request(
         self,
@@ -138,7 +143,7 @@ class BaseAPI:
         *,
         raw: Literal[False] = False,
         **kwargs: Any,
-    ) -> dict[str, Any] | list[dict[str, Any]]: ...
+    ) -> Any: ...
     @overload
     def _get(
         self,
@@ -150,9 +155,9 @@ class BaseAPI:
     ) -> bytes: ...
     def _post(
         self, endpoint: str, data: dict[str, Any] | None = None, **kwargs: Any
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+    ) -> Any:
         """Make a POST request to the TestRail API."""
     def _post_multipart(
         self, endpoint: str, file_path: str, **kwargs: Any
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+    ) -> Any:
         """Make a multipart/form-data POST request uploading a file."""
