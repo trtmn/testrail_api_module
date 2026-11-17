@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > prepends new blocks above the most recent release based on
 > Conventional Commits.
 
+## [0.8.3](https://github.com/trtmn/testrail_api_module/compare/v0.8.2...v0.8.3) (2026-11-17)
+
+
+### 🐛 Fixed
+
+* **ci:** align ruff everywhere and stop PR runs into main ([#248](https://github.com/trtmn/testrail_api_module/issues/248)) ([438ee9d](https://github.com/trtmn/testrail_api_module/commit/438ee9d60c6d16b43dba2f81d44fe5804599e583))
+
 ## [0.8.2](https://github.com/trtmn/testrail_api_module/compare/v0.8.1...v0.8.2) (2026-11-17)
 
 
