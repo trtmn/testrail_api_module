@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > prepends new blocks above the most recent release based on
 > Conventional Commits.
 
+## [0.8.2](https://github.com/trtmn/testrail_api_module/compare/v0.8.1...v0.8.2) (2026-11-17)
+
+
+### 🐛 Fixed
+
+* **deps:** clear all 27 open Dependabot alerts ([#244](https://github.com/trtmn/testrail_api_module/issues/244)) ([e2c6b59](https://github.com/trtmn/testrail_api_module/commit/e2c6b59c69e49a8d337d903db1ef8abea06df920))
+
 ## [0.8.1](https://github.com/trtmn/testrail_api_module/compare/v0.8.0...v0.8.1) (2026-07-09)
 
 
