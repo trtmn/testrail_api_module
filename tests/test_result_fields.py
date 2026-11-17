@@ -25,15 +25,6 @@ class TestResultFieldsAPI:
     """Test suite for ResultFieldsAPI class."""
 
     @pytest.fixture
-    def mock_client(self) -> Mock:
-        """Create a mock TestRail client."""
-        client = Mock()
-        client.base_url = "https://testrail.example.com"
-        client.username = "testuser"
-        client.api_key = "test_api_key"
-        return client
-
-    @pytest.fixture
     def result_fields_api(self, mock_client: Mock) -> ResultFieldsAPI:
         """Create a ResultFieldsAPI instance with mocked client."""
         return ResultFieldsAPI(mock_client)

@@ -25,15 +25,6 @@ class TestTestsAPI:
     """Test suite for TestsAPI class."""
 
     @pytest.fixture
-    def mock_client(self) -> Mock:
-        """Create a mock TestRail client."""
-        client = Mock()
-        client.base_url = "https://testrail.example.com"
-        client.username = "testuser"
-        client.api_key = "test_api_key"
-        return client
-
-    @pytest.fixture
     def tests_api(self, mock_client: Mock) -> TestsAPI:
         """Create a TestsAPI instance with mocked client."""
         return TestsAPI(mock_client)

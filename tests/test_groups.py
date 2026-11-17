@@ -25,15 +25,6 @@ class TestGroupsAPI:
     """Test suite for GroupsAPI class."""
 
     @pytest.fixture
-    def mock_client(self) -> Mock:
-        """Create a mock TestRail client."""
-        client = Mock()
-        client.base_url = "https://testrail.example.com"
-        client.username = "testuser"
-        client.api_key = "test_api_key"
-        return client
-
-    @pytest.fixture
     def groups_api(self, mock_client: Mock) -> GroupsAPI:
         """Create a GroupsAPI instance with mocked client."""
         return GroupsAPI(mock_client)

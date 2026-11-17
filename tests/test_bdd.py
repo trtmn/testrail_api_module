@@ -25,15 +25,6 @@ class TestBDDAPI:
     """Test suite for BDDAPI class."""
 
     @pytest.fixture
-    def mock_client(self) -> Mock:
-        """Create a mock TestRail client."""
-        client = Mock()
-        client.base_url = "https://testrail.example.com"
-        client.username = "testuser"
-        client.api_key = "test_api_key"
-        return client
-
-    @pytest.fixture
     def bdd_api(self, mock_client: Mock) -> BDDAPI:
         """Create a BDDAPI instance with mocked client."""
         return BDDAPI(mock_client)

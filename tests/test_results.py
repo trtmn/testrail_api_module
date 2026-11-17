@@ -6,7 +6,7 @@ including edge cases, error handling, and proper API request formatting.
 """
 
 from typing import TYPE_CHECKING
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -23,15 +23,6 @@ if TYPE_CHECKING:
 
 class TestResultsAPI:
     """Test suite for ResultsAPI class."""
-
-    @pytest.fixture
-    def mock_client(self):
-        """Create a mock TestRail client."""
-        client = Mock()
-        client.base_url = "https://testrail.example.com"
-        client.username = "testuser"
-        client.api_key = "test_api_key"
-        return client
 
     @pytest.fixture
     def results_api(self, mock_client):

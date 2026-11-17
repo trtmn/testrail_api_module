@@ -25,15 +25,6 @@ class TestAttachmentsAPI:
     """Test suite for AttachmentsAPI class."""
 
     @pytest.fixture
-    def mock_client(self) -> Mock:
-        """Create a mock TestRail client."""
-        client = Mock()
-        client.base_url = "https://testrail.example.com"
-        client.username = "testuser"
-        client.api_key = "test_api_key"
-        return client
-
-    @pytest.fixture
     def attachments_api(self, mock_client: Mock) -> AttachmentsAPI:
         """Create an AttachmentsAPI instance with mocked client."""
         return AttachmentsAPI(mock_client)

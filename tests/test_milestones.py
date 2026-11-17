@@ -25,15 +25,6 @@ class TestMilestonesAPI:
     """Test suite for MilestonesAPI class."""
 
     @pytest.fixture
-    def mock_client(self) -> Mock:
-        """Create a mock TestRail client."""
-        client = Mock()
-        client.base_url = "https://testrail.example.com"
-        client.username = "testuser"
-        client.api_key = "test_api_key"
-        return client
-
-    @pytest.fixture
     def milestones_api(self, mock_client: Mock) -> MilestonesAPI:
         """Create a MilestonesAPI instance with mocked client."""
         return MilestonesAPI(mock_client)
