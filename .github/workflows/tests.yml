@@ -44,11 +44,10 @@ jobs:
 
       # Stub-shadowing means `mypy src/` only builds the .pyi files; an
       # explicit .py file list is required to type-check implementations.
-      # Non-blocking until pre-existing implementation errors are fixed —
-      # see https://github.com/trtmn/testrail_api_module/issues/149
-      - name: Mypy (implementations, non-blocking)
+      # Must stay green: base.pyi types the transport helpers as Any so
+      # this mode and per-file runs agree (see issue #241).
+      - name: Mypy (implementations)
         run: uv run mypy src/testrail_api_module/*.py
-        continue-on-error: true
 
   test:
     name: Test (Python ${{ matrix.python-version }})

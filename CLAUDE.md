@@ -77,8 +77,11 @@ tox
 uv run pytest tests/test_cases.py
 uv run pytest tests/test_cases.py::TestCasesAPI::test_get_case
 
-# Type check
+# Type check the stubs (this is all that `mypy src/` checks — see below)
 uv run mypy src/
+
+# Type check the implementations (explicit .py file list is required)
+uv run mypy src/testrail_api_module/*.py
 
 # Lint and format
 uv run ruff check . --fix
@@ -133,11 +136,21 @@ Every submodule follows this structure:
 - Class inherits `BaseAPI`, accepts client in `__init__`
 - GET methods call `self._get(endpoint, params={})`
 - POST methods build a `data` dict (excluding `None` values) and call `self._post(endpoint, data=data)`
+- Build request dicts with `self._build_data(name=name, description=description)`, which drops only `None`. Do not hand-roll `if x is not None: data["x"] = x`, and do not switch it to truthiness filtering — `""`, `0`, `False`, and `[]` are meaningful to TestRail and must be sent.
 - Each file declares `__all__ = ['<ClassName>API']`
 
 ### Type Stubs
 
 Every `.py` has a matching `.pyi` stub. The package ships `py.typed` (PEP 561). Stubs are included via `pyproject.toml` package-data config.
+
+Mypy prefers a `.pyi` over the sibling `.py`, so the two commands above check different things and neither subsumes the other:
+
+| Command | What it checks |
+|---|---|
+| `uv run mypy src/` | `.pyi` files only (`.py` implementations are never read) |
+| `uv run mypy src/testrail_api_module/*.py` | implementations |
+
+That shadowing is also why `base.pyi` types `_get`/`_post`/`_api_request` as returning `Any` (with a `raw=True` overload returning `bytes`): the precise response type belongs to each submodule's declared return type. When the stub claimed `dict | list`, checking a *single* module made mypy resolve `base` from the stub and report ~68 return-value errors, so `mypy some_module.py` and `mypy src/` disagreed. Keep all three invocations green — the pre-commit hook type-checks only the staged files.
 
 ### CasesAPI — Most Complex Module
 
