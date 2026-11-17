@@ -25,7 +25,7 @@ Keep the GitHub issue updated throughout the work:
 
 ### Branches
 
-- **`main`** — production mirror, protected branch (enforce_admins, PR required, Tests x4 required)
+- **`main`** — production mirror. The live ruleset only blocks deletion and force-pushes: there are **no required status checks** and no review requirement, so merges are not CI-gated. The release workflow's sync PR therefore merges immediately, which is why PR-triggered runs for `main` were removed from `tests.yml` (see issue #247).
 - **`development`** — default branch, integration branch, all feature work merges here. Release-please watches this branch.
 - **Feature/fix branches** — branch from `development`, PR back to `development`
 - **Release-please PR** — auto-maintained by `release-please-action`. Merging it to `development` cuts the next release.
@@ -180,3 +180,4 @@ uv version 0.7.0
 - **Quotes**: Double quotes
 - **Target**: Python 3.11
 - **Linter rules**: E, W, F, I (isort), B (bugbear), C4, UP (pyupgrade)
+- **Ruff version**: keep the `ruff` constraint in `pyproject.toml` and the `ruff-pre-commit` `rev` in `.pre-commit-config.yaml` on the same version. CI runs `ruff format --check` with the lockfile's ruff while pre-commit formats with the pinned hook; when they drift, one side rewrites what the other rejects. Markdown is excluded from formatting (`extend-exclude`) because newer ruff versions reformat Python code blocks inside docs.

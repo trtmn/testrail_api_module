@@ -3,8 +3,12 @@ name: Tests
 on:
   push:
     branches: [main, development]
+  # PRs target `development`. The only PRs into `main` are mirror syncs of an
+  # already-tagged, already-tested commit; the release workflow merges them
+  # immediately, which raced the PR-triggered run into a startup failure and
+  # left a red run on every release. `main` is still covered by `push` above.
   pull_request:
-    branches: [main, development]
+    branches: [development]
   # Reusable: release-please.yml calls this to gate publishing on a green
   # matrix at the release commit. See issue #186.
   workflow_call:
