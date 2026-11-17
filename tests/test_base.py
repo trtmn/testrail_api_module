@@ -967,3 +967,71 @@ class TestBaseAPI:
             base_api._post_multipart(
                 "add_attachment_to_case/1", str(file_path)
             )
+
+
+class TestBuildData:
+    """Test suite for BaseAPI._build_data."""
+
+    @pytest.fixture
+    def mock_client(self) -> Mock:
+        """Create a mock TestRail client."""
+        client = Mock()
+        client.base_url = "https://testrail.example.com"
+        client.username = "testuser"
+        client.api_key = "test_api_key"
+        client.timeout = 30
+        return client
+
+    @pytest.fixture
+    def base_api(self, mock_client: Mock) -> BaseAPI:
+        """Create a BaseAPI instance with mocked client."""
+        return BaseAPI(mock_client)
+
+    def test_build_data_drops_none_values(self, base_api: BaseAPI) -> None:
+        """Test _build_data drops keys whose value is None."""
+        result = base_api._build_data(name="Test", description=None)
+
+        assert result == {"name": "Test"}
+
+    def test_build_data_preserves_falsey_values(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _build_data keeps falsey values that are not None.
+
+        Empty strings, zero, False, and empty containers are all
+        meaningful to TestRail and must still be sent; only None means
+        "omit this field".
+        """
+        result = base_api._build_data(
+            is_completed=False,
+            count=0,
+            comment="",
+            case_ids=[],
+            custom_fields={},
+        )
+
+        assert result == {
+            "is_completed": False,
+            "count": 0,
+            "comment": "",
+            "case_ids": [],
+            "custom_fields": {},
+        }
+
+    def test_build_data_all_none_returns_empty_dict(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _build_data returns an empty dict when every value is None."""
+        assert base_api._build_data(a=None, b=None) == {}
+
+    def test_build_data_no_arguments_returns_empty_dict(
+        self, base_api: BaseAPI
+    ) -> None:
+        """Test _build_data with no arguments returns an empty dict."""
+        assert base_api._build_data() == {}
+
+    def test_build_data_preserves_key_order(self, base_api: BaseAPI) -> None:
+        """Test _build_data preserves the order keys were declared in."""
+        result = base_api._build_data(beta=1, alpha=2, gamma=3)
+
+        assert list(result) == ["beta", "alpha", "gamma"]

@@ -189,6 +189,26 @@ class BaseAPI:
                 url += f"&{urlencode(filtered_params)}"
         return url
 
+    def _build_data(self, **kwargs: Any) -> dict[str, Any]:
+        """
+        Build a request payload from keyword arguments.
+
+        TestRail distinguishes an omitted field from a present-but-empty
+        one, so only ``None`` is dropped: ``False``, ``0``, ``""``, and
+        empty lists/dicts are all sent as-is. Keeping this policy in one
+        place is what makes that distinction consistent across modules.
+
+        Args:
+            **kwargs: Field names and their values.
+
+        Returns:
+            Dict containing every argument whose value is not None, in
+            declaration order.
+        """
+        return {
+            key: value for key, value in kwargs.items() if value is not None
+        }
+
     def _get_auth(self) -> tuple[str, str]:
         """
         Get authentication credentials.

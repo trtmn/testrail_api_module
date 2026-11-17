@@ -77,6 +77,19 @@ class BaseAPI:
         Returns:
             Complete URL string
         """
+    def _build_data(self, **kwargs: Any) -> dict[str, Any]:
+        """
+        Build a request payload from keyword arguments.
+
+        Only ``None`` is dropped; ``False``, ``0``, ``""``, and empty
+        lists/dicts are sent as-is.
+
+        Args:
+            **kwargs: Field names and their values.
+
+        Returns:
+            Dict of every argument whose value is not None.
+        """
     def _get_auth(self) -> tuple[str, str]:
         """
         Get authentication credentials.
